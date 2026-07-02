@@ -8,7 +8,7 @@
 const SUPABASE_URL = "https://lwfjnmudtlybnnfgtgag.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZmpubXVkdGx5Ym5uZmd0Z2FnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NTAzNTIsImV4cCI6MjA5ODUyNjM1Mn0.plYp6N1-gQDk3O8mY6IbGcyVyCby0oCg9rGtodD6WK4"; // <-- Cole aqui a sua chave anon pública
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Nome oficializado para relatórios, cabeçalhos e logs do sistema ERP
 const EMPRESA_NOME_OFICIAL = "NEVIXA ENGENHARIA COMERCIO & SERVICOS LTDA";
