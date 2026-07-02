@@ -8,7 +8,7 @@
 const SUPABASE_URL = "https://lwfjnmudtlybnnfgtgag.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZmpubXVkdGx5Ym5uZmd0Z2FnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NTAzNTIsImV4cCI6MjA5ODUyNjM1Mn0.plYp6N1-gQDk3O8mY6IbGcyVyCby0oCg9rGtodD6WK4"; // <-- Cole aqui a sua chave anon pública
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Nome oficializado para relatórios, cabeçalhos e logs do sistema ERP
 const EMPRESA_NOME_OFICIAL = "NEVIXA ENGENHARIA COMERCIO & SERVICOS LTDA";
@@ -21,7 +21,7 @@ async function realizarLoginReal(email, senha) {
 
     try {
         // 1. Autentica o usuário na camada de Auth do Supabase
-        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
             email: email,
             password: senha
         });
@@ -35,7 +35,7 @@ async function realizarLoginReal(email, senha) {
         const userId = authData.user.id;
 
         // 2. Busca os dados de permissão e status na tabela pública "perfis"
-        const { data: perfil, error: perfilError } = await supabase
+        const { data: perfil, error: perfilError } = await supabaseClient
             .from('perfis')
             .select('*')
             .eq('id', userId)
@@ -43,7 +43,7 @@ async function realizarLoginReal(email, senha) {
 
         if (perfilError || !perfil) {
             alert("Erro ao carregar perfil. Entre em contato com o suporte.");
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             exibirCarregamentoLogin(false);
             return;
         }
@@ -51,14 +51,14 @@ async function realizarLoginReal(email, senha) {
         // 3. Regra de Negócio Crítica: Bloqueio de usuários Pendentes ou Bloqueados
         if (perfil.status === 'pendente') {
             alert("Acesso Negado: O seu cadastro foi recebido com sucesso, mas está aguardando a aprovação do Administrador da NEVIXA ENGENHARIA.");
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             exibirCarregamentoLogin(false);
             return;
         }
 
         if (perfil.status === 'bloqueado') {
             alert("Acesso Negado: Esta conta de usuário encontra-se desativada/bloqueada no sistema.");
-            await supabase.auth.signOut();
+            await supabaseClient.auth.signOut();
             exibirCarregamentoLogin(false);
             return;
         }
@@ -92,7 +92,7 @@ async function realizarLoginReal(email, senha) {
 async function realizarCadastroReal(nome, email, senha, papelEscolhido) {
     try {
         // 1. Cria o usuário no Supabase Auth passando metadados (nome)
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await supabaseClient.auth.signUp({
             email: email,
             password: senha,
             options: {
@@ -112,7 +112,7 @@ async function realizarCadastroReal(nome, email, senha, papelEscolhido) {
         if (data?.user) {
             if (papelEscolhido && papelEscolhido !== 'tecnico') {
                 // Atualiza o papel solicitado, mas mantém o status em análise ('pendente')
-                await supabase
+                await supabaseClient
                     .from('perfis')
                     .update({ papel: papelEscolhido })
                     .eq('id', data.user.id);
