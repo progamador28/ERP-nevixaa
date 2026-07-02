@@ -321,7 +321,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     
     // Iniciar Polling de sincronização entre guias anônimas/normais (Fase 4C)
-    startStateSyncPolling();
+    // startStateSyncPolling();
 });
 
 // Inicializa o banco de dados carregando do LocalStorage ou usando dados mockados
@@ -2952,37 +2952,8 @@ function setupEventListeners() {
         const email = document.getElementById("login-email").value.trim().toLowerCase();
         const senha = document.getElementById("login-senha").value;
         
-        const user = MOCK_USERS.find(u => u.email === email && u.senha === senha);
-        
-        if (user) {
-            userTemporario = user;
-            // Ocultar login, mostrar 2FA
-            document.getElementById("form-login").classList.add("d-none");
-            document.getElementById("form-2fa").classList.remove("d-none");
-            
-            // Simular geração de token
-            alert(`[VERIFICAÇÃO DE SEGURANÇA 2FA]\nNevixa enviou um código de verificação para o dispositivo associado.\n\n👉 DIGITE O TOKEN DE HOMOLOGAÇÃO: 123456`);
-            
-            // Iniciar contagem regressiva
-            let segundos = 30;
-            document.getElementById("timer-2fa").innerText = segundos;
-            
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                segundos--;
-                document.getElementById("timer-2fa").innerText = segundos;
-                if (segundos <= 0) {
-                    clearInterval(timerInterval);
-                    alert("O código 2FA expirou! Clique em Acessar para gerar outro código.");
-                    // Voltar para login
-                    document.getElementById("form-login").classList.remove("d-none");
-                    document.getElementById("form-2fa").classList.add("d-none");
-                    userTemporario = null;
-                }
-            }, 1000);
-        } else {
-            alert("Credenciais inválidas. Utilize um dos usuários de teste informados abaixo.");
-        }
+        // NOVO FLUXO DE LOGIN: Chama a função que usa o Supabase
+        realizarLoginReal(email, senha);
     });
 
     safeAddEventListener("form-2fa", "submit", (e) => {
