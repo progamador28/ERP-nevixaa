@@ -139,7 +139,6 @@ function exibirCarregamentoLogin(carregando) {
     }
 }
 
-
 // ==========================================================================
 // DADOS MOCK INICIAIS (Se o localStorage estiver vazio)
 // ==========================================================================
