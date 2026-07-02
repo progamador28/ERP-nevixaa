@@ -304,7 +304,7 @@ window.prefillLogin = function(email, senha) {
 // INICIALIZAÇÃO DA APLICAÇÃO
 // ==========================================================================
 document.addEventListener("DOMContentLoaded", () => {
-    loadStateFromServer(); // Carrega do servidor central
+    initDatabase(); // Inicializa o banco de dados (localStorage ou Mock)
     checkAuth();
     initMobileNavigation();
     setupEventListeners();
