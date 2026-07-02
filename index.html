@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nevixa | ERP Gestão Financeira & Operações</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome para ícones modernos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Folha de estilos customizada -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- ==========================================================================
+       TELA DE LOGIN (OVERLAY PARA SESSÃO NÃO AUTENTICADA)
+       ========================================================================== -->
+    <!-- ==========================================================================
+       TELA DE LOGIN (OVERLAY PARA SESSÃO NÃO AUTENTICADA)
+       ========================================================================== -->
+    <div id="login-overlay" class="login-overlay active">
+        <div class="login-box">
+            <div class="login-brand">
+                <img src="logo.svg" alt="Nevixa Engenharia Logo" style="height: 80px; width: auto; max-width: 100%; margin-bottom: 12px;">
+                <p>Gestão Financeira & Controle de Caixa</p>
+            </div>
+            
+            <!-- Etapa 1: Login de Usuário -->
+            <form id="form-login">
+                <div class="form-group">
+                    <label for="login-email">E-mail Corporativo</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="login-email" required placeholder="seuemail@nevixa.com.br">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="login-senha">Senha de Acesso</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="login-senha" required placeholder="••••••••">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary-gradient btn-block mt-3">
+                    <i class="fa-solid fa-right-to-bracket"></i> Acessar Sistema
+                </button>
+            </form>
+
+            <!-- Etapa 2: Token 2FA Simulado (Melhoria 26) -->
+            <form id="form-2fa" class="d-none">
+                <div class="form-group">
+                    <label for="login-token-2fa">Código de Verificação de 6 Dígitos *</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <input type="text" id="login-token-2fa" required placeholder="Digite 123456" maxlength="6" pattern="\d{6}" style="text-align: center; letter-spacing: 4px; font-size: 1.15rem; font-weight: 700;">
+                    </div>
+                    <p class="text-muted mt-2" style="font-size:0.725rem; text-align: center;">Um código de uso único de teste foi gerado para segurança.</p>
+                </div>
+                <button type="submit" class="btn btn-secondary-gradient btn-block mt-3">
+                    <i class="fa-solid fa-key"></i> Confirmar Acesso 2FA
+                </button>
+                <div class="text-center mt-3">
+                    <span class="text-muted" style="font-size:0.75rem">Reenviar código em <strong id="timer-2fa">30</strong>s</span>
+                </div>
+            </form>
+            
+            <div class="login-help">
+                <h4><i class="fa-solid fa-circle-info text-primary"></i> Contas de Teste Pré-configuradas:</h4>
+                <div class="test-users-list">
+                    <div class="test-user-item" onclick="prefillLogin('admin@nevixa.com.br', 'admin123')">
+                        <span class="user-role-badge badge-admin">Admin</span>
+                        <span class="user-details">admin@nevixa.com.br <strong>(admin123)</strong></span>
+                    </div>
+                    <div class="test-user-item" onclick="prefillLogin('financeiro@nevixa.com.br', 'fin123')">
+                        <span class="user-role-badge badge-fin">Financeiro</span>
+                        <span class="user-details">financeiro@nevixa.com.br <strong>(fin123)</strong></span>
+                    </div>
+                    <div class="test-user-item" onclick="prefillLogin('tecnico@nevixa.com.br', 'tec123')">
+                        <span class="user-role-badge badge-tec">Técnico</span>
+                        <span class="user-details">tecnico@nevixa.com.br <strong>(tec123)</strong></span>
+                    </div>
+                </div>
+                <p class="click-to-fill">Clique em uma conta acima para preencher automaticamente.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+       CONTEÚDO PRINCIPAL DO APP (SPA)
+       ========================================================================== -->
+    <div class="app-container">
+        <!-- Sidebar / Barra Lateral de Navegação -->
+        <aside class="sidebar">
+            <div class="sidebar-brand" style="justify-content: flex-start; padding-left: 0; margin-bottom: 30px;">
+                <img src="logo.svg" alt="Nevixa Engenharia Logo" style="height: 52px; width: auto; max-width: 100%;">
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li id="menu-item-dashboard">
+                        <a href="#" class="nav-link active" data-tab="dashboard">
+                            <i class="fa-solid fa-chart-pie"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li id="menu-item-notas">
+                        <a href="#" class="nav-link" data-tab="notas">
+                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                            <span>Notas Fiscais</span>
+                        </a>
+                    </li>
+                    <li id="menu-item-fluxo">
+                        <a href="#" class="nav-link" data-tab="fluxo">
+                            <i class="fa-solid fa-money-bill-transfer"></i>
+                            <span>Fluxo de Caixa</span>
+                        </a>
+                    </li>
+                    <li id="menu-item-operacoes">
+                        <a href="#" class="nav-link" data-tab="operacoes">
+                            <i class="fa-solid fa-helmet-safety"></i>
+                            <span>Op. Técnicas</span>
+                        </a>
+                    </li>
+                    <li id="menu-item-relatorios">
+                        <a href="#" class="nav-link" data-tab="relatorios">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <span>BI & Relatórios</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button id="btn-backup" class="btn btn-outline btn-block">
+                    <i class="fa-solid fa-database"></i>
+                    <span>Backup de Dados</span>
+                </button>
+                <div class="user-profile-wrapper">
+                    <div class="user-profile">
+                        <div class="user-avatar" id="current-user-avatar">
+                            <i class="fa-solid fa-user-tie"></i>
+                        </div>
+                        <div class="user-details">
+                            <p class="user-name" id="current-user-name">Carregando...</p>
+                            <p class="user-role" id="current-user-role">Carregando...</p>
+                        </div>
+                    </div>
+                    <button id="btn-logout" class="btn-logout" title="Sair da Conta">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <main class="main-content">
+            <!-- Header do Dashboard -->
+            <header class="main-header">
+                <div class="header-title">
+                    <h2 id="current-section-title">Dashboard Geral</h2>
+                    <p id="current-section-subtitle" class="text-muted">Visão consolidada da saúde financeira da empresa</p>
+                </div>
+                <div class="header-actions">
+                    <!-- Simulador de Funcionamento Offline (Melhoria 17) -->
+                    <button id="btn-toggle-offline" class="btn btn-outline" title="Simular Conectividade">
+                        <i class="fa-solid fa-wifi text-success"></i>
+                        <span id="connection-status-text">Online</span>
+                    </button>
+                    <!-- Visualização de Logs de Auditoria (Melhoria 18) -->
+                    <button id="btn-view-logs" class="btn btn-outline col-hide-tecnico col-hide-financeiro" title="Logs de Auditoria do Sistema">
+                        <i class="fa-solid fa-history"></i> Auditoria
+                    </button>
+                    <!-- Alternador de Tema Claro/Escuro (Melhoria 28) -->
+                    <button id="btn-toggle-theme" class="btn btn-outline" title="Alternar Tema Claro/Escuro">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <div class="date-badge">
+                        <i class="fa-regular fa-calendar"></i>
+                        <span id="header-date">Julho 2026</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Telas das Abas (Abas ativas alternadas por JS) -->
+            <div class="tab-content-wrapper">
+                
+                <!-- 1. ABA DASHBOARD -->
+                <section id="tab-dashboard" class="tab-pane active">
+                    <!-- Cards Resumo -->
+                    <div class="metrics-grid">
+                        <!-- Card Entradas -->
+                        <div class="metric-card card-entradas">
+                            <div class="metric-header">
+                                <span class="metric-title">Receita Total (Mês)</span>
+                                <div class="metric-icon">
+                                    <i class="fa-solid fa-arrow-trend-up"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value" id="dash-entradas">R$ 0,00</div>
+                            <div class="metric-footer">
+                                <span class="trend trend-up">
+                                    <i class="fa-solid fa-circle-check"></i> Receitas confirmadas
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card Saídas -->
+                        <div class="metric-card card-saidas">
+                            <div class="metric-header">
+                                <span class="metric-title">Despesas Totais (Mês)</span>
+                                <div class="metric-icon">
+                                    <i class="fa-solid fa-arrow-trend-down"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value" id="dash-saidas">R$ 0,00</div>
+                            <div class="metric-footer">
+                                <span class="trend trend-neutral" id="dash-saidas-pendentes">
+                                    R$ 0,00 pendentes
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card Lucro Líquido -->
+                        <div class="metric-card card-lucro" id="dash-card-lucro-container">
+                            <div class="metric-header">
+                                <span class="metric-title">Lucro Líquido (Mês)</span>
+                                <div class="metric-icon">
+                                    <i class="fa-solid fa-wallet"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value" id="dash-lucro">R$ 0,00</div>
+                            <div class="metric-footer">
+                                <span id="dash-lucro-trend" class="trend trend-up">
+                                    <i class="fa-solid fa-arrow-trend-up"></i> Calculado automaticamente
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card Margem de Lucro -->
+                        <div class="metric-card card-margem" id="dash-card-margem-container">
+                            <div class="metric-header">
+                                <span class="metric-title">Margem de Lucro Geral</span>
+                                <div class="metric-icon">
+                                    <i class="fa-solid fa-percent"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value" id="dash-margem">0.0%</div>
+                            <div class="metric-footer">
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" id="dash-margem-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Layout Gráficos e Alertas -->
+                    <div class="dashboard-charts-grid" id="dash-charts-section">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Fluxo Mensal (Histórico)</h3>
+                                <p class="text-muted">Comparativo de entradas e saídas</p>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="chart-fluxo-mensal"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Despesas por Categoria</h3>
+                                <p class="text-muted">Distribuição percentual das saídas</p>
+                            </div>
+                            <div class="chart-body donut-chart-container">
+                                <canvas id="chart-despesas-categoria"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alertas e Rentabilidade de Notas -->
+                    <div class="dashboard-alerts-section">
+                        <div class="card shadow-sm">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="card-title"><i class="fa-solid fa-triangle-exclamation text-warning"></i> Alertas de Margem de Lucro por Nota</h3>
+                                    <p class="text-muted">Notas Fiscais operando com margem abaixo de 20%</p>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Nota Fiscal</th>
+                                                <th>Cliente</th>
+                                                <th>Valor da Nota</th>
+                                                <th>Custos Acumulados</th>
+                                                <th>Margem de Lucro</th>
+                                                <th>Rentabilidade</th>
+                                                <th>Ação</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dash-alerts-table-body">
+                                            <!-- Preenchido via JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. ABA NOTAS FISCAIS (CENTRO DE CUSTOS) -->
+                <section id="tab-notas" class="tab-pane">
+                    <div class="filter-bar">
+                        <div class="filter-group-main">
+                            <div class="search-input-wrapper">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="search-nota" placeholder="Buscar por Nota, Cliente ou Descrição...">
+                            </div>
+                            <div class="select-wrapper">
+                                <select id="filter-nota-status">
+                                    <option value="Todos">Todos os Status</option>
+                                    <option value="Recebido">Recebidos</option>
+                                    <option value="Pendente">Pendentes</option>
+                                    <option value="Cancelado">Cancelados</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button id="btn-config-tributaria" class="btn btn-outline" title="Configurações Tributárias e de Rateio da Nevixa">
+                                <i class="fa-solid fa-scale-balanced"></i> Config. Tributária
+                            </button>
+                            <button id="btn-add-nota" class="btn btn-primary">
+                                <i class="fa-solid fa-plus"></i> Nova Nota Fiscal
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Configuração Rápida do Regime Tributário visível -->
+                    <div class="card mb-4" id="tax-regime-info-card" style="border-left: 4px solid var(--color-secondary);">
+                        <div class="card-body py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                                <h4 style="font-size: 0.95rem; font-weight: 600;"><i class="fa-solid fa-circle-nodes text-secondary"></i> Regime Tributário Ativo da Nevixa</h4>
+                                <p class="text-muted" style="font-size: 0.775rem;">Impostos provisionados automaticamente ao cadastrar Notas Fiscais.</p>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="badge badge-purple" id="badge-active-tax-regime" style="font-size: 0.8rem; padding: 6px 12px;">Carregando...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card table-card">
+                        <div class="table-responsive">
+                            <table class="table table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Número</th>
+                                        <th>Cliente</th>
+                                        <th>Valor da Nota</th>
+                                        <th>Custos Vinculados</th>
+                                        <th>Custo (%)</th>
+                                        <th class="col-hide-tecnico">Lucro Líquido</th>
+                                        <th class="col-hide-tecnico">Margem (%)</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-notas-body">
+                                    <!-- Dinâmico por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. ABA FLUXO DE CAIXA -->
+                <section id="tab-fluxo" class="tab-pane">
+                    <div class="filter-bar filter-bar-extended">
+                        <div class="filter-grid-row">
+                            <div class="search-input-wrapper">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="search-transacao" placeholder="Buscar transação...">
+                            </div>
+                            <div class="select-wrapper">
+                                <select id="filter-transacao-tipo">
+                                    <option value="Todos">Todas as Movimentações</option>
+                                    <option value="Entrada">Entradas (+)</option>
+                                    <option value="Saída">Saídas (-)</option>
+                                </select>
+                            </div>
+                            <div class="select-wrapper">
+                                <select id="filter-transacao-categoria">
+                                    <option value="Todos">Todas as Categorias</option>
+                                    <option value="Serviços">Serviços</option>
+                                    <option value="Peças">Peças</option>
+                                    <option value="Impostos">Impostos</option>
+                                    <option value="Deslocamento">Deslocamento</option>
+                                    <option value="Salários">Salários</option>
+                                    <option value="Outros">Outros</option>
+                                </select>
+                            </div>
+                            <div class="date-range-group">
+                                <input type="date" id="filter-transacao-inicio" placeholder="De">
+                                <span class="date-separator">a</span>
+                                <input type="date" id="filter-transacao-fim" placeholder="Até">
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button id="btn-open-ofx" class="btn btn-outline col-hide-tecnico" title="Importar/Conciliar Extrato Bancário OFX">
+                                <i class="fa-solid fa-file-invoice-dollar text-secondary"></i> Conciliar OFX
+                            </button>
+                            <button id="btn-add-transacao" class="btn btn-secondary">
+                                <i class="fa-solid fa-plus"></i> Lançar Movimentação
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card table-card">
+                        <div class="table-responsive">
+                            <table class="table table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Descrição</th>
+                                        <th>Tipo</th>
+                                        <th>Valor</th>
+                                        <th>Categoria</th>
+                                        <th>Nota Vinculada</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-transacoes-body">
+                                    <!-- Dinâmico por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. ABA OPERAÇÕES TÉCNICAS (NEW) -->
+                <section id="tab-operacoes" class="tab-pane">
+                    <!-- Abas Internas -->
+                    <div class="sub-nav-tabs">
+                        <button class="sub-tab-btn active" data-subtab="equipamentos"><i class="fa-solid fa-microscope"></i> Prontuário Equipamentos</button>
+                        <button class="sub-tab-btn" data-subtab="calibradores"><i class="fa-solid fa-gauge-high"></i> Ferramental & Calibradores</button>
+                        <button class="sub-tab-btn" data-subtab="cotacoes"><i class="fa-solid fa-truck-ramp-box"></i> Cotações de Peças</button>
+                        <button class="sub-tab-btn" data-subtab="chamados"><i class="fa-solid fa-phone-volume"></i> Chamados & SLAs</button>
+                    </div>
+
+                    <!-- Conteúdos das Sub-abas -->
+                    <div class="sub-tab-content-wrapper mt-3">
+                        <!-- Sub-aba 1: Prontuário de Equipamentos -->
+                        <div id="subtab-equipamentos" class="sub-tab-pane active">
+                            <div class="filter-bar filter-bar-compact">
+                                <div class="filter-group-main">
+                                    <div class="search-input-wrapper">
+                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                        <input type="text" id="search-equipamento" placeholder="Buscar por TAG, Modelo ou Serial...">
+                                    </div>
+                                    <div class="select-wrapper">
+                                        <select id="filter-equipamento-cliente">
+                                            <option value="Todos">Todos os Hospitais</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button id="btn-add-equipamento" class="btn btn-primary">
+                                        <i class="fa-solid fa-plus"></i> Novo Equipamento
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card table-card">
+                                <div class="table-responsive">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>N/S Série</th>
+                                                <th>Equipamento / Modelo</th>
+                                                <th>Cliente / Hospital</th>
+                                                <th>Status Técnico</th>
+                                                <th>Última Preventiva</th>
+                                                <th>Custos Acumulados</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-equipamentos-body">
+                                            <!-- Dinâmico -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sub-aba 2: Ferramental & Calibradores -->
+                        <div id="subtab-calibradores" class="sub-tab-pane">
+                            <div class="filter-bar filter-bar-compact">
+                                <div></div>
+                                <div class="d-flex gap-2">
+                                    <button id="btn-add-calibrador" class="btn btn-primary">
+                                        <i class="fa-solid fa-plus"></i> Novo Calibrador
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card table-card">
+                                <div class="table-responsive">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Ferramenta / Calibrador</th>
+                                                <th>N/S Série</th>
+                                                <th>Última Calibração</th>
+                                                <th>Próxima Calibração</th>
+                                                <th>Dias Restantes</th>
+                                                <th>Status Laudo</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-calibradores-body">
+                                            <!-- Dinâmico -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sub-aba 3: Cotações de Peças -->
+                        <div id="subtab-cotacoes" class="sub-tab-pane">
+                            <div class="filter-bar filter-bar-compact">
+                                <div></div>
+                                <div class="d-flex gap-2">
+                                    <button id="btn-add-cotacao" class="btn btn-primary">
+                                        <i class="fa-solid fa-plus"></i> Nova Cotação
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card table-card">
+                                <div class="table-responsive">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Requisição / Peça</th>
+                                                <th>Equipamento</th>
+                                                <th>Solicitante</th>
+                                                <th>Fornecedor</th>
+                                                <th>Valor Cotado</th>
+                                                <th>Status Cotação</th>
+                                                <th>Ação</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-cotacoes-body">
+                                            <!-- Dinâmico -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sub-aba 4: Chamados & SLAs -->
+                        <div id="subtab-chamados" class="sub-tab-pane">
+                            <div class="filter-bar filter-bar-compact">
+                                <div></div>
+                                <div class="d-flex gap-2">
+                                    <button id="btn-add-chamado" class="btn btn-primary">
+                                        <i class="fa-solid fa-plus"></i> Novo Chamado / OS
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card table-card">
+                                <div class="table-responsive">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>Chamado / OS</th>
+                                                <th>Hospital</th>
+                                                <th>Equipamento</th>
+                                                <th>Tipo</th>
+                                                <th>SLA Acordado</th>
+                                                <th>Tempo Restante</th>
+                                                <th>Status</th>
+                                                <th>Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-chamados-body">
+                                            <!-- Dinâmico -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. ABA BI & RELATÓRIOS CONTÁBEIS (NEW) -->
+                <section id="tab-relatorios" class="tab-pane">
+                    <!-- Cards de BI superiores -->
+                    <div class="metrics-grid">
+                        <!-- Ponto de Equilíbrio -->
+                        <div class="metric-card card-lucro">
+                            <div class="metric-header">
+                                <span class="metric-title">Ponto de Equilíbrio (Mês)</span>
+                                <i class="fa-solid fa-scale-unbalanced"></i>
+                            </div>
+                            <div class="metric-value" id="bi-break-even-value">R$ 0,00</div>
+                            <div class="metric-footer d-flex flex-column align-items-start gap-1">
+                                <span class="text-muted" id="bi-break-even-label" style="font-size:0.7rem">Meta de Faturamento Fixo</span>
+                                <div class="progress-bar-container" style="margin-top:0">
+                                    <div class="progress-bar-fill" id="bi-break-even-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Projeção Caixa 30 Dias -->
+                        <div class="metric-card card-saidas">
+                            <div class="metric-header">
+                                <span class="metric-title">Saldo Projetado (30 dias)</span>
+                                <i class="fa-solid fa-hourglass-half"></i>
+                            </div>
+                            <div class="metric-value" id="bi-projection-value">R$ 0,00</div>
+                            <div class="metric-footer">
+                                <span id="bi-projection-status" class="trend trend-up">
+                                    Caixa seguro
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Configuração de Rateio Operacional (Melhoria 14) -->
+                        <div class="metric-card card-margem">
+                            <div class="metric-header">
+                                <span class="metric-title">Rateio de Custo Fixo (%)</span>
+                                <i class="fa-solid fa-percent"></i>
+                            </div>
+                            <div class="metric-value d-flex align-items-center gap-2">
+                                <input type="number" id="input-bi-rateio-perc" value="10" min="0" max="100" style="width: 70px; background: rgba(0,0,0,0.2); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 4px 8px; font-size: 1.25rem; font-weight:700; text-align:center;">
+                                <span style="font-size: 1.15rem">%</span>
+                            </div>
+                            <div class="metric-footer">
+                                <span class="text-muted" style="font-size:0.7rem">Rateio central descontado na margem de lucro real</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Layout Principal Relatórios (Grid lateral) -->
+                    <div class="dashboard-charts-grid">
+                        <!-- Demonstrativo de Resultado (DRE) -->
+                        <div class="chart-card d-flex flex-column" style="grid-column: 1 / -1">
+                            <div class="chart-header d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h3>DRE - Demonstrativo de Resultado do Exercício</h3>
+                                    <p class="text-muted">Cálculo de margem real descontando rateios operacionais corporativos</p>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline btn-sm" id="btn-export-contabil" title="Gerar Exportação Contábil para XML/CSV">
+                                        <i class="fa-solid fa-file-excel"></i> Exportação Contábil
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-custom table-sm table-dre">
+                                    <tbody id="dre-table-body">
+                                        <!-- Preenchido via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Curva ABC de Clientes -->
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Curva ABC de Clientes</h3>
+                                <p class="text-muted">Ranking de rentabilidade acumulada de hospitais</p>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-custom table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Cliente</th>
+                                            <th>Faturamento</th>
+                                            <th>Margem Média</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-abc-clientes-body">
+                                        <!-- Dinâmico -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Gráfico de Projeção de Caixa -->
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3>Projeção de Caixa Preditiva</h3>
+                                <p class="text-muted">Evolução de saldo para os próximos 30 dias</p>
+                            </div>
+                            <div class="chart-body" style="height: 200px">
+                                <canvas id="chart-projection-line"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL 1: CADASTRAR/EDITAR NOTA FISCAL -->
+    <div id="modal-nota" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-nota-title">Nova Nota Fiscal / Centro de Custo</h3>
+                <button class="modal-close" data-close-modal="modal-nota">&times;</button>
+            </div>
+            <form id="form-nota">
+                <input type="hidden" id="form-nota-id">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label for="nota-numero">Número da Nota / OS *</label>
+                            <input type="text" id="nota-numero" required placeholder="Ex: NF-2026101">
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="nota-data">Data de Emissão *</label>
+                            <input type="date" id="nota-data" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Vínculo com Equipamento Prontuário (Melhoria 6) -->
+                    <div class="form-group">
+                        <label for="nota-equipamento-id">Vincular a um Equipamento Médico *</label>
+                        <select id="nota-equipamento-id" required>
+                            <!-- Preenchido via JS -->
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nota-cliente">Cliente *</label>
+                        <input type="text" id="nota-cliente" required placeholder="Nome do Hospital, Clínica ou Cliente" readonly>
+                        <span style="font-size:0.7rem; color:var(--color-text-muted)">Preenchido automaticamente com base no Equipamento selecionado.</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="nota-descricao">Descrição do Serviço</label>
+                        <textarea id="nota-descricao" rows="2" placeholder="Detalhes do serviço prestado..."></textarea>
+                    </div>
+                    <!-- Habilitador de Faturamento Misto / Split (Melhoria 18) -->
+                    <div class="form-group" style="background-color: rgba(255,255,255,0.01); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--color-border); margin-bottom: 12px;">
+                        <div class="checkbox-row" style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="nota-faturamento-misto" style="width: 18px; height: 18px; cursor: pointer;">
+                            <label for="nota-faturamento-misto" style="cursor: pointer; text-transform: none; font-size: 0.85rem; color: var(--color-text-main);">
+                                Faturamento Misto (Split Peças + Serviços)
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" id="row-split-faturamento" style="display: none;">
+                        <div class="form-group col-6">
+                            <label for="nota-valor-pecas">Valor de Peças (Comércio) (R$)</label>
+                            <input type="number" step="0.01" min="0" id="nota-valor-pecas" placeholder="0,00">
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="nota-valor-servicos">Valor de Serviços (Engenharia) (R$)</label>
+                            <input type="number" step="0.01" min="0" id="nota-valor-servicos" placeholder="0,00">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label for="nota-valor">Valor Total da Nota (R$) *</label>
+                            <input type="number" step="0.01" min="0.01" id="nota-valor" required placeholder="0,00">
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="nota-status">Status de Faturamento *</label>
+                            <select id="nota-status" required>
+                                <option value="Recebido">Recebida / Paga</option>
+                                <option value="Pendente">Pendente de Recebimento</option>
+                                <option value="Cancelado">Cancelada</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Campo de Impostos Automatizados -->
+                    <div class="form-group" style="margin-top: 10px; background-color: rgba(255,255,255,0.02); padding: 12px; border-radius: var(--radius-sm); border: 1px dashed var(--color-border);">
+                        <div class="checkbox-row" style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="nota-calcular-impostos" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <label for="nota-calcular-impostos" style="cursor: pointer; text-transform: none; font-size: 0.85rem; color: var(--color-text-main);">
+                                Calcular e provisionar impostos retidos na fonte automaticamente
+                            </label>
+                        </div>
+                        <p class="text-muted" style="font-size: 0.725rem; margin-top: 6px; padding-left: 26px;">
+                            Despesas tributárias correspondentes ao regime tributário ativo serão lançadas e vinculadas a esta nota fiscal de forma automática.
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close-modal="modal-nota">Cancelar</button>
+                    <button type="submit" class="btn btn-primary-gradient">Salvar Nota</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CADASTRAR/EDITAR TRANSAÇÃO -->
+    <div id="modal-transacao" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-transacao-title">Lançar Movimentação Financeira</h3>
+                <button class="modal-close" data-close-modal="modal-transacao">&times;</button>
+            </div>
+            <form id="form-transacao">
+                <input type="hidden" id="form-transacao-id">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label for="trans-tipo">Tipo de Movimentação *</label>
+                            <select id="trans-tipo" required>
+                                <option value="Saída">Saída / Despesa (-)</option>
+                                <option value="Entrada">Entrada / Receita (+)</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="trans-data">Data da Operação *</label>
+                            <input type="date" id="trans-data" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="trans-descricao">Descrição da Transação *</label>
+                        <input type="text" id="trans-descricao" required placeholder="Ex: Compra de placas, pagamento de impostos, etc.">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label for="trans-valor">Valor (R$) *</label>
+                            <input type="number" step="0.01" min="0.01" id="trans-valor" required placeholder="0,00">
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="trans-categoria">Categoria *</label>
+                            <select id="trans-categoria" required>
+                                <option value="Peças">Peças de Reposição</option>
+                                <option value="Deslocamento">Deslocamento (Hospedagem/Combustível)</option>
+                                <option value="Impostos">Impostos & Tributos</option>
+                                <option value="Serviços">Serviços de Terceiros</option>
+                                <option value="Salários">Salários / Pró-labore</option>
+                                <option value="Outros">Outras Despesas</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Campos de Km Roteirização (Melhoria 7) e Garantia (Melhoria 10) -->
+                    <div class="form-row" id="row-extended-despesa">
+                        <div class="form-group col-6" id="group-km-deslocamento">
+                            <label for="trans-km">Distância Percorrida (Km)</label>
+                            <input type="number" step="0.1" min="0" id="trans-km" placeholder="Km rodado">
+                        </div>
+                        <div class="form-group col-6" id="group-garantia-peca">
+                            <label for="trans-garantia">Garantia da Peça (Meses)</label>
+                            <input type="number" min="0" id="trans-garantia" placeholder="Meses de garantia">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label for="trans-status">Status de Pagamento *</label>
+                            <select id="trans-status" required>
+                                <option value="Pago">Pago / Recebido</option>
+                                <option value="Pendente">Pendente / Em Aberto</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="trans-nota">Vincular a uma Nota Fiscal (Opcional)</label>
+                            <select id="trans-nota">
+                                <option value="">Não Vincular (Despesa Geral)</option>
+                                <!-- Preenchido dinamicamente via JS -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close-modal="modal-transacao">Cancelar</button>
+                    <button type="submit" class="btn btn-secondary-gradient">Registrar Lançamento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: GAVETA DE DETALHES DE NOTA FISCAL (CENTRO DE CUSTO DETALHADO) -->
+    <div id="modal-detalhes-nota" class="modal-overlay">
+        <div class="modal-content modal-large">
+            <!-- Cabeçalho Executivo Exclusivo para Impressão de Laudo RAT (Melhoria 1) -->
+            <div class="print-only-header">
+                <img src="logo.svg" alt="Nevixa Engenharia Logo" style="height: 60px;">
+                <div style="text-align: right;">
+                    <h2 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin: 0;">NEVIXA ENGENHARIA COMERCIO & SERVICOS LTDA</h2>
+                    <span style="font-size: 0.8rem; color: #64748b;">Relatório de Atendimento Técnico (RAT) - Ordem de Serviço</span>
+                </div>
+            </div>
+            <div class="modal-header">
+                <div class="d-flex align-items-center gap-2">
+                    <h3 id="detalhe-nota-numero">Detalhes da Nota Fiscal</h3>
+                    <span id="detalhe-nota-status-badge" class="badge">Pago</span>
+                </div>
+                <button class="modal-close" data-close-modal="modal-detalhes-nota">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Informações do cabeçalho da nota -->
+                <div class="detalhes-nota-resumo-container">
+                    <div class="detalhes-meta">
+                        <p><strong>Cliente:</strong> <span id="detalhe-nota-cliente">Nome do Hospital</span></p>
+                        <p><strong>Descrição:</strong> <span id="detalhe-nota-descricao">Serviço de Manutenção</span></p>
+                        <p><strong>Data de Emissão:</strong> <span id="detalhe-nota-data">01/07/2026</span></p>
+                        <!-- Régua de Cobrança Preventiva (Melhoria 13) -->
+                        <div id="billing-reminders-box" class="mt-3 col-hide-tecnico" style="background:rgba(0,0,0,0.2); padding:10px; border-radius: var(--radius-sm); border:1px solid var(--color-border)">
+                            <h5 style="font-size:0.75rem; font-weight:600; text-transform:uppercase; color:var(--color-primary);"><i class="fa-solid fa-envelope-open-text"></i> Régua de Lembretes</h5>
+                            <ul id="billing-reminders-list" style="font-size:0.7rem; color:var(--color-text-muted); margin-top:6px; display:flex; flex-direction:column; gap:4px">
+                                <!-- Preenchido dinamicamente -->
+                            </ul>
+                        </div>
+                        <!-- Checklist Técnico Dinâmico de Engenharia Clínica (Melhoria 2) -->
+                        <div id="checklist-tecnico-box" class="checklist-tecnico-box mt-3" style="display: none;">
+                            <h5 class="checklist-tecnico-title"><i class="fa-solid fa-list-check"></i> Checklist Operacional do Técnico</h5>
+                            <div class="checklist-tecnico-list" id="checklist-tecnico-list">
+                                <!-- Preenchido dinamicamente conforme equipamento -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="detalhes-valores-gauge">
+                        <div class="gauge-card">
+                            <span class="label">Valor Faturado</span>
+                            <span class="value val-receita" id="detalhe-nota-valor-faturado">R$ 0,00</span>
+                            <button id="btn-gerar-cobranca" class="btn btn-outline btn-sm col-hide-tecnico mt-2">
+                                <i class="fa-solid fa-qrcode"></i> Faturar / Cobrança
+                            </button>
+                        </div>
+                        <div class="gauge-card">
+                            <span class="label">Custos Associados</span>
+                            <span class="value val-despesa" id="detalhe-nota-valor-custos">R$ 0,00</span>
+                            <span class="percentage text-danger" id="detalhe-nota-custo-perc">0% do faturamento</span>
+                        </div>
+                        <div class="gauge-card highlight-profit col-hide-tecnico" id="detalhe-nota-lucro-card">
+                            <span class="label">Lucro Líquido Real</span>
+                            <span class="value val-lucro" id="detalhe-nota-lucro-liquido">R$ 0,00</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="percentage text-success font-weight-bold" id="detalhe-nota-margem-perc">0%</span>
+                                <span class="label-inline">de margem</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quadro de Timesheet Técnico (Melhoria 5) -->
+                <div class="card mt-3 col-hide-tecnico" style="background-color: rgba(255,255,255,0.01);">
+                    <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                        <h5 style="font-size:0.85rem; font-weight:600;"><i class="fa-solid fa-clock text-secondary"></i> Timesheet - Horas Técnicas Lançadas</h5>
+                        <form id="form-timesheet" class="d-flex gap-2 align-items-center">
+                            <input type="text" id="ts-tecnico" required placeholder="Nome Técnico" style="font-size:0.75rem; padding: 4px 8px; width: 120px; background:var(--color-bg-input); border:1px solid var(--color-border); border-radius:4px;">
+                            <input type="number" id="ts-horas" required placeholder="Horas" min="1" style="font-size:0.75rem; padding: 4px 8px; width: 60px; background:var(--color-bg-input); border:1px solid var(--color-border); border-radius:4px;">
+                            <input type="number" id="ts-valor" required placeholder="R$/h" min="0" style="font-size:0.75rem; padding: 4px 8px; width: 65px; background:var(--color-bg-input); border:1px solid var(--color-border); border-radius:4px;">
+                            <button type="submit" class="btn btn-secondary btn-sm" style="padding: 4px 10px;"><i class="fa-solid fa-plus"></i></button>
+                        </form>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-custom table-sm mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Técnico</th>
+                                        <th>Horas Lançadas</th>
+                                        <th>Valor da Hora</th>
+                                        <th>Custo Mão de Obra</th>
+                                        <th>Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-timesheet-body">
+                                    <!-- Dinâmico -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="divider">
+
+                <!-- Seção de custos vinculados -->
+                <div class="detalhes-custos-secao">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4><i class="fa-solid fa-list-check"></i> Custos e Despesas Vinculados a esta Nota</h4>
+                        <button id="btn-add-despesa-direta" class="btn btn-sm btn-secondary">
+                            <i class="fa-solid fa-plus"></i> Adicionar Custo Direto
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-custom table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Valor</th>
+                                    <th>Categoria</th>
+                                    <th>Garantia</th>
+                                    <th>Status de Pagamento</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-detalhes-custos-body">
+                                <!-- Dinâmico por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <hr class="divider">
+
+                <!-- Assinatura Digital do RAT (Melhoria 8) -->
+                <div class="rat-signature-section mt-3">
+                    <h4><i class="fa-solid fa-signature"></i> Assinatura do Relatório de Atendimento Técnico (RAT)</h4>
+                    <p class="text-muted" style="font-size:0.775rem;">Assine abaixo para validar e autorizar o faturamento deste atendimento técnico.</p>
+                    <div class="signature-canvas-container mt-2">
+                        <canvas id="signature-pad" width="450" height="150"></canvas>
+                        <div class="signature-actions">
+                            <button id="btn-clear-signature" class="btn btn-outline btn-sm"><i class="fa-solid fa-eraser"></i> Limpar Canvas</button>
+                            <button id="btn-save-signature" class="btn btn-secondary btn-sm"><i class="fa-solid fa-circle-check"></i> Salvar Assinatura RAT</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" data-close-modal="modal-detalhes-nota">Fechar Detalhes</button>
+                <button class="btn btn-secondary-gradient" id="btn-imprimir-rat"><i class="fa-solid fa-print"></i> Imprimir Relatório RAT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: BACKUP E IMPORTAÇÃO/EXPORTAÇÃO DE DADOS -->
+    <div id="modal-backup" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Backup e Exportação de Dados</h3>
+                <button class="modal-close" data-close-modal="modal-backup">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-4">Garanta a segurança dos seus dados financeiros exportando backups regulares ou importando um backup prévio.</p>
+                <div class="backup-actions-grid">
+                    <div class="backup-card" id="action-export-db">
+                        <i class="fa-solid fa-file-export text-primary"></i>
+                        <h4>Exportar Dados (Backup)</h4>
+                        <p class="text-muted">Baixe um arquivo contendo todas as notas fiscais e fluxo de caixa cadastrados.</p>
+                        <button class="btn btn-primary btn-block mt-3">Baixar Backup .json</button>
+                    </div>
+                    <div class="backup-card">
+                        <i class="fa-solid fa-file-import text-secondary"></i>
+                        <h4>Importar Dados</h4>
+                        <p class="text-muted">Carregue um arquivo de backup previamente gerado para restaurar as informações.</p>
+                        <label for="input-import-file" class="btn btn-secondary btn-block mt-3 cursor-pointer">
+                            <i class="fa-solid fa-upload"></i> Selecionar Arquivo
+                        </label>
+                        <input type="file" id="input-import-file" accept=".json" class="d-none">
+                    </div>
+                </div>
+                <div class="alert alert-warning mt-4 text-left">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <strong>Atenção:</strong> Ao importar um novo arquivo de backup, todos os dados cadastrados atualmente no navegador serão substituídos.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: CONFIGURAÇÃO TRIBUTÁRIA DA NEVIXA -->
+    <div id="modal-config-tributaria" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Configurações Tributárias - Nevixa</h3>
+                <button class="modal-close" data-close-modal="modal-config-tributaria">&times;</button>
+            </div>
+            <form id="form-config-tributaria">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="config-regime">Regime Tributário Ativo *</label>
+                        <select id="config-regime" required>
+                            <option value="SimplesNacional">Simples Nacional (Alíquota Unificada)</option>
+                            <option value="LucroPresumido">Lucro Presumido (Retenções Individuais)</option>
+                        </select>
+                    </div>
+
+                    <hr class="divider">
+
+                    <!-- Seção Simples Nacional -->
+                    <div id="secao-simples" class="tax-config-section">
+                        <div class="form-group">
+                            <label for="simples-aliquota">Alíquota Única Simples Nacional (%) *</label>
+                            <input type="number" step="0.01" min="0.00" max="100.00" id="simples-aliquota" required placeholder="8.00">
+                            <p class="text-muted" style="font-size: 0.725rem; margin-top: 4px;">
+                                A alíquota unificada que será aplicada diretamente ao valor faturado da nota fiscal.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Seção Lucro Presumido -->
+                    <div id="secao-presumido" class="tax-config-section d-none">
+                        <p class="text-muted mb-3" style="font-size: 0.8rem;">Retenções federais e imposto municipal padrões sobre prestação de serviços de engenharia e manutenção.</p>
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label for="presumido-pis">PIS (%) *</label>
+                                <input type="number" step="0.01" min="0" max="100" id="presumido-pis" required placeholder="0.65">
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="presumido-cofins">COFINS (%) *</label>
+                                <input type="number" step="0.01" min="0" max="100" id="presumido-cofins" required placeholder="3.00">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label for="presumido-csll">CSLL (%) *</label>
+                                <input type="number" step="0.01" min="0" max="100" id="presumido-csll" required placeholder="1.00">
+                            </div>
+                            <div class="form-group col-6">
+                                <label for="presumido-irrf">IRRF (%) *</label>
+                                <input type="number" step="0.01" min="0" max="100" id="presumido-irrf" required placeholder="1.50">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="presumido-iss">ISSQN Municipal (%) *</label>
+                            <input type="number" step="0.01" min="0" max="100" id="presumido-iss" required placeholder="5.00">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close-modal="modal-config-tributaria">Cancelar</button>
+                    <button type="submit" class="btn btn-primary-gradient">Salvar Configurações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 6: LOGS DE AUDITORIA DO SISTEMA (Melhoria 18) -->
+    <div id="modal-auditoria" class="modal-overlay">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Logs de Auditoria de Lançamentos</h3>
+                <button class="modal-close" data-close-modal="modal-auditoria">&times;</button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="table-responsive" style="max-height:60vh; overflow-y:auto">
+                    <table class="table table-custom table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Usuário</th>
+                                <th>Operação</th>
+                                <th>Descrição da Mudança</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-auditoria-body">
+                            <!-- Preenchido via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" data-close-modal="modal-auditoria">Fechar Logs</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 7: COBRANÇA E FATURAMENTO DETALHADO (Pix/Boleto - Melhoria 12) -->
+    <div id="modal-cobranca" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Simulação de Cobrança - Faturamento</h3>
+                <button class="modal-close" data-close-modal="modal-cobranca">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-4">Envie o faturamento desta Nota Fiscal para o cliente instantaneamente.</p>
+                
+                <div style="background:var(--color-bg-input); border:1px solid var(--color-border); padding:20px; border-radius:var(--radius-md); display:flex; flex-direction:column; align-items:center; gap:16px;">
+                    <div class="qr-code-placeholder" id="cobranca-qr-code" style="padding:15px; background:white; border-radius: var(--radius-sm)">
+                        <!-- QR Code Canvas Injetado por JS -->
+                    </div>
+                    <div>
+                        <h4 style="font-weight:700;" id="cobranca-valor-total">R$ 0,00</h4>
+                        <span class="badge badge-success" style="margin-top:6px;">Chave Pix Copia e Cola Gerada</span>
+                    </div>
+                </div>
+                
+                <div class="form-group mt-3 text-left">
+                    <label for="cobranca-pix-string">Código Pix (Copia e Cola)</label>
+                    <input type="text" id="cobranca-pix-string" readonly style="font-size:0.75rem;" onclick="this.select()">
+                </div>
+
+                <div class="form-group text-left">
+                    <label for="cobranca-boleto-string">Linha Digitável do Boleto</label>
+                    <input type="text" id="cobranca-boleto-string" readonly style="font-size:0.75rem;" onclick="this.select()">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" data-close-modal="modal-cobranca">Fechar</button>
+                <button class="btn btn-secondary" id="btn-cobranca-whatsapp"><i class="fa-brands fa-whatsapp"></i> Compartilhar no WhatsApp</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL 8: PRONTUÁRIO DETALHADO DO EQUIPAMENTO (Melhoria 6 - Totalmente Funcional) -->
+    <div id="modal-prontuario" class="modal-overlay">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <div class="d-flex align-items-center gap-2">
+                    <h3 id="prontuario-equipamento-titulo">Prontuário de Manutenção</h3>
+                    <span id="prontuario-equipamento-status-badge" class="badge">Operacional</span>
+                </div>
+                <button class="modal-close" data-close-modal="modal-prontuario">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="detalhes-nota-resumo-container mb-3" style="grid-template-columns: 1fr 1fr;">
+                    <div class="detalhes-meta">
+                        <p><strong>Equipamento / Modelo:</strong> <span id="prontuario-equipamento-nome">Carregando...</span></p>
+                        <p><strong>N/S Série:</strong> <span id="prontuario-equipamento-serial">Carregando...</span></p>
+                        <p><strong>TAG Patrimonial:</strong> <span id="prontuario-equipamento-tag">Carregando...</span></p>
+                    </div>
+                    <div class="detalhes-meta">
+                        <p><strong>Cliente / Hospital:</strong> <span id="prontuario-equipamento-cliente">Carregando...</span></p>
+                        <p><strong>Última Preventiva:</strong> <span id="prontuario-equipamento-preventiva">Carregando...</span></p>
+                        <p><strong>Custo Total Acumulado:</strong> <span id="prontuario-equipamento-custo-total" class="font-weight-bold val-despesa">R$ 0,00</span></p>
+                    </div>
+                </div>
+                
+                <!-- Bloco de desgaste de Tubo de Raios-X (Melhoria 4) -->
+                <div id="prontuario-desgaste-tubo-box" class="desgaste-tubo-box mb-3" style="display: none;">
+                    <div class="desgaste-tubo-title"><i class="fa-solid fa-bolt"></i> Desgaste Estimado do Tubo de Raios-X</div>
+                    <div class="desgaste-tubo-bar-container">
+                        <div id="prontuario-desgaste-tubo-bar" class="desgaste-tubo-bar"></div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted" style="font-size:0.7rem">Base de disparos e preventivas acumuladas</span>
+                        <span id="prontuario-desgaste-tubo-label" class="desgaste-status-label">Carregando...</span>
+                    </div>
+                </div>
+
+                <h4><i class="fa-solid fa-history"></i> Histórico de Intervenções e OS</h4>
+                <div class="table-responsive mt-3" style="max-height: 40vh; overflow-y: auto;">
+                    <table class="table table-custom table-sm">
+                        <thead>
+                            <tr>
+                                <th>OS / Nota</th>
+                                <th>Data</th>
+                                <th>Descrição do Atendimento</th>
+                                <th>Valor do Serviço</th>
+                                <th>Peças / Deslocamento</th>
+                                <th>Mão de Obra (TS)</th>
+                                <th>Custo Total OS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-prontuario-historico-body">
+                            <!-- Preenchido dinamicamente por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" data-close-modal="modal-prontuario">Fechar Prontuário</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL 9: CONCILIAÇÃO BANCÁRIA OFX (Melhoria 15 - Totalmente Funcional) -->
+    <div id="modal-ofx" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Conciliação Bancária via OFX</h3>
+                <button class="modal-close" data-close-modal="modal-ofx">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-4">Importe arquivos de extrato estruturados `.ofx` ou `.csv` emitidos pelo seu banco para cruzamento de recebimentos e baixas automáticas.</p>
+                
+                <div style="background:var(--color-bg-input); border:2px dashed var(--color-border); padding:30px; border-radius:var(--radius-md); display:flex; flex-direction:column; align-items:center; gap:16px;">
+                    <i class="fa-solid fa-file-invoice-dollar" style="font-size:3rem; color:var(--color-secondary);"></i>
+                    <div>
+                        <label for="input-ofx-file" class="btn btn-secondary cursor-pointer">
+                            <i class="fa-solid fa-upload"></i> Selecionar Arquivo OFX
+                        </label>
+                        <input type="file" id="input-ofx-file" accept=".ofx,.xml" class="d-none">
+                    </div>
+                    <span class="text-muted" style="font-size:0.75rem">Ou utilize nossa simulação de homologação abaixo:</span>
+                    <button type="button" class="btn btn-outline btn-sm" id="btn-simular-ofx-auto">
+                        <i class="fa-solid fa-wand-magic-sparkles text-secondary"></i> Simular Importação de Extrato OFX
+                    </button>
+                </div>
+                
+                <div class="alert alert-warning mt-4 text-left">
+                     <i class="fa-solid fa-info-circle"></i>
+                     <strong>Regra de Conciliação:</strong> Lançamentos correspondentes às Notas Fiscais pendentes serão detectados e baixados como "Recebidos" no fluxo geral.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WIDGET FLUTUANTE CENTRAL DE AJUDA (Melhoria 30) -->
+    <div id="help-widget" class="help-widget" title="Manual e Central de Ajuda">
+        <i class="fa-solid fa-circle-question"></i>
+    </div>
+
+    <!-- GAVETA LATERAL DE AJUDA -->
+    <div id="help-drawer" class="help-drawer">
+        <div class="help-drawer-header">
+            <h3><i class="fa-solid fa-book-open"></i> Manual do ERP Nevixa</h3>
+            <button id="btn-close-help" class="help-drawer-close">&times;</button>
+        </div>
+        <div class="help-drawer-body">
+            <div class="help-section">
+                <h4>1. Níveis de Acesso (ACL)</h4>
+                <p>O ERP Nevixa opera com perfis de segurança rígidos:</p>
+                <ul>
+                    <li><strong>Admin:</strong> Acesso irrestrito a configurações fiscais, backups, logs e faturamentos.</li>
+                    <li><strong>Financeiro:</strong> Vê fluxo geral e faturamentos, mas não pode gerenciar backups ou alterar alíquotas fiscais.</li>
+                    <li><strong>Técnico:</strong> Acesso exclusivo à aba de Notas de Campo para despesas, RAT e horas. Não vê gráficos consolidados ou lucros.</li>
+                </ul>
+            </div>
+            <hr class="divider">
+            <div class="help-section">
+                <h4>2. Timesheet & Assinatura RAT</h4>
+                <p>Ao abrir os detalhes de uma nota, o engenheiro de campo pode lançar horas técnicas gastas em atendimento. O RAT digital permite colher a assinatura da clínica parceira diretamente na tela. Você pode imprimir o laudo RAT formatado para arquivo físico.</p>
+            </div>
+            <hr class="divider">
+            <div class="help-section">
+                <h4>3. Faturamento Misto (Split)</h4>
+                <p>Na criação da nota, marque a opção "Faturamento Misto" se houver venda de peças integrada ao atendimento. O sistema segregará o cálculo fiscal aplicando alíquotas comerciais (ICMS) no comércio e ISSQN nos serviços de engenharia clínica.</p>
+            </div>
+            <hr class="divider">
+            <div class="help-section">
+                <h4>4. Conciliação OFX</h4>
+                <p>Na aba de Fluxo de Caixa, envie o extrato bancário do mês. O sistema fará a varredura automática, liquidará faturas correspondentes a receber e atualizará o caixa geral.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 10: CADASTRO/EDIÇÃO DE EQUIPAMENTOS -->
+    <div id="modal-equipamento" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-equipamento-title">Cadastrar Novo Equipamento</h3>
+                <button class="modal-close" data-close-modal="modal-equipamento">&times;</button>
+            </div>
+            <form id="form-equipamento">
+                <input type="hidden" id="form-equipamento-id">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="eq-form-tag">Código / TAG Patrimonial</label>
+                            <input type="text" id="eq-form-tag" required placeholder="Ex: EQ-RM-001">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="eq-form-serial">Número de Série (S/N)</label>
+                            <input type="text" id="eq-form-serial" required placeholder="Ex: S/N: RM987654">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="eq-form-nome">Nome / Modelo do Equipamento</label>
+                        <input type="text" id="eq-form-nome" required placeholder="Ex: Ressonância Magnética Philips Achieva 1.5T">
+                    </div>
+                    <div class="form-group">
+                        <label for="eq-form-cliente">Cliente / Hospital</label>
+                        <input type="text" id="eq-form-cliente" required placeholder="Ex: Clínica Radiosul">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="eq-form-status">Status Técnico</label>
+                            <select id="eq-form-status" required>
+                                <option value="Operacional">Operacional</option>
+                                <option value="Atenção">Atenção</option>
+                                <option value="Parado">Parado</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="eq-form-preventiva">Última Preventiva</label>
+                            <input type="date" id="eq-form-preventiva" required>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="eq-form-periodicidade">Periodicidade (Meses)</label>
+                            <input type="number" id="eq-form-periodicidade" required value="6" min="1" max="24">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close-modal="modal-equipamento">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Equipamento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 11: CERTIFICADO DE CALIBRAÇÃO RBC (Padrão Biomédico) -->
+    <div id="modal-certificado" class="modal-overlay">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Certificado de Calibração Padrão</h3>
+                <button class="modal-close" data-close-modal="modal-certificado">&times;</button>
+            </div>
+            <div class="modal-body" id="certificado-print-area">
+                <div class="certificado-container">
+                    <div class="certificado-cabecalho d-flex justify-content-between align-items-center mb-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="logo.svg" alt="Nevixa Logo" style="height:40px;">
+                            <div>
+                                <h2 style="font-size:1.4rem; font-weight:800; color:var(--color-text);">NEVIXA ENGENHARIA</h2>
+                                <p style="font-size:0.65rem; text-transform:uppercase;" class="text-muted">Laboratório de Metrologia e Calibração Hospitalar</p>
+                            </div>
+                        </div>
+                        <div class="text-right" style="text-align:right">
+                            <span class="badge badge-purple" style="font-size:0.8rem; padding:6px 12px;">LAUDO DE CALIBRAÇÃO RBC</span>
+                            <p style="font-size:0.7rem; margin-top:4px;" class="text-muted">Laudo nº <strong id="cert-numero">L-883719/2026</strong></p>
+                        </div>
+                    </div>
+
+                    <div style="border: 2px solid var(--color-border); border-radius: var(--radius-md); padding:20px; position:relative; background: rgba(255,255,255,0.02)">
+                        <!-- Marca d'água simulada -->
+                        <div class="certificado-marca-dagua" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%) rotate(-30deg); font-size:6rem; font-weight:950; color:rgba(124, 58, 237, 0.03); pointer-events:none; white-space:nowrap; text-transform:uppercase;">
+                            Aprovado RBC
+                        </div>
+
+                        <div class="metrics-grid mb-3" style="grid-template-columns: 1fr 1fr; gap:16px;">
+                            <div>
+                                <h4 style="font-size:0.9rem; font-weight:700; border-bottom:1px solid var(--color-border); padding-bottom:4px; margin-bottom:10px;">DADOS DO CALIBRADOR</h4>
+                                <p style="font-size:0.75rem; margin-bottom:4px;"><strong>Instrumento:</strong> <span id="cert-instrumento">Carregando...</span></p>
+                                <p style="font-size:0.75rem; margin-bottom:4px;"><strong>Número de Série:</strong> <span id="cert-serial">Carregando...</span></p>
+                                <p style="font-size:0.75rem; margin-bottom:4px;"><strong>Fabricante:</strong> Fluke Biomedical / BIO-TEK</p>
+                            </div>
+                            <div>
+                                <h4 style="font-size:0.9rem; font-weight:700; border-bottom:1px solid var(--color-border); padding-bottom:4px; margin-bottom:10px;">DADOS METROLÓGICOS</h4>
+                                <p style="font-size:0.75rem; margin-bottom:4px;"><strong>Última Calibração:</strong> <span id="cert-ultima">Carregando...</span></p>
+                                <p style="font-size:0.75rem; margin-bottom:4px;"><strong>Validade do Laudo:</strong> <span id="cert-validade">Carregando...</span></p>
+                                <p style="font-size:0.75rem; margin-bottom:4px;"><strong>Incerteza Expandida:</strong> U = ±0.012% Vc (k=2.00, t=95%)</p>
+                            </div>
+                        </div>
+
+                        <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:10px; border-bottom:1px solid var(--color-border); padding-bottom:4px;">DECLARAÇÃO DE CONFORMIDADE</h4>
+                        <p style="font-size:0.75rem; line-height:1.5; color:var(--color-text-muted);" class="mb-4">
+                            Declaramos que o instrumento acima identificado foi calibrado utilizando padrões rastreáveis à Rede Brasileira de Calibração (RBC) e ao Instituto Nacional de Metrologia, Qualidade e Tecnologia (INMETRO), estando apto para operações técnicas em conformidade com as normas regulamentadoras hospitalares brasileiras.
+                        </p>
+
+                        <div class="d-flex justify-content-between align-items-end mt-4 pt-3" style="border-top:1px solid var(--color-border)">
+                            <div style="font-size:0.7rem; color:var(--color-text-muted)">
+                                <p>Responsável Técnico: <strong>Eng. Felipe de Souza Monte</strong></p>
+                                <p>Registro CREA-SP: 507189332-A</p>
+                            </div>
+                            <div class="text-right" style="text-align:right">
+                                <div style="border-bottom:1px solid var(--color-border); width:200px; margin-bottom:4px;"></div>
+                                <p style="font-size:0.7rem;" class="text-muted">Assinatura Eletrônica do Engenheiro</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" data-close-modal="modal-certificado">Fechar Certificado</button>
+                <button class="btn btn-primary" id="btn-imprimir-certificado"><i class="fa-solid fa-print"></i> Imprimir Laudo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 12: LANÇAMENTO DE NOVA COTAÇÃO DE PEÇA -->
+    <div id="modal-cotacao" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Solicitar Cotação de Peça</h3>
+                <button class="modal-close" data-close-modal="modal-cotacao">&times;</button>
+            </div>
+            <form id="form-cotacao">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="cot-form-peca">Peça Requisitada</label>
+                        <input type="text" id="cot-form-peca" required placeholder="Ex: Tubo de Raios-X Tomógrafo CT-001">
+                    </div>
+                    <div class="form-group">
+                        <label for="cot-form-equipamento">Equipamento Vinculado</label>
+                        <select id="cot-form-equipamento" required>
+                            <!-- Dinâmico por JS -->
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="cot-form-solicitante">Engenheiro Solicitante</label>
+                            <input type="text" id="cot-form-solicitante" required placeholder="Ex: Carlos Monteiro">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="cot-form-fornecedor">Fornecedor Cotado</label>
+                            <input type="text" id="cot-form-fornecedor" required placeholder="Ex: Philips Medical S.A.">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="cot-form-valor">Valor Cotado (R$)</label>
+                        <input type="number" id="cot-form-valor" required placeholder="0.00" step="0.01">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close-modal="modal-cotacao">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Lançar Cotação</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 13: ABERTURA DE CHAMADO / OS COM SLA -->
+    <div id="modal-chamado" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Abrir Chamado Técnico (Ordem de Serviço)</h3>
+                <button class="modal-close" data-close-modal="modal-chamado">&times;</button>
+            </div>
+            <form id="form-chamado">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="cham-form-descricao">Descrição do Problema / Assunto</label>
+                        <input type="text" id="cham-form-descricao" required placeholder="Ex: Erro de centelhamento no gantry / Tomografia travando">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="cham-form-hospital">Hospital / Cliente</label>
+                            <input type="text" id="cham-form-hospital" required placeholder="Ex: Hospital Albert Einstein">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="cham-form-equipamento">Equipamento com Defeito</label>
+                            <select id="cham-form-equipamento" required>
+                                <!-- Dinâmico por JS -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="cham-form-tipo">Tipo de Manutenção</label>
+                            <select id="cham-form-tipo" required>
+                                <option value="Corretiva">Corretiva</option>
+                                <option value="Preventiva">Preventiva</option>
+                                <option value="Calibração">Calibração</option>
+                                <option value="Instalação">Instalação</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="cham-form-sla">Urgência de Atendimento (SLA)</label>
+                            <select id="cham-form-sla" required>
+                                <option value="2">Urgente (SLA 2 horas)</option>
+                                <option value="4">Rápido (SLA 4 horas)</option>
+                                <option value="12">Padrão (SLA 12 horas)</option>
+                                <option value="24">Planejado (SLA 24 horas)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close-modal="modal-chamado">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Abrir Chamado</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL 14: EXECUÇÃO DE OS PELO TÉCNICO -->
+    <div id="modal-executar-chamado" class="modal-overlay">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Preenchimento de Laudo RAT Técnico</h3>
+                <button class="modal-close" data-close-modal="modal-executar-chamado">&times;</button>
+            </div>
+            <form id="form-executar-chamado">
+                <input type="hidden" id="rat-exec-id">
+                <div class="modal-body">
+                    <div class="metrics-grid mb-3" style="grid-template-columns: 1fr 1fr; gap:16px;">
+                        <div>
+                            <p style="font-size:0.8rem; margin-bottom:4px;"><strong>Chamado / OS:</strong> <span id="rat-info-os" class="font-weight-bold">OS-2026501</span></p>
+                            <p style="font-size:0.8rem; margin-bottom:4px;"><strong>Equipamento:</strong> <span id="rat-info-equipamento">Tomógrafo GE Optima</span></p>
+                        </div>
+                        <div>
+                            <p style="font-size:0.8rem; margin-bottom:4px;"><strong>Hospital / Cliente:</strong> <span id="rat-info-hospital">Hospital Albert Einstein</span></p>
+                            <p style="font-size:0.8rem; margin-bottom:4px;"><strong>Início do Atendimento:</strong> <span id="rat-info-inicio" class="text-secondary">01/07/2026 23:19</span></p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rat-exec-servico">Descrição Detalhada do Serviço Realizado</label>
+                        <textarea id="rat-exec-servico" rows="4" required placeholder="Escreva o que foi feito na máquina (ex: Substituição de escovas do gantry, limpeza dos detectores e testes de calibração final com calibrador biométrico fluke)..." style="width:100%; border-radius:var(--radius-sm); border:1px solid var(--color-border); padding:8px; font-family:inherit; background:rgba(255,255,255,0.01); color:inherit;"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Fotos da Manutenção (Antes & Depois)</label>
+                        <div class="d-flex gap-2 mb-2">
+                            <input type="file" id="rat-exec-file" class="d-none" accept="image/*" multiple>
+                            <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('rat-exec-file').click()"><i class="fa-solid fa-camera"></i> Selecionar Fotos</button>
+                        </div>
+                        <div id="rat-photos-preview" class="d-flex gap-2 flex-wrap" style="min-height:50px; padding:10px; border:1px dashed var(--color-border); border-radius:var(--radius-sm); background:rgba(255,255,255,0.01);">
+                            <span class="text-muted" style="font-size:0.75rem;">Nenhuma foto selecionada. Clique em "Selecionar Fotos" para carregar imagens reais!</span>
+                        </div>
+                    </div>
+
+                    <h4 style="font-size:0.9rem; font-weight:700; border-bottom:1px solid var(--color-border); padding-bottom:4px; margin-top:20px; margin-bottom:12px; text-transform:uppercase;">Validação do Responsável do Hospital</h4>
+                    
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="rat-exec-resp-nome">Nome do Responsável do Hospital</label>
+                            <input type="text" id="rat-exec-resp-nome" required placeholder="Ex: Dra. Mariana Ramos">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="rat-exec-resp-cargo">Cargo / Função no Hospital</label>
+                            <input type="text" id="rat-exec-resp-cargo" required placeholder="Ex: Diretora Médica / Engenheira Clínica">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Assinatura Eletrônica do Responsável (Desenhe abaixo)</label>
+                        <div style="position:relative; width:100%; border:2px dashed var(--color-border); border-radius:var(--radius-sm); background:#0c111d; overflow:hidden;">
+                            <canvas id="rat-signature-canvas" width="460" height="150" style="cursor:crosshair; width:100%; height:150px; display:block;"></canvas>
+                        </div>
+                        <button type="button" class="btn btn-outline btn-sm mt-1" id="btn-clear-rat-signature"><i class="fa-solid fa-eraser"></i> Limpar Assinatura</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close-modal="modal-executar-chamado">Voltar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-circle-check"></i> Concluir OS e Emitir RAT</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 15: RELATÓRIO DE ASSISTÊNCIA TÉCNICA (RAT) - VISUALIZAÇÃO E IMPRESSÃO -->
+    <div id="modal-detalhes-rat" class="modal-overlay">
+        <div class="modal-content modal-large" style="background:#0f172a; max-width:800px;">
+            <div class="modal-header">
+                <h3>Visualização de Laudo RAT Clínico</h3>
+                <button class="modal-close" data-close-modal="modal-detalhes-rat">&times;</button>
+            </div>
+            <div class="modal-body" id="rat-print-area">
+                <div class="certificado-container" style="background:transparent; padding:20px; border-radius:var(--radius-md);">
+                    <!-- Cabeçalho Executivo -->
+                    <div class="certificado-cabecalho d-flex justify-content-between align-items-center mb-4" style="border-bottom:2px solid var(--color-secondary); padding-bottom:15px;">
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="logo.svg" alt="Nevixa Logo" style="height:45px;">
+                            <div>
+                                <h2 style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:0;">NEVIXA ENGENHARIA</h2>
+                                <p style="font-size:0.65rem; text-transform:uppercase; margin:0;" class="text-muted">Manutenção e Instalação de Equipamentos de Imagem</p>
+                            </div>
+                        </div>
+                        <div class="text-right" style="text-align:right">
+                            <span class="badge badge-success" style="font-size:0.8rem; padding:6px 12px; background:#10b981;">OS RAT CONCLUÍDA</span>
+                            <p style="font-size:0.7rem; margin-top:4px;" class="text-muted">Documento Nº <strong id="rat-view-numero">OS-2026501</strong></p>
+                        </div>
+                    </div>
+
+                    <h2 class="text-center mb-4" style="font-size:1.2rem; font-weight:800; text-transform:uppercase; text-align:center; letter-spacing:1px; color:#ffffff;">Relatório de Assistência Técnica (RAT)</h2>
+
+                    <!-- Seção 1: Dados Gerais -->
+                    <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding:15px; margin-bottom:20px; background:rgba(255,255,255,0.01);">
+                        <h4 style="font-size:0.85rem; font-weight:700; color:var(--color-secondary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--color-border); padding-bottom:4px;">1. INFORMAÇÕES DO ATENDIMENTO</h4>
+                        <div class="metrics-grid" style="grid-template-columns: 1fr 1fr; gap:12px;">
+                            <p style="font-size:0.775rem; margin-bottom:4px;"><strong>Hospital / Cliente:</strong> <span id="rat-view-hospital">Carregando...</span></p>
+                            <p style="font-size:0.775rem; margin-bottom:4px;"><strong>Equipamento Médico:</strong> <span id="rat-view-equipamento">Carregando...</span></p>
+                            <p style="font-size:0.775rem; margin-bottom:4px;"><strong>Tipo de Serviço:</strong> <span id="rat-view-tipo" class="badge badge-neutral">Corretiva</span></p>
+                            <p style="font-size:0.775rem; margin-bottom:4px;"><strong>SLA Acordado:</strong> <span id="rat-view-sla">Carregando...</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Seção 2: Tempos e Prazos -->
+                    <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding:15px; margin-bottom:20px; background:rgba(255,255,255,0.01);">
+                        <h4 style="font-size:0.85rem; font-weight:700; color:var(--color-secondary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--color-border); padding-bottom:4px;">2. REGISTRO DE HORÁRIOS & SLA</h4>
+                        <div class="metrics-grid" style="grid-template-columns: 1fr 1fr 1fr; gap:12px;">
+                            <div>
+                                <p style="font-size:0.7rem; color:var(--color-text-muted);" class="mb-1">Início do Atendimento</p>
+                                <p style="font-size:0.8rem; font-weight:600;" id="rat-view-horario-inicio">Carregando...</p>
+                            </div>
+                            <div>
+                                <p style="font-size:0.7rem; color:var(--color-text-muted);" class="mb-1">Conclusão do Serviço</p>
+                                <p style="font-size:0.8rem; font-weight:600;" id="rat-view-horario-fim">Carregando...</p>
+                            </div>
+                            <div>
+                                <p style="font-size:0.7rem; color:var(--color-text-muted);" class="mb-1">Tempo Total Gasto</p>
+                                <p style="font-size:0.8rem; font-weight:600; color:var(--color-success);" id="rat-view-horario-duracao">Carregando...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Seção 3: Descrição Técnica -->
+                    <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding:15px; margin-bottom:20px; background:rgba(255,255,255,0.01);">
+                        <h4 style="font-size:0.85rem; font-weight:700; color:var(--color-secondary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--color-border); padding-bottom:4px;">3. DESCRIÇÃO DETALHADA DOS SERVIÇOS EXECUTADOS</h4>
+                        <p style="font-size:0.775rem; line-height:1.6; white-space:pre-line;" id="rat-view-servico">
+                            Carregando histórico do chamado...
+                        </p>
+                    </div>
+
+                    <!-- Seção 4: Galeria de Fotos -->
+                    <div id="rat-view-photos-section" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding:15px; margin-bottom:20px; background:rgba(255,255,255,0.01);">
+                        <h4 style="font-size:0.85rem; font-weight:700; color:var(--color-secondary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--color-border); padding-bottom:4px;">4. EVIDÊNCIAS DE CAMPO (FOTOS ANTES/DEPOIS)</h4>
+                        <div id="rat-view-photos-grid" class="d-flex gap-3 flex-wrap justify-content-start">
+                            <!-- Injetado por JS -->
+                        </div>
+                    </div>
+
+                    <!-- Seção 5: Assinatura e Encerramento -->
+                    <div style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding:15px; background:rgba(255,255,255,0.01);">
+                        <h4 style="font-size:0.85rem; font-weight:700; color:var(--color-secondary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--color-border); padding-bottom:4px;">5. CONFORMIDADE DO CLIENTE & ASSINATURA</h4>
+                        <div class="d-flex justify-content-between align-items-end mt-3 flex-wrap gap-4">
+                            <div style="font-size:0.75rem; max-width:320px;">
+                                <p style="margin-bottom:4px;">Declaramos que os serviços acima descritos foram realizados a contento e o equipamento encontra-se operacional.</p>
+                                <p style="margin-bottom:2px; margin-top:12px;">Responsável: <strong id="rat-view-resp-nome">Mariana Ramos</strong></p>
+                                <p>Cargo: <span id="rat-view-resp-cargo" class="text-muted">Engenheira Clínica</span></p>
+                            </div>
+                            <div class="text-right" style="text-align:right;">
+                                <div id="rat-view-signature-container" style="background:#ffffff; padding:4px; border-radius:var(--radius-sm); display:inline-block; border:1px solid var(--color-border);">
+                                    <img id="rat-view-signature-img" src="" alt="Assinatura Digital" style="max-height:80px; display:block;">
+                                </div>
+                                <p style="font-size:0.65rem;" class="text-muted mt-1">Assinatura Eletrônica do Responsável</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" data-close-modal="modal-detalhes-rat">Fechar Laudo</button>
+                <button class="btn btn-primary" id="btn-imprimir-rat-novo"><i class="fa-solid fa-print"></i> Imprimir RAT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js para os Gráficos de Alta Performance -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Script principal de lógica do aplicativo -->
+    <script src="app.js"></script>
+</body>
+</html>
