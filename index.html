@@ -49,23 +49,50 @@
                 <button type="submit" class="btn btn-primary-gradient btn-block mt-3">
                     <i class="fa-solid fa-right-to-bracket"></i> Acessar Sistema
                 </button>
+                <div class="mt-3 text-center">
+                    <a href="#" id="btn-show-register" style="color: var(--text-muted); font-size: 0.9rem; text-decoration: none;">Ainda não tem conta? <strong style="color: var(--primary-color);">Solicitar Acesso</strong></a>
+                </div>
             </form>
 
-            <!-- Etapa 2: Token 2FA Simulado (Melhoria 26) -->
-            <form id="form-2fa" class="d-none">
+            <!-- Formulário de Solicitação de Acesso -->
+            <form id="form-register" class="d-none">
                 <div class="form-group">
-                    <label for="login-token-2fa">Código de Verificação de 6 Dígitos *</label>
+                    <label for="register-nome">Nome Completo *</label>
                     <div class="input-icon-wrapper">
-                        <i class="fa-solid fa-shield-halved"></i>
-                        <input type="text" id="login-token-2fa" required placeholder="Digite 123456" maxlength="6" pattern="\d{6}" style="text-align: center; letter-spacing: 4px; font-size: 1.15rem; font-weight: 700;">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" id="register-nome" required placeholder="Seu nome">
                     </div>
-                    <p class="text-muted mt-2" style="font-size:0.725rem; text-align: center;">Um código de uso único de teste foi gerado para segurança.</p>
                 </div>
-                <button type="submit" class="btn btn-secondary-gradient btn-block mt-3">
-                    <i class="fa-solid fa-key"></i> Confirmar Acesso 2FA
+                <div class="form-group">
+                    <label for="register-email">E-mail Corporativo *</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="register-email" required placeholder="seuemail@nevixa.com.br">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="register-senha">Senha de Acesso *</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="register-senha" required placeholder="Mínimo 6 caracteres" minlength="6">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="register-papel">Cargo / Função *</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-briefcase"></i>
+                        <select id="register-papel" required style="width: 100%; padding: 12px 15px 12px 40px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; appearance: none;">
+                            <option value="tecnico" style="background: var(--bg-card); color: white;">Técnico de Campo</option>
+                            <option value="financeiro" style="background: var(--bg-card); color: white;">Financeiro / Administrativo</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary-gradient btn-block mt-3">
+                    <i class="fa-solid fa-user-plus"></i> Enviar Solicitação
                 </button>
-                <div class="text-center mt-3">
-                    <span class="text-muted" style="font-size:0.75rem">Reenviar código em <strong id="timer-2fa">30</strong>s</span>
+                <div class="mt-3 text-center">
+                    <a href="#" id="btn-show-login" style="color: var(--text-muted); font-size: 0.9rem; text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Voltar para Login</a>
                 </div>
             </form>
             
@@ -113,6 +140,12 @@
                         <a href="#" class="nav-link" data-tab="relatorios">
                             <i class="fa-solid fa-chart-line"></i>
                             <span>BI & Relatórios</span>
+                        </a>
+                    </li>
+                    <li id="menu-item-acessos" class="d-none"> <!-- Apenas Admin -->
+                        <a href="#" class="nav-link" data-tab="acessos">
+                            <i class="fa-solid fa-users-gear"></i>
+                            <span>Acessos & Permissões</span>
                         </a>
                     </li>
                 </ul>
@@ -685,6 +718,45 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- ==========================================================================
+                   ABA: ACESSOS E PERMISSÕES (ADMIN)
+                   ========================================================================== -->
+                <section id="tab-acessos" class="tab-pane">
+                    <div class="dashboard-header mb-4">
+                        <div>
+                            <h2>Gestão de Acessos</h2>
+                            <p class="text-muted">Aprove ou bloqueie a entrada de colaboradores no sistema.</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-outline" id="btn-refresh-users">
+                                <i class="fa-solid fa-rotate"></i> Atualizar Lista
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="table" id="table-users">
+                                <thead>
+                                    <tr>
+                                        <th>NOME / E-MAIL</th>
+                                        <th>CARGO / PAPEL</th>
+                                        <th>STATUS</th>
+                                        <th>AÇÕES</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Preenchido via JS -->
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">Carregando usuários...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
             </div>
         </main>
     </div>

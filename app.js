@@ -107,18 +107,26 @@ async function realizarCadastroReal(nome, email, senha, papelEscolhido) {
             return;
         }
 
-        // 2. Se o usuário foi criado, o nosso Trigger no banco vai criar o perfil como 'pendente' automaticamente.
-        // Vamos atualizar o campo 'papel' que o usuário escolheu na tela de cadastro (padrão é técnico)
+        // 2. Garantir a criação do perfil no banco como 'pendente'
         if (data?.user) {
-            if (papelEscolhido && papelEscolhido !== 'tecnico') {
-                // Atualiza o papel solicitado, mas mantém o status em análise ('pendente')
-                await supabaseClient
-                    .from('perfis')
-                    .update({ papel: papelEscolhido })
-                    .eq('id', data.user.id);
+            const { error: insertError } = await supabaseClient
+                .from('perfis')
+                .upsert({ 
+                    id: data.user.id,
+                    email: email,
+                    nome: nome,
+                    papel: papelEscolhido || 'tecnico',
+                    status: 'pendente'
+                });
+
+            if (insertError) {
+                console.warn("Aviso: Falha ao inserir perfil no banco.", insertError);
             }
 
             alert("Cadastro realizado com sucesso! Aguarde até que um Administrador da NEVIXA ENGENHARIA aprove o seu acesso para poder entrar no sistema.");
+            
+            // Fazer o signOut (deslogar) imediatamente, pois ele está pendente e não deve entrar
+            await supabaseClient.auth.signOut();
             
             // Força o retorno para a tela de login limpa
             alternarModoJanelaLogin('login'); 
@@ -461,6 +469,13 @@ function applyUserProfile(user) {
     if (user.papel === "admin") avatarIcon.classList.add("fa-user-gear");
     else if (user.papel === "financeiro") avatarIcon.classList.add("fa-user-tie");
     else avatarIcon.classList.add("fa-user-helmet-safety");
+    
+    // Controle Aba Acessos
+    const menuAcessos = document.getElementById("menu-item-acessos");
+    if (menuAcessos) {
+        if (user.papel === "admin") menuAcessos.classList.remove("d-none");
+        else menuAcessos.classList.add("d-none");
+    }
 }
 
 // ==========================================================================
@@ -580,6 +595,10 @@ function switchTab(tabName) {
     } else if (tabName === "relatorios") {
         sectionTitle.innerText = "BI & Relatórios Contábeis";
         sectionSubtitle.innerText = "Demonstrativos de Resultados (DRE), Ponto de Equilíbrio, Margem Real e Prospecção";
+    } else if (tabName === "acessos") {
+        sectionTitle.innerText = "Gestão de Acessos";
+        sectionSubtitle.innerText = "Aprove ou bloqueie a entrada de colaboradores no sistema";
+        carregarUsuarios(); // Sempre que entrar na aba, recarrega a lista
     }
     
     renderApp();
@@ -2941,37 +2960,138 @@ function safeAddQueryEventListener(selector, event, callback) {
 }
 
 // ==========================================================================
-function setupEventListeners() {
-    // 1. Tela de Login e Autenticação com 2FA Simulado (Melhoria 26)
-    let userTemporario = null;
-    let timerInterval = null;
+// MÓDULO DE ACESSOS E PERMISSÕES (ADMIN)
+// ==========================================================================
+window.carregarUsuarios = async function() {
+    if (state.currentUser.papel !== 'admin') return;
+    
+    const tbody = document.querySelector("#table-users tbody");
+    if (!tbody) return;
+    
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Carregando usuários...</td></tr>';
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('perfis')
+            .select('*')
+            .order('status', { ascending: false });
+            
+        if (error) throw error;
+        
+        tbody.innerHTML = '';
+        
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhum usuário encontrado.</td></tr>';
+            return;
+        }
+        
+        data.forEach(user => {
+            const tr = document.createElement("tr");
+            
+            let statusBadge = '';
+            if (user.status === 'ativo') statusBadge = '<span class="badge" style="background: rgba(34, 197, 94, 0.2); color: #4ade80; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;"><i class="fa-solid fa-circle-check"></i> Ativo</span>';
+            else if (user.status === 'pendente') statusBadge = '<span class="badge" style="background: rgba(234, 179, 8, 0.2); color: #facc15; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;"><i class="fa-solid fa-clock"></i> Pendente</span>';
+            else statusBadge = '<span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #f87171; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem;"><i class="fa-solid fa-ban"></i> Bloqueado</span>';
+            
+            tr.innerHTML = `
+                <td>
+                    <div class="fw-bold">${user.nome || 'Sem nome'}</div>
+                    <div class="text-muted small">${user.email || ''}</div>
+                </td>
+                <td>
+                    <select class="form-select form-select-sm" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 4px; padding: 4px; width: 100%; appearance: auto;" onchange="alterarPapelUsuario('${user.id}', this.value)" ${user.id === state.currentUser.id ? 'disabled' : ''}>
+                        <option value="tecnico" ${user.papel === 'tecnico' ? 'selected' : ''} style="background: var(--bg-card);">Técnico de Campo</option>
+                        <option value="financeiro" ${user.papel === 'financeiro' ? 'selected' : ''} style="background: var(--bg-card);">Financeiro</option>
+                        <option value="admin" ${user.papel === 'admin' ? 'selected' : ''} style="background: var(--bg-card);">Administrador</option>
+                    </select>
+                </td>
+                <td>${statusBadge}</td>
+                <td>
+                    ${user.id !== state.currentUser.id ? `
+                        ${user.status !== 'ativo' ? `<button class="btn btn-sm btn-outline" style="color: #4ade80; border-color: #4ade80; padding: 4px 8px; background: transparent;" onclick="alterarStatusUsuario('${user.id}', 'ativo')" title="Aprovar/Ativar"><i class="fa-solid fa-check"></i></button>` : ''}
+                        ${user.status !== 'bloqueado' ? `<button class="btn btn-sm btn-outline" style="color: #f87171; border-color: #f87171; padding: 4px 8px; margin-left: 5px; background: transparent;" onclick="alterarStatusUsuario('${user.id}', 'bloqueado')" title="Bloquear"><i class="fa-solid fa-ban"></i></button>` : ''}
+                    ` : '<span class="text-muted small">Você</span>'}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        
+    } catch (err) {
+        console.error("Erro ao carregar usuários:", err);
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Erro ao carregar lista de usuários.</td></tr>';
+    }
+}
 
+window.alterarStatusUsuario = async function(id, novoStatus) {
+    if (!confirm(`Tem certeza que deseja mudar o status deste usuário para ${novoStatus.toUpperCase()}?`)) return;
+    
+    try {
+        const { error } = await supabaseClient.from('perfis').update({ status: novoStatus }).eq('id', id);
+        if (error) throw error;
+        alert("Status atualizado com sucesso!");
+        carregarUsuarios();
+    } catch (err) {
+        console.error("Erro ao alterar status:", err);
+        alert("Erro ao alterar o status do usuário.");
+    }
+};
+
+window.alterarPapelUsuario = async function(id, novoPapel) {
+    try {
+        const { error } = await supabaseClient.from('perfis').update({ papel: novoPapel }).eq('id', id);
+        if (error) throw error;
+    } catch (err) {
+        console.error("Erro ao alterar papel:", err);
+        alert("Erro ao alterar a função do usuário.");
+        carregarUsuarios(); 
+    }
+};
+
+function setupEventListeners() {
     safeAddEventListener("form-login", "submit", (e) => {
         e.preventDefault();
-        
         const email = document.getElementById("login-email").value.trim().toLowerCase();
         const senha = document.getElementById("login-senha").value;
-        
-        // NOVO FLUXO DE LOGIN: Chama a função que usa o Supabase
         realizarLoginReal(email, senha);
     });
 
-    safeAddEventListener("form-2fa", "submit", (e) => {
+    safeAddEventListener("form-register", "submit", (e) => {
         e.preventDefault();
-        const token = document.getElementById("login-token-2fa").value.trim();
+        const nome = document.getElementById("register-nome").value.trim();
+        const email = document.getElementById("register-email").value.trim().toLowerCase();
+        const senha = document.getElementById("register-senha").value;
+        const papel = document.getElementById("register-papel").value;
         
-        if (token === "123456" && userTemporario) {
-            if (timerInterval) clearInterval(timerInterval);
-            sessionStorage.setItem("nevixa_current_user", JSON.stringify(userTemporario));
-            checkAuth();
-            alert(`Bem-vindo, ${userTemporario.nome}! Login e 2FA validados com sucesso.`);
-            userTemporario = null;
-            document.getElementById("login-token-2fa").value = "";
+        exibirCarregamentoLogin(true);
+        realizarCadastroReal(nome, email, senha, papel);
+    });
+
+    safeAddEventListener("btn-show-register", "click", (e) => {
+        e.preventDefault();
+        document.getElementById("form-login").classList.add("d-none");
+        document.getElementById("form-register").classList.remove("d-none");
+    });
+
+    safeAddEventListener("btn-show-login", "click", (e) => {
+        e.preventDefault();
+        document.getElementById("form-register").classList.add("d-none");
+        document.getElementById("form-login").classList.remove("d-none");
+    });
+    
+    window.alternarModoJanelaLogin = function(modo) {
+        if(modo === 'login') {
+            document.getElementById("form-register").classList.add("d-none");
             document.getElementById("form-login").classList.remove("d-none");
-            document.getElementById("form-2fa").classList.add("d-none");
+            document.getElementById("form-register").reset();
         } else {
-            alert("Código 2FA incorreto! Digite o token de teste: 123456.");
+            document.getElementById("form-login").classList.add("d-none");
+            document.getElementById("form-register").classList.remove("d-none");
         }
+        exibirCarregamentoLogin(false);
+    }
+    
+    safeAddEventListener("btn-refresh-users", "click", () => {
+        carregarUsuarios();
     });
     
     // Botão Sair da Conta (Logout)
