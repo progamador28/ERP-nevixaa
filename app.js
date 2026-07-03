@@ -2495,10 +2495,20 @@ if (formNota) {
         const id = document.getElementById("form-nota-id").value;
         const numeroNota = document.getElementById("nota-numero").value.trim();
         const dataEmissao = document.getElementById("nota-data").value;
-        const equipamentoId = document.getElementById("nota-equipamento-id").value;
+        
+        const equipamentoNome = document.getElementById("nota-equipamento-nome").value.trim();
+        let equipamentoId = document.getElementById("nota-equipamento-id").value;
+        const eqByNome = state.equipments.find(item => `${item.tag} - ${item.nome} (${item.cliente})` === equipamentoNome);
+        
+        if (eqByNome) {
+            equipamentoId = eqByNome.id;
+        } else if (equipamentoNome) {
+            equipamentoId = equipamentoNome;
+        }
         
         const eq = state.equipments.find(item => item.id === equipamentoId);
-        const cliente = eq ? eq.cliente : "Cliente Desconhecido";
+        const clienteInput = document.getElementById("nota-cliente").value.trim();
+        const cliente = clienteInput || (eq ? eq.cliente : "Cliente Desconhecido");
         
         const descricao = document.getElementById("nota-descricao").value.trim();
         const valorTotal = parseCurrencyBR(document.getElementById("nota-valor").value);
@@ -2596,13 +2606,16 @@ if (formNota) {
 }
 
 // Vincula o preenchimento automático do cliente ao trocar de equipamento
-const inputEquipamento = document.getElementById("nota-equipamento-id");
-if (inputEquipamento) {
-    inputEquipamento.addEventListener("change", (e) => {
-        const eqId = e.target.value;
-        const eq = state.equipments.find(item => item.id === eqId);
+const inputEquipamentoNome = document.getElementById("nota-equipamento-nome");
+if (inputEquipamentoNome) {
+    inputEquipamentoNome.addEventListener("change", (e) => {
+        const val = e.target.value.trim();
+        const eq = state.equipments.find(item => `${item.tag} - ${item.nome} (${item.cliente})` === val);
         if (eq) {
+            document.getElementById("nota-equipamento-id").value = eq.id;
             document.getElementById("nota-cliente").value = eq.cliente;
+        } else {
+            document.getElementById("nota-equipamento-id").value = val;
         }
     });
 }
@@ -2722,8 +2735,15 @@ function editInvoice(id) {
     document.getElementById("nota-data").value = inv.dataEmissao;
     
     popularEquipamentosDropdown();
-    document.getElementById("nota-equipamento-id").value = inv.equipamentoId;
-    document.getElementById("nota-cliente").value = inv.cliente;
+    const eq = state.equipments.find(e => e.id === inv.equipamentoId);
+    if (eq) {
+        document.getElementById("nota-equipamento-nome").value = `${eq.tag} - ${eq.nome} (${eq.cliente})`;
+        document.getElementById("nota-equipamento-id").value = eq.id;
+    } else {
+        document.getElementById("nota-equipamento-nome").value = inv.equipamentoId || "";
+        document.getElementById("nota-equipamento-id").value = inv.equipamentoId || "";
+    }
+    document.getElementById("nota-cliente").value = inv.cliente || "";
     
     document.getElementById("nota-descricao").value = inv.descricao || "";
     document.getElementById("nota-valor").value = formatInputCurrency(inv.valorTotal);
@@ -2740,16 +2760,15 @@ function editInvoice(id) {
 }
 
 function popularEquipamentosDropdown() {
-    const dropdown = document.getElementById("nota-equipamento-id");
-    if (!dropdown) return;
+    const list = document.getElementById("equipamentos-list");
+    if (!list) return;
     
-    dropdown.innerHTML = '<option value="" disabled selected>Selecione um Equipamento...</option>';
+    list.innerHTML = '';
     
     state.equipments.forEach(eq => {
         const option = document.createElement("option");
-        option.value = eq.id;
-        option.innerText = `${eq.tag} - ${eq.nome} (${eq.cliente})`;
-        dropdown.appendChild(option);
+        option.value = `${eq.tag} - ${eq.nome} (${eq.cliente})`;
+        list.appendChild(option);
     });
 }
 
