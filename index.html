@@ -830,18 +830,18 @@
                     <div class="form-row" id="row-split-faturamento" style="display: none;">
                         <div class="form-group col-6">
                             <label for="nota-valor-pecas">Valor de Peças (Comércio) (R$)</label>
-                            <input type="number" step="0.01" min="0" id="nota-valor-pecas" placeholder="0,00">
+                            <input type="text" inputmode="numeric" id="nota-valor-pecas" placeholder="0,00" oninput="mascaraMoeda(this)">
                         </div>
                         <div class="form-group col-6">
                             <label for="nota-valor-servicos">Valor de Serviços (Engenharia) (R$)</label>
-                            <input type="number" step="0.01" min="0" id="nota-valor-servicos" placeholder="0,00">
+                            <input type="text" inputmode="numeric" id="nota-valor-servicos" placeholder="0,00" oninput="mascaraMoeda(this)">
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group col-6">
                             <label for="nota-valor">Valor Total da Nota (R$) *</label>
-                            <input type="number" step="0.01" min="0.01" id="nota-valor" required placeholder="0,00">
+                            <input type="text" inputmode="numeric" id="nota-valor" required placeholder="0,00" oninput="mascaraMoeda(this)">
                         </div>
                         <div class="form-group col-6">
                             <label for="nota-status">Status de Faturamento *</label>

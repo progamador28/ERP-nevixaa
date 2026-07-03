@@ -520,6 +520,32 @@ function formatCurrency(value) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
 
+window.mascaraMoeda = function(campo) {
+    let valor = campo.value.replace(/\D/g, '');
+    if (valor === '') {
+        campo.value = '';
+        return;
+    }
+    valor = (parseInt(valor, 10) / 100).toFixed(2) + '';
+    valor = valor.replace(".", ",");
+    valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+    campo.value = valor;
+};
+
+window.parseCurrencyBR = function(val) {
+    if (!val) return 0;
+    val = val.toString().replace(/\./g, '').replace(',', '.');
+    return parseFloat(val) || 0;
+};
+
+window.formatInputCurrency = function(val) {
+    if (!val && val !== 0) return "";
+    let valor = parseFloat(val).toFixed(2);
+    valor = valor.replace(".", ",");
+    valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+    return valor;
+};
+
 function formatDate(dateString) {
     if (!dateString) return "";
     const parts = dateString.split("-");
@@ -2472,7 +2498,7 @@ if (formNota) {
         const cliente = eq ? eq.cliente : "Cliente Desconhecido";
         
         const descricao = document.getElementById("nota-descricao").value.trim();
-        const valorTotal = parseFloat(document.getElementById("nota-valor").value);
+        const valorTotal = parseCurrencyBR(document.getElementById("nota-valor").value);
         const status = document.getElementById("nota-status").value;
         const calcularImpostos = document.getElementById("nota-calcular-impostos").checked;
 
@@ -2482,8 +2508,8 @@ if (formNota) {
         let valorServicos = 0;
         
         if (isMisto) {
-            valorPecas = parseFloat(document.getElementById("nota-valor-pecas").value) || 0;
-            valorServicos = parseFloat(document.getElementById("nota-valor-servicos").value) || 0;
+            valorPecas = parseCurrencyBR(document.getElementById("nota-valor-pecas").value) || 0;
+            valorServicos = parseCurrencyBR(document.getElementById("nota-valor-servicos").value) || 0;
             
             if (Math.abs((valorPecas + valorServicos) - valorTotal) > 0.02) {
                 alert("A soma do valor de peças e serviços deve ser exatamente igual ao Valor Total da Nota informado!");
@@ -2697,15 +2723,15 @@ function editInvoice(id) {
     document.getElementById("nota-cliente").value = inv.cliente;
     
     document.getElementById("nota-descricao").value = inv.descricao || "";
-    document.getElementById("nota-valor").value = inv.valorTotal;
+    document.getElementById("nota-valor").value = formatInputCurrency(inv.valorTotal);
     document.getElementById("nota-status").value = inv.status;
     document.getElementById("nota-calcular-impostos").checked = inv.calcularImpostos !== false;
     
     // Injetar valores do split no formulário
     document.getElementById("nota-faturamento-misto").checked = inv.isMisto === true;
     document.getElementById("row-split-faturamento").style.display = inv.isMisto ? "flex" : "none";
-    document.getElementById("nota-valor-pecas").value = inv.valorPecas || "";
-    document.getElementById("nota-valor-servicos").value = inv.valorServicos || "";
+    document.getElementById("nota-valor-pecas").value = inv.valorPecas ? formatInputCurrency(inv.valorPecas) : "";
+    document.getElementById("nota-valor-servicos").value = inv.valorServicos ? formatInputCurrency(inv.valorServicos) : "";
     
     openModal("modal-nota");
 }
