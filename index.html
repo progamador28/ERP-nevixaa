@@ -802,16 +802,18 @@
 
                     <!-- Vínculo com Equipamento Prontuário (Melhoria 6) -->
                     <div class="form-group">
-                        <label for="nota-equipamento-id">Vincular a um Equipamento Médico *</label>
-                        <select id="nota-equipamento-id" required>
+                        <label for="nota-equipamento-nome">Vincular a um Equipamento Médico *</label>
+                        <input type="text" id="nota-equipamento-nome" list="equipamentos-list" required placeholder="Selecione na lista ou digite equipamento avulso..." autocomplete="off">
+                        <datalist id="equipamentos-list">
                             <!-- Preenchido via JS -->
-                        </select>
+                        </datalist>
+                        <input type="hidden" id="nota-equipamento-id">
                     </div>
 
                     <div class="form-group">
                         <label for="nota-cliente">Cliente *</label>
-                        <input type="text" id="nota-cliente" required placeholder="Nome do Hospital, Clínica ou Cliente" readonly>
-                        <span style="font-size:0.7rem; color:var(--color-text-muted)">Preenchido automaticamente com base no Equipamento selecionado.</span>
+                        <input type="text" id="nota-cliente" required placeholder="Nome do Hospital, Clínica ou Cliente">
+                        <span style="font-size:0.7rem; color:var(--color-text-muted)">Preenchido automaticamente ou digite manualmente.</span>
                     </div>
                     <div class="form-group">
                         <label for="nota-descricao">Descrição do Serviço</label>
