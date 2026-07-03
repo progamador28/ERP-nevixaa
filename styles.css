@@ -1968,6 +1968,20 @@ body.light-mode .desgaste-tubo-box {
         background: transparent !important;
     }
     
+    body.print-mode-rat .col-hide-tecnico,
+    body.print-mode-rat .detalhes-valores-gauge,
+    body.print-mode-rat .detalhes-custos-secao,
+    body.print-mode-rat #form-timesheet,
+    body.print-mode-rat .modal-header,
+    body.print-mode-rat .modal-footer,
+    body.print-mode-rat .divider {
+        display: none !important;
+    }
+    
+    body.print-mode-rat #modal-detalhes-nota .modal-body {
+        padding: 40px !important;
+    }
+    
     body.print-mode-rat .print-only-header {
         display: flex !important;
         align-items: center;

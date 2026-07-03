@@ -974,7 +974,10 @@
                 </div>
                 <button class="modal-close" data-close-modal="modal-detalhes-nota">&times;</button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="position: relative; z-index: 1;">
+                <!-- Marca d'água RAT -->
+                <img src="logo.svg" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; max-width:500px; opacity: 0.08 !important; pointer-events: none; z-index: -1; -webkit-print-color-adjust: exact; print-color-adjust: exact;" alt="Watermark Nevixa">
+                
                 <!-- Informações do cabeçalho da nota -->
                 <div class="detalhes-nota-resumo-container">
                     <div class="detalhes-meta">
@@ -1039,9 +1042,9 @@
                                     <tr>
                                         <th>Técnico</th>
                                         <th>Horas Lançadas</th>
-                                        <th>Valor da Hora</th>
-                                        <th>Custo Mão de Obra</th>
-                                        <th>Ação</th>
+                                        <th class="col-hide-tecnico">Valor da Hora</th>
+                                        <th class="col-hide-tecnico">Custo Mão de Obra</th>
+                                        <th class="col-hide-tecnico">Ação</th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-timesheet-body">
@@ -1167,7 +1170,7 @@
                     <div id="secao-simples" class="tax-config-section">
                         <div class="form-group">
                             <label for="simples-aliquota">Alíquota Única Simples Nacional (%) *</label>
-                            <input type="number" step="0.01" min="0.00" max="100.00" id="simples-aliquota" required placeholder="8.00">
+                            <input type="number" step="0.01" min="0.00" max="100.00" id="simples-aliquota" required placeholder="5.00">
                             <p class="text-muted" style="font-size: 0.725rem; margin-top: 4px;">
                                 A alíquota unificada que será aplicada diretamente ao valor faturado da nota fiscal.
                             </p>

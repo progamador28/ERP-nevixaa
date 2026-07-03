@@ -264,7 +264,7 @@ const MOCK_TRANSACTIONS = [
 
 const DEFAULT_TAX_CONFIG = {
     regime: "SimplesNacional",
-    simplesAliquota: 8.0,
+    simplesAliquota: 5.0,
     presumido: { pis: 0.65, cofins: 3.00, csll: 1.00, irrf: 1.50, iss: 5.00 }
 };
 
@@ -378,6 +378,9 @@ async function initDatabase() {
     
     // Configurações tributárias/rateios
     state.taxConfig = storedTaxConfig ? JSON.parse(storedTaxConfig) : DEFAULT_TAX_CONFIG;
+    if (state.taxConfig && state.taxConfig.simplesAliquota === 8.0) {
+        state.taxConfig.simplesAliquota = 5.0; // Atualiza defaults para base local também
+    }
     state.rateioConfig = storedRateio ? parseFloat(storedRateio) : 10;
     
     const inputRateio = document.getElementById("input-bi-rateio-perc");
@@ -2053,9 +2056,9 @@ function updateInvoiceDetailsModal(invoiceId) {
             row.innerHTML = `
                 <td><strong>${ts.tecnico}</strong></td>
                 <td class="font-numeric">${ts.horas} horas</td>
-                <td class="font-numeric">${formatCurrency(ts.valorHora)}/h</td>
-                <td class="font-numeric val-despesa">${formatCurrency(ts.custoTotal)}</td>
-                <td>
+                <td class="font-numeric col-hide-tecnico">${formatCurrency(ts.valorHora)}/h</td>
+                <td class="font-numeric val-despesa col-hide-tecnico">${formatCurrency(ts.custoTotal)}</td>
+                <td class="col-hide-tecnico">
                     <button class="btn btn-outline btn-sm text-danger" onclick="deleteTimesheet('${ts.id}', '${invoiceId}')" style="padding: 2px 6px;">
                         <i class="fa-solid fa-trash-can" style="font-size:0.7rem"></i>
                     </button>
