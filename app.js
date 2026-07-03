@@ -1405,6 +1405,10 @@ window.visualizarCertificadoRBC = function(id) {
     
     document.getElementById("cert-instrumento").innerText = cal.nome;
     document.getElementById("cert-serial").innerText = cal.serial;
+    
+    // Fallbacks para campos novos em calibradores antigos
+    document.getElementById("cert-fabricante").innerText = cal.fabricante || "Fluke Biomedical / BIO-TEK";
+    
     document.getElementById("cert-ultima").innerText = formatDate(cal.ultimaCalibracao);
     document.getElementById("cert-validade").innerText = formatDate(cal.proximaCalibracao);
     
@@ -3462,6 +3466,41 @@ function setupEventListeners() {
         renderApp();
     });
 
+    // Formulário do Novo Calibrador
+    safeAddEventListener("form-novo-calibrador", "submit", (e) => {
+        e.preventDefault();
+        const nome = document.getElementById("cal-form-nome").value;
+        const fabricante = document.getElementById("cal-form-fabricante").value;
+        const serial = document.getElementById("cal-form-serial").value;
+        const engenheiro = document.getElementById("cal-form-engenheiro").value;
+        const crea = document.getElementById("cal-form-crea").value;
+        
+        const hoje = new Date();
+        const ultimaCal = hoje.toISOString().slice(0, 10);
+        
+        const proximaData = new Date();
+        proximaData.setFullYear(hoje.getFullYear() + 1);
+        const proximaCal = proximaData.toISOString().slice(0, 10);
+        
+        const novoCal = {
+            id: generateUUID(),
+            nome,
+            fabricante,
+            serial,
+            engenheiro,
+            crea,
+            ultimaCalibracao: ultimaCal,
+            proximaCalibracao: proximaCal
+        };
+        
+        state.calibrators.push(novoCal);
+        addAuditLog("Calibrador Adicionado", `Nova ferramenta biométrica cadastrada: ${nome} - S/N: ${serial}`);
+        saveStateToLocalStorage();
+        closeModal("modal-novo-calibrador");
+        renderApp();
+        alert(`Sucesso! O calibrador "${nome}" foi cadastrado e sua calibração está válida por 1 ano.`);
+    });
+
     safeAddEventListener("form-cotacao", "submit", (e) => {
         e.preventDefault();
         const peca = document.getElementById("cot-form-peca").value.trim();
@@ -3678,38 +3717,8 @@ function renderChecklistTecnico(inv) {
 // FUNÇÕES AUXILIARES DA FASE 4 (OPERAÇÕES TÉCNICAS DE CAMPO)
 // ==========================================================================
 window.openNovoCalibrador = function() {
-    const nome = prompt("Digite o nome do Instrumento / Calibrador:");
-    if (!nome) return;
-    const serial = prompt("Digite o número de série (S/N):");
-    if (!serial) return;
-    const engenheiro = prompt("Digite o nome do Engenheiro Responsável Técnico:");
-    if (!engenheiro) return;
-    const crea = prompt("Digite o Registro do CREA do engenheiro:");
-    if (!crea) return;
-    
-    const hoje = new Date();
-    const ultimaCal = hoje.toISOString().slice(0, 10);
-    
-    // Próxima calibração em 1 ano
-    const proximaData = new Date();
-    proximaData.setFullYear(hoje.getFullYear() + 1);
-    const proximaCal = proximaData.toISOString().slice(0, 10);
-    
-    const novoCal = {
-        id: generateUUID(),
-        nome,
-        serial,
-        engenheiro,
-        crea,
-        ultimaCalibracao: ultimaCal,
-        proximaCalibracao: proximaCal
-    };
-    
-    state.calibrators.push(novoCal);
-    addAuditLog("Calibrador Adicionado", `Nova ferramenta biométrica cadastrada: ${nome} - S/N: ${serial}`);
-    saveStateToLocalStorage();
-    renderApp();
-    alert(`Sucesso! O calibrador "${nome}" foi cadastrado e sua calibração está válida por 1 ano.`);
+    document.getElementById("form-novo-calibrador").reset();
+    openModal("modal-novo-calibrador");
 };
 
 window.openNovaCotacao = function() {

@@ -1492,7 +1492,7 @@
                                 <h4 style="font-size:0.9rem; font-weight:700; border-bottom:1px solid var(--color-border); padding-bottom:4px; margin-bottom:10px;">DADOS DO CALIBRADOR</h4>
                                 <p style="font-size:0.75rem; margin-bottom:4px;"><strong>Instrumento:</strong> <span id="cert-instrumento">Carregando...</span></p>
                                 <p style="font-size:0.75rem; margin-bottom:4px;"><strong>Número de Série:</strong> <span id="cert-serial">Carregando...</span></p>
-                                <p style="font-size:0.75rem; margin-bottom:4px;"><strong>Fabricante:</strong> Fluke Biomedical / BIO-TEK</p>
+                                <p style="font-size:0.75rem; margin-bottom:4px;"><strong>Fabricante:</strong> <span id="cert-fabricante">Fluke Biomedical / BIO-TEK</span></p>
                             </div>
                             <div>
                                 <h4 style="font-size:0.9rem; font-weight:700; border-bottom:1px solid var(--color-border); padding-bottom:4px; margin-bottom:10px;">DADOS METROLÓGICOS</h4>
@@ -1524,6 +1524,46 @@
                 <button class="btn btn-outline" data-close-modal="modal-certificado">Fechar Certificado</button>
                 <button class="btn btn-primary" id="btn-imprimir-certificado"><i class="fa-solid fa-print"></i> Imprimir Laudo</button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL 11.5: CADASTRO DE NOVO CALIBRADOR -->
+    <div id="modal-novo-calibrador" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Cadastrar Novo Calibrador</h3>
+                <button class="modal-close" data-close-modal="modal-novo-calibrador">&times;</button>
+            </div>
+            <form id="form-novo-calibrador">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="cal-form-nome">Nome do Instrumento / Calibrador</label>
+                        <input type="text" id="cal-form-nome" required placeholder="Ex: Multímetro Digital Fluke 87V">
+                    </div>
+                    <div class="form-group">
+                        <label for="cal-form-fabricante">Fabricante</label>
+                        <input type="text" id="cal-form-fabricante" required placeholder="Ex: Fluke Biomedical / RaySafe">
+                    </div>
+                    <div class="form-group">
+                        <label for="cal-form-serial">Número de Série (S/N)</label>
+                        <input type="text" id="cal-form-serial" required placeholder="Ex: 94857322">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="cal-form-engenheiro">Engenheiro Responsável</label>
+                            <input type="text" id="cal-form-engenheiro" required placeholder="Nome do Engenheiro">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="cal-form-crea">Registro CREA</label>
+                            <input type="text" id="cal-form-crea" required placeholder="Ex: 507189332-A">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close-modal="modal-novo-calibrador">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Salvar Calibrador</button>
+                </div>
+            </form>
         </div>
     </div>
 
