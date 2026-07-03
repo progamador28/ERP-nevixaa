@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nevixa | ERP Gestão Financeira & Operações</title>
+    <title>Nevixa Engenharia</title>
+    <style>
+        @media print {
+            /* Remove cabeçalhos e rodapés automáticos (URL, página) do navegador */
+            @page { margin: 0; }
+            /* Adiciona uma margem apenas no corpo do documento impresso para não cortar texto nas bordas */
+            body { padding: 1.5cm; }
+        }
+    </style>
     <!-- Google Fonts: Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1685,9 +1693,11 @@
                 <button class="modal-close" data-close-modal="modal-detalhes-rat">&times;</button>
             </div>
             <div class="modal-body" id="rat-print-area">
-                <div class="certificado-container" style="background:transparent; padding:20px; border-radius:var(--radius-md);">
+                <div class="certificado-container" style="position:relative; background:transparent; padding:20px; border-radius:var(--radius-md);">
+                    <!-- Marca d'água -->
+                    <img src="logo.svg" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; opacity: 0.05; pointer-events: none; z-index: 0;" alt="Watermark Nevixa">
                     <!-- Cabeçalho Executivo -->
-                    <div class="certificado-cabecalho d-flex justify-content-between align-items-center mb-4" style="border-bottom:2px solid var(--color-secondary); padding-bottom:15px;">
+                    <div class="certificado-cabecalho d-flex justify-content-between align-items-center mb-4" style="position:relative; z-index:1; border-bottom:2px solid var(--color-secondary); padding-bottom:15px;">
                         <div class="d-flex align-items-center gap-2">
                             <img src="logo.svg" alt="Nevixa Logo" style="height:45px;">
                             <div>

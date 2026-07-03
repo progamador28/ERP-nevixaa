@@ -3870,7 +3870,6 @@ document.addEventListener("change", (e) => {
                 div.className = "rat-photo-thumb";
                 div.innerHTML = `
                     <img src="${base64Data}" alt="${newPhoto.titulo}">
-                    <span class="badge ${titulo.includes('Antes') ? 'badge-danger' : 'badge-success'}">${titulo}</span>
                 `;
                 preview.appendChild(div);
             };
@@ -3967,7 +3966,6 @@ window.visualizarLaudoRAT = function(id) {
             div.className = "rat-photo-view";
             div.innerHTML = `
                 <img src="${foto.url}" alt="${foto.titulo}">
-                <span class="badge ${foto.titulo.includes('Antes') ? 'badge-danger' : 'badge-success'}">${foto.titulo}</span>
             `;
             photosGrid.appendChild(div);
         });
