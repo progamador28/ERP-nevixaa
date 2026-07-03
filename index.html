@@ -10,6 +10,11 @@
             @page { margin: 0; }
             /* Adiciona uma margem apenas no corpo do documento impresso para não cortar texto nas bordas */
             body { padding: 1.5cm; }
+            /* Inverte a logo branca para preta no papel branco */
+            img[src="logo.svg"] {
+                filter: invert(1) !important;
+                -webkit-filter: invert(1) !important;
+            }
         }
     </style>
     <!-- Google Fonts: Outfit -->
