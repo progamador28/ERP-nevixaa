@@ -311,8 +311,8 @@ window.prefillLogin = function(email, senha) {
 // ==========================================================================
 // INICIALIZAÇÃO DA APLICAÇÃO
 // ==========================================================================
-document.addEventListener("DOMContentLoaded", () => {
-    initDatabase(); // Inicializa o banco de dados (localStorage ou Mock)
+document.addEventListener("DOMContentLoaded", async () => {
+    await initDatabase(); // Inicializa o banco de dados (localStorage ou Mock)
     checkAuth();
     initMobileNavigation();
     setupEventListeners();
@@ -321,9 +321,9 @@ document.addEventListener("DOMContentLoaded", () => {
     applyThemePreference();
 
     // Sincronização multi-abas em tempo real (Sincronismo Operacional)
-    window.addEventListener("storage", (e) => {
+    window.addEventListener("storage", async (e) => {
         if (e.key && e.key.startsWith("nevixa_")) {
-            initDatabase();
+            await initDatabase();
             renderApp();
         }
     });
@@ -332,8 +332,39 @@ document.addEventListener("DOMContentLoaded", () => {
     // startStateSyncPolling();
 });
 
-// Inicializa o banco de dados carregando do LocalStorage ou usando dados mockados
-function initDatabase() {
+// Inicializa o banco de dados carregando da Nuvem (Supabase) ou usando LocalStorage/Mock
+async function initDatabase() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('dados_sistema')
+            .select('dados')
+            .eq('id', 1)
+            .single();
+            
+        if (data && data.dados) {
+            const cloud = data.dados;
+            state.invoices = cloud.invoices || [];
+            state.transactions = cloud.transactions || [];
+            state.equipments = cloud.equipments || MOCK_EQUIPMENTS;
+            state.calibrators = cloud.calibrators || MOCK_CALIBRATORS;
+            state.quotations = cloud.quotations || MOCK_QUOTATIONS;
+            state.tickets = cloud.tickets || MOCK_TICKETS;
+            state.timesheets = cloud.timesheets || MOCK_TIMESHEETS;
+            state.auditLogs = cloud.auditLogs || [];
+            state.taxConfig = cloud.taxConfig || DEFAULT_TAX_CONFIG;
+            state.rateioConfig = cloud.rateioConfig || 10;
+            
+            const inputRateio = document.getElementById("input-bi-rateio-perc");
+            if (inputRateio) inputRateio.value = state.rateioConfig;
+            
+            saveStateToLocalStorageOnly(); // Mantém cache local atualizado
+            console.log("Banco de dados sincronizado com a Nuvem (Supabase) com sucesso!");
+            return;
+        }
+    } catch (err) {
+        console.warn("Aviso: Nuvem não inicializada ou vazia, usando LocalStorage...", err);
+    }
+
     const storedInvoices = localStorage.getItem("nevixa_invoices");
     const storedTransactions = localStorage.getItem("nevixa_transactions");
     const storedEquipments = localStorage.getItem("nevixa_equipments");
@@ -374,12 +405,12 @@ function initDatabase() {
         state.auditLogs = [
             { timestamp: new Date().toISOString(), usuario: "Sistema", operacao: "Banco Inicializado", descricao: "Banco de dados preenchido com dados fictícios de demonstração." }
         ];
-        saveStateToLocalStorage();
     }
+    saveStateToLocalStorage();
 }
 
-// Salva dados no LocalStorage e no Servidor
-function saveStateToLocalStorage() {
+// Salva dados no LocalStorage e no Servidor Supabase
+async function saveStateToLocalStorage() {
     saveStateToLocalStorageOnly();
     
     const dataToSave = {
@@ -395,11 +426,15 @@ function saveStateToLocalStorage() {
         rateioConfig: state.rateioConfig
     };
     
-    fetch('/api/state', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dataToSave)
-    }).catch(err => console.log('Erro ao salvar estado no servidor:', err));
+    try {
+        const { error } = await supabaseClient
+            .from('dados_sistema')
+            .upsert({ id: 1, dados: dataToSave });
+            
+        if (error) console.error('Erro ao salvar estado no Supabase:', error);
+    } catch (err) {
+        console.error('Falha de conexão ao salvar na nuvem:', err);
+    }
 }
 
 function saveStateToLocalStorageOnly() {
