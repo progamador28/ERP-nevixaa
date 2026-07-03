@@ -1408,6 +1408,9 @@ window.visualizarCertificadoRBC = function(id) {
     document.getElementById("cert-ultima").innerText = formatDate(cal.ultimaCalibracao);
     document.getElementById("cert-validade").innerText = formatDate(cal.proximaCalibracao);
     
+    document.getElementById("cert-engenheiro").innerText = cal.engenheiro || "Eng. Felipe de Souza Monte";
+    document.getElementById("cert-crea").innerText = cal.crea || "507189332-A";
+    
     // Gerar um número de laudo aleatório mas persistente baseado no serial
     const hashNum = cal.serial.replace(/[^0-9]/g, "") || "488192";
     document.getElementById("cert-numero").innerText = `L-${hashNum}/2026`;
@@ -3679,6 +3682,10 @@ window.openNovoCalibrador = function() {
     if (!nome) return;
     const serial = prompt("Digite o número de série (S/N):");
     if (!serial) return;
+    const engenheiro = prompt("Digite o nome do Engenheiro Responsável Técnico:");
+    if (!engenheiro) return;
+    const crea = prompt("Digite o Registro do CREA do engenheiro:");
+    if (!crea) return;
     
     const hoje = new Date();
     const ultimaCal = hoje.toISOString().slice(0, 10);
@@ -3692,6 +3699,8 @@ window.openNovoCalibrador = function() {
         id: generateUUID(),
         nome,
         serial,
+        engenheiro,
+        crea,
         ultimaCalibracao: ultimaCal,
         proximaCalibracao: proximaCal
     };

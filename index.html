@@ -1464,8 +1464,10 @@
                 <button class="modal-close" data-close-modal="modal-certificado">&times;</button>
             </div>
             <div class="modal-body" id="certificado-print-area">
-                <div class="certificado-container">
-                    <div class="certificado-cabecalho d-flex justify-content-between align-items-center mb-4">
+                <div class="certificado-container" style="position:relative; background:transparent; padding:20px; border-radius:var(--radius-md);">
+                    <!-- Marca d'água -->
+                    <img src="logo.svg" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; opacity: 0.15; pointer-events: none; z-index: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact;" alt="Watermark Nevixa">
+                    <div class="certificado-cabecalho d-flex justify-content-between align-items-center mb-4" style="position:relative; z-index:1; border-bottom:2px solid var(--color-secondary); padding-bottom:15px;">
                         <div class="d-flex align-items-center gap-2">
                             <img src="logo.svg" alt="Nevixa Logo" style="height:40px;">
                             <div>
@@ -1479,7 +1481,7 @@
                         </div>
                     </div>
 
-                    <div style="border: 2px solid var(--color-border); border-radius: var(--radius-md); padding:20px; position:relative; background: rgba(255,255,255,0.02)">
+                    <div style="border: 2px solid var(--color-border); border-radius: var(--radius-md); padding:20px; position:relative; z-index:1; background: rgba(255,255,255,0.02)">
                         <!-- Marca d'água simulada -->
                         <div class="certificado-marca-dagua" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%) rotate(-30deg); font-size:6rem; font-weight:950; color:rgba(124, 58, 237, 0.03); pointer-events:none; white-space:nowrap; text-transform:uppercase;">
                             Aprovado RBC
@@ -1507,8 +1509,8 @@
 
                         <div class="d-flex justify-content-between align-items-end mt-4 pt-3" style="border-top:1px solid var(--color-border)">
                             <div style="font-size:0.7rem; color:var(--color-text-muted)">
-                                <p>Responsável Técnico: <strong>Eng. Felipe de Souza Monte</strong></p>
-                                <p>Registro CREA-SP: 507189332-A</p>
+                                <p>Responsável Técnico: <strong id="cert-engenheiro">Eng. Felipe de Souza Monte</strong></p>
+                                <p>Registro CREA: <span id="cert-crea">507189332-A</span></p>
                             </div>
                             <div class="text-right" style="text-align:right">
                                 <div style="border-bottom:1px solid var(--color-border); width:200px; margin-bottom:4px;"></div>
