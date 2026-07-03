@@ -76,7 +76,7 @@ async function realizarLoginReal(email, senha) {
         
         // Esconde a tela de login e inicializa o painel do sistema
         document.getElementById("login-overlay").classList.remove("active");
-        initApp(); 
+        checkAuth(); 
 
     } catch (err) {
         console.error("Erro inesperado no login:", err);
