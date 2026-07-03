@@ -2068,6 +2068,17 @@ function updateInvoiceDetailsModal(invoiceId) {
     
     // 6. Checklist Técnico Dinâmico por Equipamento (Melhoria 2)
     renderChecklistTecnico(inv);
+    
+    // 7. Botão do PDF Anexo
+    const btnPdf = document.getElementById("btn-ver-pdf-nota");
+    if (btnPdf) {
+        if (inv.arquivoUrl) {
+            btnPdf.href = inv.arquivoUrl;
+            btnPdf.style.display = "inline-block";
+        } else {
+            btnPdf.style.display = "none";
+        }
+    }
 }
 
 // Régua de cobrança preventiva simulada (Melhoria 13)
@@ -2438,12 +2449,18 @@ if (btnExportContabil) {
 // FORMULÁRIOS & CADASTROS (CRUDS)
 // ==========================================================================
 
+window.openInvoiceDetails = function(id) {
+    document.getElementById("modal-detalhes-nota").setAttribute("data-active-invoice-id", id);
+    openModal("modal-detalhes-nota");
+    updateInvoiceDetailsModal(id);
+};
+
 /* --------------------------------------------------------------------------
    GESTÃO DE NOTAS FISCAIS & IMPOSTOS AUTOMÁTICOS
    -------------------------------------------------------------------------- */
 const formNota = document.getElementById("form-nota");
 if (formNota) {
-    formNota.addEventListener("submit", (e) => {
+    formNota.addEventListener("submit", async (e) => {
         e.preventDefault();
         
         const id = document.getElementById("form-nota-id").value;
@@ -2484,20 +2501,58 @@ if (formNota) {
         
         let notaId = id || generateUUID();
         
+        // Upload do PDF anexo (se selecionado)
+        const fileInput = document.getElementById("nota-arquivo");
+        let arquivoUrl = null;
+        if (id) {
+            const notaAtual = state.invoices.find(n => n.id === id);
+            arquivoUrl = notaAtual ? notaAtual.arquivoUrl : null;
+        }
+
+        if (fileInput && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `notas/${fileName}`;
+            
+            const btnSalvar = document.querySelector("#form-nota button[type='submit']");
+            const originalText = btnSalvar.innerHTML;
+            btnSalvar.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Anexando Arquivo...`;
+            btnSalvar.disabled = true;
+
+            const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                .from('arquivos-nevixa')
+                .upload(filePath, file);
+                
+            btnSalvar.innerHTML = originalText;
+            btnSalvar.disabled = false;
+
+            if (uploadError) {
+                alert("Erro ao fazer upload do arquivo (verifique se o bucket 'arquivos-nevixa' é público/permitido): " + uploadError.message);
+                return;
+            }
+
+            const { data: urlData } = supabaseClient.storage
+                .from('arquivos-nevixa')
+                .getPublicUrl(filePath);
+                
+            arquivoUrl = urlData.publicUrl;
+        }
+        
         if (id) {
             const index = state.invoices.findIndex(n => n.id === id);
             if (index !== -1) {
                 state.invoices[index] = { 
                     ...state.invoices[index], 
                     numeroNota, dataEmissao, equipamentoId, cliente, descricao, valorTotal, status, calcularImpostos,
-                    isMisto, valorPecas, valorServicos
+                    isMisto, valorPecas, valorServicos, arquivoUrl
                 };
             }
             addAuditLog("Nota Fiscal Editada", `Atualização dos dados da nota ${numeroNota} - Valor: ${formatCurrency(valorTotal)}`);
         } else {
             const novaNota = { 
                 id: notaId, numeroNota, dataEmissao, equipamentoId, cliente, descricao, valorTotal, status, calcularImpostos,
-                isMisto, valorPecas, valorServicos
+                isMisto, valorPecas, valorServicos, arquivoUrl
             };
             state.invoices.push(novaNota);
             addAuditLog("Nota Fiscal Cadastrada", `Emissão de nota ${numeroNota} para ${cliente} - Valor: ${formatCurrency(valorTotal)}`);
