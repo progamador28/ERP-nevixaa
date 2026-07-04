@@ -2125,13 +2125,7 @@ body.light-mode .desgaste-tubo-box {
         opacity: 0.05 !important;
     }
 
-    body.print-mode-rat-novo {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-        background: var(--color-bg-app) !important;
-        color: var(--color-text-main) !important;
-    }
-
+    /* 3. SE ESTIVERMOS NO MODO DE IMPRESSÃO DO RAT NOVO (TÉCNICO) */
     body.print-mode-rat-novo #modal-detalhes-rat {
         display: block !important;
         position: absolute !important;
@@ -2139,6 +2133,8 @@ body.light-mode .desgaste-tubo-box {
         top: 0 !important;
         width: 100% !important;
         height: auto !important;
+        background: white !important;
+        color: black !important;
         z-index: 99999 !important;
         opacity: 1 !important;
         overflow: visible !important;
@@ -2148,12 +2144,37 @@ body.light-mode .desgaste-tubo-box {
     body.print-mode-rat-novo #modal-detalhes-rat .modal-content {
         border: none !important;
         box-shadow: none !important;
-        /* Keep inline background #0f172a */
+        background: none !important;
         max-width: 100% !important;
         width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
         backdrop-filter: none !important;
+    }
+
+    body.print-mode-rat-novo #modal-detalhes-rat * {
+        color: black !important;
+        border-color: #64748b !important;
+    }
+    
+    body.print-mode-rat-novo #modal-detalhes-rat div,
+    body.print-mode-rat-novo #modal-detalhes-rat section,
+    body.print-mode-rat-novo #modal-detalhes-rat p,
+    body.print-mode-rat-novo #modal-detalhes-rat h2,
+    body.print-mode-rat-novo #modal-detalhes-rat h3,
+    body.print-mode-rat-novo #modal-detalhes-rat h4 {
+        background: transparent !important;
+    }
+
+    body.print-mode-rat-novo #modal-detalhes-rat .badge {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color: white !important;
+    }
+    
+    body.print-mode-rat-novo .certificado-cabecalho img,
+    body.print-mode-rat-novo .certificado-container > img {
+        filter: brightness(0) !important;
     }
 
     body.print-mode-rat-novo #rat-print-area {
