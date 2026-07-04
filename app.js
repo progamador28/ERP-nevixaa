@@ -578,6 +578,17 @@ window.mascaraMoeda = function(campo) {
     campo.value = valor;
 };
 
+window.parseCurrency = function(val) {
+    if (typeof val === 'number') return val;
+    if (!val) return 0;
+    // Se for string no formato pt-BR (ex: "5.700,00" ou "5,70")
+    let str = val.toString();
+    if (str.includes(',')) {
+        str = str.replace(/\./g, '').replace(',', '.');
+    }
+    return parseFloat(str) || 0;
+};
+
 window.parseCurrencyBR = function(val) {
     if (!val) return 0;
     val = val.toString().replace(/\./g, '').replace(',', '.');
@@ -1813,7 +1824,7 @@ function renderChamados() {
             } else {
                 if (tk.status === "Pendente") {
                     actionBtn = `
-                        <button class="btn btn-success btn-sm" onclick="iniciarAtendimentoChamado('${tk.id}')" title="Direcionar e Iniciar Atendimento Técnico">
+                        <button class="btn btn-primary btn-sm" onclick="iniciarAtendimentoChamado('${tk.id}')" title="Direcionar e Iniciar Atendimento Técnico">
                             <i class="fa-solid fa-play"></i> Direcionar OS
                         </button>
                     `;
@@ -2404,7 +2415,7 @@ if (formTimesheet) {
         
         const tecnico = document.getElementById("ts-tecnico").value.trim();
         const horas = parseFloat(document.getElementById("ts-horas").value);
-        const valorHora = parseFloat(document.getElementById("ts-valor").value);
+        const valorHora = parseCurrency(document.getElementById("ts-valor").value);
         const custoTotal = horas * valorHora;
         
         const novoTS = {
@@ -3057,7 +3068,7 @@ if (formTransacao) {
         const tipo = document.getElementById("trans-tipo").value;
         const data = document.getElementById("trans-data").value;
         const descricao = document.getElementById("trans-descricao").value.trim();
-        const valorInput = parseFloat(document.getElementById("trans-valor").value);
+        const valorInput = parseCurrency(document.getElementById("trans-valor").value);
         const categoria = document.getElementById("trans-categoria").value;
         const status = document.getElementById("trans-status").value;
         const notaFiscalId = document.getElementById("trans-nota").value;
@@ -3944,7 +3955,7 @@ function setupEventListeners() {
         const eqId = document.getElementById("cot-form-equipamento").value;
         const solicitante = document.getElementById("cot-form-solicitante").value.trim();
         const fornecedor = document.getElementById("cot-form-fornecedor").value.trim();
-        const valor = parseFloat(document.getElementById("cot-form-valor").value);
+        const valor = parseCurrency(document.getElementById("cot-form-valor").value);
         
         const eq = state.equipments.find(item => item.id === eqId);
         const equipamentoNome = eq ? eq.nome : "Equipamento Desconhecido";
