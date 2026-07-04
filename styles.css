@@ -2154,12 +2154,38 @@ body.light-mode .desgaste-tubo-box {
 
     body.print-mode-rat-novo #modal-detalhes-rat * {
         color: black !important;
-        background: transparent !important;
         border-color: #64748b !important;
+    }
+    
+    body.print-mode-rat-novo #modal-detalhes-rat div,
+    body.print-mode-rat-novo #modal-detalhes-rat section,
+    body.print-mode-rat-novo #modal-detalhes-rat p,
+    body.print-mode-rat-novo #modal-detalhes-rat h2,
+    body.print-mode-rat-novo #modal-detalhes-rat h3,
+    body.print-mode-rat-novo #modal-detalhes-rat h4 {
+        background: transparent !important;
+    }
+
+    body.print-mode-rat-novo #modal-detalhes-rat .badge {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color: white !important;
+    }
+    
+    body.print-mode-rat-novo .certificado-cabecalho img,
+    body.print-mode-rat-novo .certificado-container > img {
+        filter: brightness(0) !important;
     }
 
     body.print-mode-rat-novo #rat-print-area {
         padding: 20px !important;
+        overflow: visible !important;
+        max-height: none !important;
+    }
+    
+    body.print-mode-rat-novo .certificado-cabecalho {
+        display: flex !important;
+        page-break-inside: avoid;
     }
 }
 
