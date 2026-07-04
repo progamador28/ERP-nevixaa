@@ -1755,9 +1755,11 @@ function renderChamados() {
     const hoje = new Date();
     
     const isCliente = state.currentUser && state.currentUser.papel === "cliente";
+    const isTecnico = state.currentUser && state.currentUser.papel === "tecnico";
     
     state.tickets.forEach(tk => {
         if (isCliente && tk.hospital !== state.currentUser.nome) return;
+        if (isTecnico && tk.responsavelNome !== state.currentUser.nome) return;
         
         let statusClass = "badge-info";
         if (tk.status === "Pendente") statusClass = "badge-warning";
@@ -1860,23 +1862,42 @@ function renderChamados() {
     });
 }
 
-window.iniciarAtendimentoChamado = function(id) {
+window.iniciarAtendimentoChamado = async function(id) {
     const tk = state.tickets.find(t => t.id === id);
     if (!tk) return;
     
-    // Admin seleciona/digita o nome do técnico a ser direcionado
-    uiPrompt(`Direcionar Chamado/OS ${tk.numero}\nDigite o nome do técnico responsável:`, "Técnico de Campo", (tecnico) => {
-        if (tecnico === null || tecnico === "") return; // Cancelou o direcionamento ou deixou vazio
+    try {
+        const { data: tecnicos, error } = await supabase
+            .from('perfis')
+            .select('nome')
+            .eq('papel', 'tecnico')
+            .eq('status', 'ativo');
+            
+        if (error) throw error;
         
-        tk.status = "Em Atendimento";
-        tk.responsavelNome = tecnico.trim() || "Técnico Não Identificado";
-        tk.dataInicioAtendimento = new Date().toISOString();
+        if (!tecnicos || tecnicos.length === 0) {
+            uiAlert("Nenhum técnico ativo encontrado na Gestão de Acessos.", "warning");
+            return;
+        }
         
-        addAuditLog("OS Direcionada/Iniciada", `OS ${tk.numero} direcionada para o técnico ${tk.responsavelNome}`);
-        saveStateToLocalStorage();
-        renderApp();
-        uiAlert(`Atendimento da OS ${tk.numero} direcionado para ${tk.responsavelNome} com sucesso!`);
-    });
+        const options = tecnicos.map(t => t.nome);
+        
+        uiSelectPrompt(`Direcionar Chamado/OS ${tk.numero}\nSelecione o técnico responsável:`, options, (tecnico) => {
+            if (!tecnico) return; // Cancelou
+            
+            tk.status = "Em Atendimento";
+            tk.responsavelNome = tecnico;
+            tk.dataInicioAtendimento = new Date().toISOString();
+            
+            addAuditLog("OS Direcionada/Iniciada", `OS ${tk.numero} direcionada para o técnico ${tk.responsavelNome}`);
+            saveStateToLocalStorage();
+            renderApp();
+            uiAlert(`Atendimento da OS ${tk.numero} direcionado para ${tk.responsavelNome} com sucesso!`);
+        });
+    } catch(err) {
+        console.error("Erro ao buscar técnicos:", err);
+        uiAlert("Ocorreu um erro ao buscar os técnicos disponíveis.", "error");
+    }
 };
 
 window.abrirExecucaoChamado = function(id) {
@@ -3387,6 +3408,42 @@ safeAddEventListener("btn-prompt-custom-ok", "click", () => {
     if (promptCallback) {
         promptCallback(val);
         promptCallback = null;
+    }
+});
+
+let selectPromptCallback = null;
+window.uiSelectPrompt = function(message, options, callback) {
+    const msgEl = document.getElementById("select-custom-message");
+    const selectEl = document.getElementById("select-custom-input");
+    if (msgEl) msgEl.innerText = message;
+    
+    if (selectEl) {
+        selectEl.innerHTML = "";
+        options.forEach(opt => {
+            const el = document.createElement("option");
+            el.value = opt;
+            el.innerText = opt;
+            el.style.background = "var(--bg-card)";
+            selectEl.appendChild(el);
+        });
+    }
+    
+    selectPromptCallback = callback;
+    openModal("modal-select-custom");
+};
+
+safeAddEventListener("btn-select-custom-cancel", "click", () => {
+    closeModal("modal-select-custom");
+    selectPromptCallback = null;
+});
+
+safeAddEventListener("btn-select-custom-ok", "click", () => {
+    const selectEl = document.getElementById("select-custom-input");
+    const val = selectEl ? selectEl.value : "";
+    closeModal("modal-select-custom");
+    if (selectPromptCallback) {
+        selectPromptCallback(val);
+        selectPromptCallback = null;
     }
 });
 
