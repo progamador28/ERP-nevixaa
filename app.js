@@ -1922,6 +1922,9 @@ window.abrirExecucaoChamado = function(id) {
     
     // Inicializar o canvas de desenho de assinatura
     setTimeout(() => {
+        clearSignatureCanvas("rat-signature-canvas");
+        clearSignatureCanvas("rat-tecnico-signature-canvas");
+        // Configuramos os listeners (se já configurado antes, eles sobrepõem, mas idealmente seria só na primeira vez)
         setupRatSignatureCanvas();
     }, 200);
     
@@ -4328,65 +4331,70 @@ let ratCanvas = null;
 let ratCtx = null;
 
 function setupRatSignatureCanvas() {
-    ratCanvas = document.getElementById("rat-signature-canvas");
-    if (!ratCanvas) return;
+    setupCanvasEvents("rat-signature-canvas");
+    setupCanvasEvents("rat-tecnico-signature-canvas");
+}
+
+function setupCanvasEvents(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
     
-    ratCtx = ratCanvas.getContext("2d");
-    if (!ratCtx) return;
-    
-    // Configuração do pincel
-    ratCtx.strokeStyle = "#2563eb"; // Azul de destaque
-    ratCtx.lineWidth = 3;
-    ratCtx.lineCap = "round";
-    ratCtx.lineJoin = "round";
+    let drawing = false;
+    ctx.strokeStyle = "#2563eb"; // Azul de destaque
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
     
     // Mouse events
-    ratCanvas.addEventListener("mousedown", (e) => {
-        ratDrawing = true;
-        const rect = ratCanvas.getBoundingClientRect();
-        ratCtx.beginPath();
-        ratCtx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    canvas.addEventListener("mousedown", (e) => {
+        drawing = true;
+        const rect = canvas.getBoundingClientRect();
+        ctx.beginPath();
+        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
     });
     
-    ratCanvas.addEventListener("mousemove", (e) => {
-        if (!ratDrawing) return;
-        const rect = ratCanvas.getBoundingClientRect();
-        ratCtx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-        ratCtx.stroke();
+    canvas.addEventListener("mousemove", (e) => {
+        if (!drawing) return;
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        ctx.stroke();
     });
     
     window.addEventListener("mouseup", () => {
-        ratDrawing = false;
+        drawing = false;
     });
     
     // Touch events para celular/tablet
-    ratCanvas.addEventListener("touchstart", (e) => {
+    canvas.addEventListener("touchstart", (e) => {
         e.preventDefault();
-        ratDrawing = true;
-        const rect = ratCanvas.getBoundingClientRect();
+        drawing = true;
+        const rect = canvas.getBoundingClientRect();
         const touch = e.touches[0];
-        ratCtx.beginPath();
-        ratCtx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+        ctx.beginPath();
+        ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
     }, { passive: false });
     
-    ratCanvas.addEventListener("touchmove", (e) => {
+    canvas.addEventListener("touchmove", (e) => {
         e.preventDefault();
-        if (!ratDrawing) return;
-        const rect = ratCanvas.getBoundingClientRect();
+        if (!drawing) return;
+        const rect = canvas.getBoundingClientRect();
         const touch = e.touches[0];
-        ratCtx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-        ratCtx.stroke();
+        ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+        ctx.stroke();
     }, { passive: false });
     
-    ratCanvas.addEventListener("touchend", () => {
-        ratDrawing = false;
+    canvas.addEventListener("touchend", () => {
+        drawing = false;
     });
     
     // Botão Limpar
-    const clearBtn = document.getElementById("btn-clear-rat-signature");
+    const clearBtnId = canvasId === "rat-signature-canvas" ? "btn-clear-rat-signature" : "btn-clear-rat-tecnico-signature";
+    const clearBtn = document.getElementById(clearBtnId);
     if (clearBtn) {
         clearBtn.onclick = function() {
-            clearSignatureCanvas("rat-signature-canvas");
+            clearSignatureCanvas(canvasId);
         };
     }
 }
@@ -4466,9 +4474,13 @@ document.addEventListener("submit", (e) => {
         const respNome = document.getElementById("rat-exec-resp-nome").value.trim();
         const respCargo = document.getElementById("rat-exec-resp-cargo").value.trim();
         
-        // Obter assinatura do canvas
+        // Obter assinatura do canvas (Cliente)
         const canvas = document.getElementById("rat-signature-canvas");
         const assinaturaData = canvas ? canvas.toDataURL() : "";
+        
+        // Obter assinatura do canvas (Técnico)
+        const tecnicoCanvas = document.getElementById("rat-tecnico-signature-canvas");
+        const assinaturaTecnicoData = tecnicoCanvas ? tecnicoCanvas.toDataURL() : "";
         
         // Obter fotos
         const preview = document.getElementById("rat-photos-preview");
@@ -4478,9 +4490,10 @@ document.addEventListener("submit", (e) => {
         tk.status = "Encerrado";
         tk.dataFimAtendimento = new Date().toISOString();
         tk.descricaoServico = servico;
-        tk.responsavelNome = respNome;
-        tk.responsavelCargo = respCargo;
-        tk.responsavelAssinatura = assinaturaData;
+        tk.clienteNome = respNome;
+        tk.clienteCargo = respCargo;
+        tk.clienteAssinatura = assinaturaData;
+        tk.tecnicoAssinatura = assinaturaTecnicoData;
         tk.fotos = fotosJson;
         
         // Integrar: Encontrar o equipamento associado (por nome) e restaurar seu status técnico para Operacional
@@ -4516,16 +4529,26 @@ window.visualizarLaudoRAT = function(id) {
     document.getElementById("rat-view-horario-duracao").innerText = calcularDuracaoAtendimento(tk.dataInicioAtendimento || tk.dataAbertura, tk.dataFimAtendimento || new Date().toISOString());
     
     document.getElementById("rat-view-servico").innerText = tk.descricaoServico || "Manutenção padrão realizada sem observações extras.";
-    document.getElementById("rat-view-resp-nome").innerText = tk.responsavelNome || "Não informado";
-    document.getElementById("rat-view-resp-cargo").innerText = tk.responsavelCargo || "Não informado";
+    document.getElementById("rat-view-resp-nome").innerText = tk.clienteNome || tk.responsavelNome || "Não informado";
+    document.getElementById("rat-view-resp-cargo").innerText = tk.clienteCargo || tk.responsavelCargo || "Não informado";
+    document.getElementById("rat-view-tecnico-assinatura-nome").innerText = tk.responsavelNome || "Não informado";
     
-    // Assinatura
+    // Assinatura do Cliente
     const sigImg = document.getElementById("rat-view-signature-img");
-    if (tk.responsavelAssinatura) {
-        sigImg.src = tk.responsavelAssinatura;
+    if (tk.clienteAssinatura || tk.responsavelAssinatura) {
+        sigImg.src = tk.clienteAssinatura || tk.responsavelAssinatura;
         sigImg.style.display = "block";
     } else {
         sigImg.style.display = "none";
+    }
+    
+    // Assinatura do Técnico
+    const sigTecnicoImg = document.getElementById("rat-view-tecnico-signature-img");
+    if (tk.tecnicoAssinatura) {
+        sigTecnicoImg.src = tk.tecnicoAssinatura;
+        sigTecnicoImg.style.display = "block";
+    } else {
+        sigTecnicoImg.style.display = "none";
     }
     
     // Fotos
