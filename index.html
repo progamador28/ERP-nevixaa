@@ -98,6 +98,7 @@
                         <select id="register-papel" required style="width: 100%; padding: 12px 15px 12px 40px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; appearance: none;">
                             <option value="tecnico" style="background: var(--bg-card); color: white;">Técnico de Campo</option>
                             <option value="financeiro" style="background: var(--bg-card); color: white;">Financeiro / Administrativo</option>
+                            <option value="cliente" style="background: var(--bg-card); color: white;">Cliente (Hospital / Clínica)</option>
                         </select>
                     </div>
                 </div>
@@ -221,6 +222,51 @@
                 
                 <!-- 1. ABA DASHBOARD -->
                 <section id="tab-dashboard" class="tab-pane active">
+                    <!-- ================= DASHBOARD DO CLIENTE ================= -->
+                    <div id="dashboard-cliente" class="d-none">
+                        <div style="margin-bottom: 25px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <h2 style="color: white; margin: 0; font-size: 1.8rem; font-weight: 600;">Área do Cliente</h2>
+                            <p class="text-muted" style="margin-top: 5px; font-size: 0.95rem;">Acompanhe o status dos seus equipamentos e notas fiscais.</p>
+                        </div>
+                        <div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+                            <!-- Card Notas Pendentes -->
+                            <div class="metric-card card-saidas">
+                                <div class="metric-header">
+                                    <span class="metric-title">Faturas Pendentes</span>
+                                    <div class="metric-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                                </div>
+                                <div class="metric-value" id="dash-cliente-faturas-count">0</div>
+                                <div class="metric-footer">
+                                    <span class="trend trend-neutral" id="dash-cliente-faturas-total">Total: R$ 0,00 a pagar</span>
+                                </div>
+                            </div>
+                            <!-- Card Equipamentos -->
+                            <div class="metric-card card-lucro">
+                                <div class="metric-header">
+                                    <span class="metric-title">Equipamentos Cadastrados</span>
+                                    <div class="metric-icon"><i class="fa-solid fa-microscope"></i></div>
+                                </div>
+                                <div class="metric-value" id="dash-cliente-equip-count">0</div>
+                                <div class="metric-footer">
+                                    <span class="trend trend-up">No seu parque instalado</span>
+                                </div>
+                            </div>
+                            <!-- Card Última Calibração -->
+                            <div class="metric-card card-entradas">
+                                <div class="metric-header">
+                                    <span class="metric-title">Status Preventivo</span>
+                                    <div class="metric-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                                </div>
+                                <div class="metric-value" style="font-size: 1.5rem;" id="dash-cliente-status-prev">Regular</div>
+                                <div class="metric-footer">
+                                    <span class="trend trend-up">Acompanhamento contínuo</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ================= DASHBOARD CORPORATIVO ================= -->
+                    <div id="dashboard-corporativo">
                     <!-- Cards Resumo -->
                     <div class="metrics-grid">
                         <!-- Card Entradas -->
@@ -339,8 +385,10 @@
                                     </table>
                                 </div>
                             </div>
+                            </div>
                         </div>
                     </div>
+                    </div> <!-- FECHAMENTO DASHBOARD CORPORATIVO -->
                 </section>
 
                 <!-- 2. ABA NOTAS FISCAIS (CENTRO DE CUSTOS) -->

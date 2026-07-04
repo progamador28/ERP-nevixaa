@@ -1525,6 +1525,25 @@ body.role-financeiro .col-hide-financeiro {
     display: none !important;
 }
 
+/* 3. Restrições do Perfil CLIENTE (role-cliente) */
+body.role-cliente #btn-backup,
+body.role-cliente #btn-config-tributaria,
+body.role-cliente #tax-regime-info-card,
+body.role-cliente #btn-quick-transaction,
+body.role-cliente #btn-add-nota,
+body.role-cliente #btn-add-equipamento,
+body.role-cliente #btn-add-calibrador,
+body.role-cliente #btn-add-cotacao,
+body.role-cliente #btn-add-chamado,
+body.role-cliente .col-hide-tecnico,
+body.role-cliente .col-hide-cliente,
+body.role-cliente #btn-view-logs {
+    display: none !important;
+}
+body.role-cliente #table-notas-body tr td:last-child button:not(:first-child) {
+    display: none !important;
+}
+
 /* ==========================================================================
    RESPONSIVENESS (MOBILE FRIENDLY)
    ========================================================================== */

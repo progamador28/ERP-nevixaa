@@ -68,8 +68,8 @@ async function realizarLoginReal(email, senha) {
             id: perfil.id,
             email: perfil.email,
             nome: perfil.nome || "Colaborador",
-            cargo: perfil.papel === 'admin' ? 'Diretor Geral' : (perfil.papel === 'financeiro' ? 'Gerente Financeira' : 'Engenheiro de Campo'),
-            papel: perfil.papel // 'admin', 'financeiro' ou 'tecnico'
+            cargo: perfil.papel === 'admin' ? 'Diretor Geral' : (perfil.papel === 'financeiro' ? 'Gerente Financeira' : (perfil.papel === 'cliente' ? 'Cliente Externo' : 'Engenheiro de Campo')),
+            papel: perfil.papel // 'admin', 'financeiro', 'tecnico' ou 'cliente'
         };
 
         sessionStorage.setItem("nevixa_current_user", JSON.stringify(usuarioSessao));
@@ -506,13 +506,48 @@ function applyUserProfile(user) {
     avatarIcon.className = "fa-solid";
     if (user.papel === "admin") avatarIcon.classList.add("fa-user-gear");
     else if (user.papel === "financeiro") avatarIcon.classList.add("fa-user-tie");
+    else if (user.papel === "cliente") avatarIcon.classList.add("fa-hospital");
     else avatarIcon.classList.add("fa-user-helmet-safety");
     
-    // Controle Aba Acessos
+    // Controle de Menus (Desktop)
     const menuAcessos = document.getElementById("menu-item-acessos");
-    if (menuAcessos) {
-        if (user.papel === "admin") menuAcessos.classList.remove("d-none");
-        else menuAcessos.classList.add("d-none");
+    const menuFluxo = document.getElementById("menu-item-fluxo");
+    const menuOp = document.getElementById("menu-item-operacoes");
+    const menuRelat = document.getElementById("menu-item-relatorios");
+
+    if (user.papel === "admin") {
+        if (menuAcessos) menuAcessos.classList.remove("d-none");
+        if (menuFluxo) menuFluxo.classList.remove("d-none");
+        if (menuOp) menuOp.classList.remove("d-none");
+        if (menuRelat) menuRelat.classList.remove("d-none");
+    } else if (user.papel === "financeiro") {
+        if (menuAcessos) menuAcessos.classList.add("d-none");
+        if (menuFluxo) menuFluxo.classList.remove("d-none");
+        if (menuOp) menuOp.classList.remove("d-none");
+        if (menuRelat) menuRelat.classList.remove("d-none");
+    } else if (user.papel === "tecnico") {
+        if (menuAcessos) menuAcessos.classList.add("d-none");
+        if (menuFluxo) menuFluxo.classList.add("d-none");
+        if (menuOp) menuOp.classList.remove("d-none");
+        if (menuRelat) menuRelat.classList.add("d-none");
+    } else if (user.papel === "cliente") {
+        if (menuAcessos) menuAcessos.classList.add("d-none");
+        if (menuFluxo) menuFluxo.classList.add("d-none");
+        if (menuOp) menuOp.classList.remove("d-none"); // Cliente precisa ver seus equipamentos e chamados
+        if (menuRelat) menuRelat.classList.add("d-none");
+    }
+
+    // Dashboard toggle
+    const dashCliente = document.getElementById("dashboard-cliente");
+    const dashCorp = document.getElementById("dashboard-corporativo");
+    if (dashCliente && dashCorp) {
+        if (user.papel === "cliente") {
+            dashCliente.classList.remove("d-none");
+            dashCorp.classList.add("d-none");
+        } else {
+            dashCliente.classList.add("d-none");
+            dashCorp.classList.remove("d-none");
+        }
     }
 }
 
@@ -613,16 +648,25 @@ function updateMobileMenuACL() {
         if (mobDashboard) mobDashboard.style.display = "none";
         if (mobFluxo) mobFluxo.style.display = "none";
         if (mobRelatorios) mobRelatorios.style.display = "none";
+    } else if (state.currentUser.papel === "cliente") {
+        if (mobDashboard) mobDashboard.style.display = "flex";
+        if (mobFluxo) mobFluxo.style.display = "none";
+        if (mobRelatorios) mobRelatorios.style.display = "none";
+        const mobOp = document.querySelector(".sidebar-nav-mobile .mobile-nav-link[data-tab='operacoes']");
+        if(mobOp) mobOp.style.display = "flex";
     } else {
         if (mobDashboard) mobDashboard.style.display = "flex";
         if (mobFluxo) mobFluxo.style.display = "flex";
         if (mobRelatorios) mobRelatorios.style.display = "flex";
+        const mobOp = document.querySelector(".sidebar-nav-mobile .mobile-nav-link[data-tab='operacoes']");
+        if(mobOp) mobOp.style.display = "flex";
     }
 }
 
 function switchTab(tabName) {
     if (!state.currentUser) return;
     if (state.currentUser.papel === "tecnico" && tabName !== "notas" && tabName !== "operacoes") return;
+    if (state.currentUser.papel === "cliente" && tabName !== "dashboard" && tabName !== "notas" && tabName !== "operacoes") return;
     
     state.activeTab = tabName;
     
@@ -709,7 +753,42 @@ function renderTab(tabName) {
 /* --------------------------------------------------------------------------
    A. ABA DASHBOARD
    -------------------------------------------------------------------------- */
+function renderDashboardCliente() {
+    const nomeCliente = state.currentUser ? state.currentUser.nome : "";
+    const clientInvoices = state.invoices.filter(inv => inv.cliente === nomeCliente && inv.status !== "Cancelado");
+    const clientEquips = state.equipments.filter(eq => eq.cliente === nomeCliente);
+    
+    const faturasPendentes = clientInvoices.filter(inv => inv.status === "Aberto" || inv.status === "Atrasado");
+    const totalPendente = faturasPendentes.reduce((acc, curr) => acc + curr.valorTotal, 0);
+    
+    document.getElementById("dash-cliente-faturas-count").innerText = faturasPendentes.length;
+    document.getElementById("dash-cliente-faturas-total").innerText = `Total: ${formatCurrency(totalPendente)} a pagar`;
+    
+    document.getElementById("dash-cliente-equip-count").innerText = clientEquips.length;
+    
+    const hoje = new Date();
+    const temAtrasado = clientEquips.some(eq => {
+        if(!eq.ultimaPreventiva) return false;
+        let diff = (hoje - new Date(eq.ultimaPreventiva)) / (1000 * 60 * 60 * 24);
+        return diff > 365;
+    });
+    
+    const elStatus = document.getElementById("dash-cliente-status-prev");
+    if (temAtrasado) {
+        elStatus.innerText = "Atenção (Vencidos)";
+        elStatus.style.color = "var(--color-danger)";
+    } else {
+        elStatus.innerText = "Regular";
+        elStatus.style.color = "var(--color-success)";
+    }
+}
+
 function renderDashboard() {
+    if (state.currentUser && state.currentUser.papel === "cliente") {
+        renderDashboardCliente();
+        return;
+    }
+
     const dataAtual = new Date();
     const anoAtual = dataAtual.getFullYear();
     const mesAtual = dataAtual.getMonth();
@@ -986,7 +1065,12 @@ function renderNotasTable() {
     const query = state.filters.nota.search.toLowerCase();
     const filterStatus = state.filters.nota.status;
     
+    const isCliente = state.currentUser && state.currentUser.papel === "cliente";
+    const nomeCliente = state.currentUser ? state.currentUser.nome : "";
+
     const filteredInvoices = state.invoices.filter(inv => {
+        if (isCliente && inv.cliente !== nomeCliente) return false;
+
         const matchesSearch = inv.numeroNota.toLowerCase().includes(query) || 
                               inv.cliente.toLowerCase().includes(query) || 
                               (inv.descricao && inv.descricao.toLowerCase().includes(query));
@@ -1033,6 +1117,29 @@ function renderNotasTable() {
                 </td>
             `;
 
+    const columnsLucroMargem = state.currentUser && (state.currentUser.papel === "tecnico" || state.currentUser.papel === "cliente")
+            ? `<td class="col-hide-tecnico">-</td><td class="col-hide-tecnico">-</td>`
+            : `<td class="font-numeric col-hide-tecnico ${lucroLiquido >= 0 ? 'text-success' : 'text-danger'}">${formatCurrency(lucroLiquido)}</td>
+               <td class="font-numeric col-hide-tecnico ${percLucro >= 30 ? 'text-success' : 'text-danger'}">${percLucro.toFixed(1)}%</td>`;
+        
+        let acoesHtml = `
+            <button class="btn btn-outline btn-sm" onclick="gerarPDFNota('${inv.id}')" title="Baixar Espelho da Nota">
+                <i class="fa-solid fa-file-pdf"></i>
+            </button>`;
+
+        if (!isCliente) {
+            acoesHtml = `
+                <button class="btn btn-outline btn-sm" onclick="openInvoiceDetails('${inv.id}')" title="Ver Gastos / Centro de Custo">
+                    <i class="fa-solid fa-list-check"></i>
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="editInvoice('${inv.id}')" title="Editar Nota">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <button class="btn btn-outline btn-sm text-danger" onclick="deleteInvoice('${inv.id}')" title="Excluir Nota">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>`;
+        }
+
         row.innerHTML = `
             <td><strong>${inv.numeroNota}</strong></td>
             <td>
@@ -1050,15 +1157,7 @@ function renderNotasTable() {
             <td><span class="badge ${statusClass}">${inv.status}</span></td>
             <td>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-outline btn-sm" onclick="openInvoiceDetails('${inv.id}')" title="Ver Gastos / Centro de Custo">
-                        <i class="fa-solid fa-list-check"></i>
-                    </button>
-                    <button class="btn btn-outline btn-sm" onclick="editInvoice('${inv.id}')" title="Editar Nota">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                    </button>
-                    <button class="btn btn-outline btn-sm text-danger" onclick="deleteInvoice('${inv.id}')" title="Excluir Nota">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
+                    ${acoesHtml}
                 </div>
             </td>
         `;
@@ -1156,8 +1255,12 @@ function renderEquipamentos() {
     updateEquipamentosClientesFilter();
     
     const hoje = new Date();
+    const isCliente = state.currentUser && state.currentUser.papel === "cliente";
+    const nomeCliente = state.currentUser ? state.currentUser.nome : "";
     
     const filteredEquips = state.equipments.filter(eq => {
+        if (isCliente && eq.cliente !== nomeCliente) return false;
+
         const matchesSearch = eq.tag.toLowerCase().includes(query) || 
                               eq.nome.toLowerCase().includes(query) || 
                               eq.serial.toLowerCase().includes(query);
@@ -1228,12 +1331,14 @@ function renderEquipamentos() {
                     <button class="btn btn-outline btn-sm" onclick="abrirProntuarioEquipamento('${eq.id}')" title="Ver Prontuário Completo">
                         <i class="fa-solid fa-file-medical"></i> Laudos
                     </button>
+                    ${isCliente ? '' : `
                     <button class="btn btn-outline btn-sm" onclick="editEquipamento('${eq.id}')" title="Editar Equipamento">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
                     <button class="btn btn-outline btn-sm text-danger" onclick="deleteEquipamento('${eq.id}')" title="Excluir Equipamento">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
+                    `}
                 </div>
             </td>
         `;
