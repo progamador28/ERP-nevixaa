@@ -103,6 +103,7 @@ async function realizarCadastroReal(nome, email, senha, papelEscolhido) {
         });
 
         if (error) {
+            exibirCarregamentoLogin(false);
             uiAlert("Erro ao criar conta: " + error.message);
             return;
         }
@@ -134,16 +135,23 @@ async function realizarCadastroReal(nome, email, senha, papelEscolhido) {
 
     } catch (err) {
         console.error("Erro no processo de cadastro:", err);
+        exibirCarregamentoLogin(false);
         uiAlert("Não foi possível processar o cadastro solicitado.");
     }
 }
 
 // Função auxiliar para dar feedback visual no botão enquanto consulta a nuvem
 function exibirCarregamentoLogin(carregando) {
-    const btn = document.querySelector("#login-overlay .btn-primary");
-    if (btn) {
-        btn.disabled = carregando;
-        btn.innerHTML = carregando ? '<i class="fa-solid fa-spinner fa-spin"></i> Autenticando...' : 'Entrar no Sistema';
+    const btnLogin = document.querySelector("#form-login button[type='submit']");
+    const btnRegister = document.querySelector("#form-register button[type='submit']");
+    
+    if (btnLogin) {
+        btnLogin.disabled = carregando;
+        btnLogin.innerHTML = carregando ? '<i class="fa-solid fa-spinner fa-spin"></i> Autenticando...' : '<i class="fa-solid fa-right-to-bracket"></i> Acessar Sistema';
+    }
+    if (btnRegister) {
+        btnRegister.disabled = carregando;
+        btnRegister.innerHTML = carregando ? '<i class="fa-solid fa-spinner fa-spin"></i> Solicitando...' : '<i class="fa-solid fa-user-plus"></i> Concluir Cadastro';
     }
 }
 
