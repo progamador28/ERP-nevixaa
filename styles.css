@@ -740,6 +740,10 @@ hr.divider {
     color: var(--color-danger);
 }
 
+.text-end, .text-right {
+    text-align: right !important;
+}
+
 .val-lucro {
     color: var(--color-primary);
 }

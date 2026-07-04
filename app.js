@@ -1077,6 +1077,15 @@ function renderNotasTable() {
         const matchesStatus = filterStatus === "Todos" || inv.status === filterStatus;
         return matchesSearch && matchesStatus;
     });
+
+    const badgeRegime = document.getElementById("badge-active-tax-regime");
+    if (badgeRegime) {
+        if (state.taxConfig && state.taxConfig.regime) {
+            badgeRegime.textContent = `${state.taxConfig.regime} (${state.taxConfig.simplesAliquota}%)`;
+        } else {
+            badgeRegime.textContent = "Não Configurado";
+        }
+    }
     
     if (filteredInvoices.length === 0) {
         tableBody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-5">Nenhuma nota fiscal encontrada.</td></tr>`;
@@ -1107,10 +1116,10 @@ function renderNotasTable() {
         const row = document.createElement("tr");
         
         const columnsLucroMargem = state.currentUser && (state.currentUser.papel === "tecnico" || state.currentUser.papel === "cliente")
-            ? `<td class="col-hide-tecnico">-</td><td class="col-hide-tecnico">-</td>`
+            ? `<td class="col-hide-tecnico text-end">-</td><td class="col-hide-tecnico text-end">-</td>`
             : `
-                <td class="font-numeric col-hide-tecnico ${lucroLiquido >= 0 ? 'val-receita' : 'val-despesa'}">${formatCurrency(lucroLiquido)}</td>
-                <td class="col-hide-tecnico">
+                <td class="font-numeric col-hide-tecnico text-end ${lucroLiquido >= 0 ? 'val-receita' : 'val-despesa'}">${formatCurrency(lucroLiquido)}</td>
+                <td class="col-hide-tecnico text-end">
                     <span class="badge ${percLucro >= 35 ? 'badge-success' : percLucro >= 20 ? 'badge-info' : percLucro > 0 ? 'badge-warning' : 'badge-danger'}">
                         ${percLucro.toFixed(1)}%
                     </span>
@@ -1141,9 +1150,9 @@ function renderNotasTable() {
                 <div class="font-weight-bold">${inv.cliente}</div>
                 <div class="text-muted" style="font-size: 0.75rem">${formatDate(inv.dataEmissao)}</div>
             </td>
-            <td class="font-numeric val-receita">${formatCurrency(inv.valorTotal)}</td>
-            <td class="font-numeric val-despesa">${formatCurrency(totalCustos)}</td>
-            <td class="font-numeric">
+            <td class="font-numeric text-end val-receita">${formatCurrency(inv.valorTotal)}</td>
+            <td class="font-numeric text-end val-despesa">${formatCurrency(totalCustos)}</td>
+            <td class="font-numeric text-end">
                 <span class="${percCusto >= 80 ? 'text-danger' : percCusto >= 50 ? 'text-warning' : 'text-muted'}" style="font-size: 0.8rem">
                     ${percCusto.toFixed(1)}%
                 </span>
@@ -1214,7 +1223,7 @@ function renderFluxoTable() {
             <td class="text-muted">${formatDate(t.data)}</td>
             <td><strong>${t.descricao}</strong></td>
             <td>${tipoBadge}</td>
-            <td class="font-numeric ${t.tipo === 'Entrada' ? 'val-receita' : 'val-despesa'}">
+            <td class="font-numeric text-end ${t.tipo === 'Entrada' ? 'val-receita' : 'val-despesa'}">
                 ${t.tipo === 'Entrada' ? '+' : '-'} ${formatCurrency(t.valor)}
             </td>
             <td><span class="badge badge-neutral">${t.categoria}</span></td>
