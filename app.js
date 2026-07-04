@@ -4849,11 +4849,12 @@ window.renderAuditLogs = function() {
     state.auditLogs.forEach(log => {
         const tr = document.createElement('tr');
         const date = new Date(log.dataHora).toLocaleString('pt-BR');
-        tr.innerHTML = `n            <td></td>
-            <td></td>
-            <td></td>
-            <td><span class="badge bg-secondary"></span></td>
-        ;
+        tr.innerHTML = `
+            <td>${date}</td>
+            <td>${log.usuarioNome}</td>
+            <td>${log.acao}</td>
+            <td><span class="badge bg-secondary">${log.modulo}</span></td>
+        `;
         tbody.appendChild(tr);
     });
 };
