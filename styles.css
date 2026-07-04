@@ -2154,22 +2154,24 @@ body.light-mode .desgaste-tubo-box {
 
     body.print-mode-rat-novo #modal-detalhes-rat * {
         color: black !important;
-        border-color: #64748b !important;
-    }
-    
-    body.print-mode-rat-novo #modal-detalhes-rat div,
-    body.print-mode-rat-novo #modal-detalhes-rat section,
-    body.print-mode-rat-novo #modal-detalhes-rat p,
-    body.print-mode-rat-novo #modal-detalhes-rat h2,
-    body.print-mode-rat-novo #modal-detalhes-rat h3,
-    body.print-mode-rat-novo #modal-detalhes-rat h4 {
         background: transparent !important;
+        border-color: #64748b !important;
     }
 
     body.print-mode-rat-novo #modal-detalhes-rat .badge {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
+    }
+
+    body.print-mode-rat-novo #modal-detalhes-rat .badge-success {
+        background-color: #10b981 !important;
         color: white !important;
+    }
+
+    body.print-mode-rat-novo #modal-detalhes-rat .badge-neutral {
+        background-color: #e2e8f0 !important;
+        color: black !important;
+        border: 1px solid #cbd5e1 !important;
     }
     
     body.print-mode-rat-novo .certificado-cabecalho img,
