@@ -1489,7 +1489,7 @@ window.abrirProntuarioEquipamento = function(eqId) {
 };
 
 // CRUD Equipamentos Lógica
-window.editEquipamento = function(id) {
+window.editEquipamento = async function(id) {
     const eq = state.equipments.find(e => e.id === id);
     if (!eq) return;
     
@@ -1498,6 +1498,43 @@ window.editEquipamento = function(id) {
     document.getElementById("eq-form-tag").value = eq.tag;
     document.getElementById("eq-form-serial").value = eq.serial;
     document.getElementById("eq-form-nome").value = eq.nome;
+    
+    const clienteSelect = document.getElementById("eq-form-cliente");
+    if (clienteSelect) {
+        clienteSelect.innerHTML = '<option value="" disabled selected>Carregando clientes...</option>';
+        try {
+            const { data, error } = await supabaseClient
+                .from('perfis')
+                .select('nome')
+                .eq('papel', 'cliente')
+                .eq('status', 'ativo')
+                .order('nome');
+                
+            clienteSelect.innerHTML = '<option value="" disabled>Selecione um Cliente / Hospital</option>';
+            if (!error && data) {
+                // Ensure the current eq.cliente is in the list even if not active anymore, for safety
+                let foundCurrent = false;
+                data.forEach(c => {
+                    const opt = document.createElement("option");
+                    opt.value = c.nome;
+                    opt.innerText = c.nome;
+                    clienteSelect.appendChild(opt);
+                    if (c.nome === eq.cliente) foundCurrent = true;
+                });
+                
+                if (!foundCurrent && eq.cliente) {
+                    const opt = document.createElement("option");
+                    opt.value = eq.cliente;
+                    opt.innerText = `${eq.cliente} (Atual)`;
+                    clienteSelect.appendChild(opt);
+                }
+            }
+        } catch (err) {
+            console.error("Erro ao carregar clientes", err);
+            clienteSelect.innerHTML = '<option value="" disabled>Erro ao carregar clientes</option>';
+        }
+    }
+    
     document.getElementById("eq-form-cliente").value = eq.cliente;
     document.getElementById("eq-form-status").value = eq.status.includes("Atenção") ? "Atenção" : eq.status.includes("Parado") ? "Parado" : "Operacional";
     document.getElementById("eq-form-preventiva").value = eq.ultimaPreventiva;
@@ -1510,12 +1547,12 @@ window.deleteEquipamento = function(id) {
     const eq = state.equipments.find(e => e.id === id);
     if (!eq) return;
     
-    if (confirm(`Deseja realmente remover o equipamento ${eq.tag} (${eq.nome}) do parque instalado?`)) {
+    uiConfirm(`Deseja realmente remover o equipamento ${eq.tag} (${eq.nome}) do parque instalado?`, () => {
         state.equipments = state.equipments.filter(e => e.id !== id);
         addAuditLog("Equipamento Excluído", `Remoção do equipamento ${eq.tag} do hospital ${eq.cliente}`);
         saveStateToLocalStorage();
         renderApp();
-    }
+    });
 };
 
 function renderCalibradores() {
@@ -1593,12 +1630,12 @@ window.deleteCalibrador = function(id) {
     const cal = state.calibrators.find(c => c.id === id);
     if (!cal) return;
     
-    if (confirm(`Excluir o calibrador biométrico ${cal.nome} (${cal.serial}) da base de ferramentas?`)) {
+    uiConfirm(`Excluir o calibrador biométrico ${cal.nome} (${cal.serial}) da base de ferramentas?`, () => {
         state.calibrators = state.calibrators.filter(c => c.id !== id);
         addAuditLog("Calibrador Excluído", `Remoção do calibrador ${cal.nome}`);
         saveStateToLocalStorage();
         renderApp();
-    }
+    });
 };
 
 function renderCotacoes() {
@@ -1658,7 +1695,7 @@ window.aprovarCotacao = function(id) {
     const q = state.quotations.find(cot => cot.id === id);
     if (!q) return;
     
-    if (confirm(`Aprovar a compra da peça "${q.peca}" no valor de ${formatCurrency(q.valor)}?`)) {
+    uiConfirm(`Aprovar a compra da peça "${q.peca}" no valor de ${formatCurrency(q.valor)}?`, () => {
         q.status = "Aprovado";
         
         // Gera automaticamente um lançamento de despesa no Fluxo de Caixa (Saída)
@@ -1678,19 +1715,19 @@ window.aprovarCotacao = function(id) {
         saveStateToLocalStorage();
         renderApp();
         uiAlert(`Sucesso! A cotação foi aprovada e um débito de ${formatCurrency(q.valor)} sob a categoria Peças foi criado no Fluxo de Caixa.`);
-    }
+    });
 };
 
 window.deleteCotacao = function(id) {
     const q = state.quotations.find(cot => cot.id === id);
     if (!q) return;
     
-    if (confirm(`Excluir a requisição de cotação da peça "${q.peca}"?`)) {
+    uiConfirm(`Excluir a requisição de cotação da peça "${q.peca}"?`, () => {
         state.quotations = state.quotations.filter(cot => cot.id !== id);
         addAuditLog("Cotação Excluída", `Remoção da cotação de ${q.peca}`);
         saveStateToLocalStorage();
         renderApp();
-    }
+    });
 };
 
 function renderChamados() {
@@ -1863,12 +1900,12 @@ window.deleteChamado = function(id) {
     const tk = state.tickets.find(t => t.id === id);
     if (!tk) return;
     
-    if (confirm(`Remover chamado técnico ${tk.numero} da base?`)) {
+    uiConfirm(`Remover chamado técnico ${tk.numero} da base?`, () => {
         state.tickets = state.tickets.filter(t => t.id !== id);
         addAuditLog("Chamado Excluído", `Remoção do chamado ${tk.numero}`);
         saveStateToLocalStorage();
         renderApp();
-    }
+    });
 };
 
 /* --------------------------------------------------------------------------
@@ -2388,13 +2425,13 @@ if (formTimesheet) {
 }
 
 window.deleteTimesheet = function(tsId, invoiceId) {
-    if (confirm("Deseja realmente excluir este lançamento de horas técnicas?")) {
+    uiConfirm("Deseja realmente excluir este lançamento de horas técnicas?", () => {
         state.timesheets = state.timesheets.filter(ts => ts.id !== tsId);
         addAuditLog("Timesheet Excluído", `Horas técnicas id ${tsId} removidas da nota ${invoiceId}`);
         saveStateToLocalStorage();
         updateInvoiceDetailsModal(invoiceId);
         renderApp();
-    }
+    });
 };
 
 window.unlinkTransaction = function(transId, invoiceId) {
@@ -2985,7 +3022,7 @@ function deleteInvoice(id) {
         confirmMsg = `ATENÇÃO: A Nota Fiscal ${inv.numeroNota} possui ${despesasDiretas} despesas diretas vinculadas. Se você excluí-la, essas despesas deixarão de estar associadas a esta nota, tornando-se despesas operacionais avulsas. Deseja prosseguir?`;
     }
     
-    if (confirm(confirmMsg)) {
+    uiConfirm(confirmMsg, () => {
         addAuditLog("Nota Fiscal Excluída", `Exclusão da nota ${inv.numeroNota} de valor ${formatCurrency(inv.valorTotal)}`);
         
         state.invoices = state.invoices.filter(n => n.id !== id);
@@ -2999,7 +3036,7 @@ function deleteInvoice(id) {
         
         saveStateToLocalStorage();
         renderApp();
-    }
+    });
 }
 
 /* --------------------------------------------------------------------------
@@ -3155,7 +3192,7 @@ function deleteTransaction(id) {
     const t = state.transactions.find(trans => trans.id === id);
     if (!t) return;
     
-    if (confirm(`Deseja realmente excluir a transação "${t.descricao}" no valor de ${formatCurrency(t.valor)}?`)) {
+    uiConfirm(`Deseja realmente excluir a transação "${t.descricao}" no valor de ${formatCurrency(t.valor)}?`, () => {
         addAuditLog("Transação Excluída", `Exclusão de transação: "${t.descricao}" de valor ${formatCurrency(t.valor)}`);
         
         state.transactions = state.transactions.filter(trans => trans.id !== id);
@@ -3167,7 +3204,7 @@ function deleteTransaction(id) {
             const activeInvoiceId = modalDetalhes.getAttribute("data-active-invoice-id");
             if (activeInvoiceId) updateInvoiceDetailsModal(activeInvoiceId);
         }
-    }
+    });
 }
 
 /* --------------------------------------------------------------------------
@@ -3415,18 +3452,18 @@ window.carregarUsuarios = async function() {
     }
 }
 
-window.alterarStatusUsuario = async function(id, novoStatus) {
-    if (!confirm(`Tem certeza que deseja mudar o status deste usuário para ${novoStatus.toUpperCase()}?`)) return;
-    
-    try {
-        const { error } = await supabaseClient.from('perfis').update({ status: novoStatus }).eq('id', id);
-        if (error) throw error;
-        uiAlert("Status atualizado com sucesso!");
-        carregarUsuarios();
-    } catch (err) {
-        console.error("Erro ao alterar status:", err);
-        uiAlert("Erro ao alterar o status do usuário.");
-    }
+window.alterarStatusUsuario = function(id, novoStatus) {
+    uiConfirm(`Tem certeza que deseja mudar o status deste usuário para ${novoStatus.toUpperCase()}?`, async () => {
+        try {
+            const { error } = await supabaseClient.from('perfis').update({ status: novoStatus }).eq('id', id);
+            if (error) throw error;
+            uiAlert("Status atualizado com sucesso!");
+            carregarUsuarios();
+        } catch (err) {
+            console.error("Erro ao alterar status:", err);
+            uiAlert("Erro ao alterar o status do usuário.");
+        }
+    });
 };
 
 window.alterarPapelUsuario = async function(id, novoPapel) {
@@ -3489,11 +3526,11 @@ function setupEventListeners() {
     
     // Botão Sair da Conta (Logout)
     safeAddEventListener("btn-logout", "click", () => {
-        if (confirm("Deseja realmente sair do sistema?")) {
+        uiConfirm("Deseja realmente sair do sistema?", () => {
             sessionStorage.removeItem("nevixa_current_user");
             document.body.className = "";
             checkAuth();
-        }
+        });
     });
 
     // 2. Alternador de Abas (Sidebar Principal)
@@ -3669,7 +3706,7 @@ function setupEventListeners() {
                     const parsedData = JSON.parse(event.target.result);
                     
                     if (parsedData && Array.isArray(parsedData.invoices) && Array.isArray(parsedData.transactions)) {
-                        if (confirm("Você tem certeza de que deseja restaurar este backup? Todos os dados atuais serão substituídos.")) {
+                        uiConfirm("Você tem certeza de que deseja restaurar este backup? Todos os dados atuais serão substituídos.", () => {
                             state.invoices = parsedData.invoices;
                             state.transactions = parsedData.transactions;
                             state.equipments = parsedData.equipments || MOCK_EQUIPMENTS;
@@ -3688,7 +3725,7 @@ function setupEventListeners() {
                             closeModal("modal-backup");
                             renderApp();
                             uiAlert("Backup restaurado com sucesso!");
-                        }
+                        });
                     } else {
                         uiAlert("Estrutura do arquivo de backup inválida. Certifique-se de usar um arquivo JSON gerado pelo sistema.");
                     }
@@ -3777,10 +3814,37 @@ function setupEventListeners() {
         renderEquipamentos();
     });
     
-    safeAddEventListener("btn-add-equipamento", "click", () => {
+    safeAddEventListener("btn-add-equipamento", "click", async () => {
         document.getElementById("form-equipamento").reset();
         document.getElementById("form-equipamento-id").value = "";
         document.getElementById("modal-equipamento-title").innerText = "Cadastrar Novo Equipamento";
+        
+        const clienteSelect = document.getElementById("eq-form-cliente");
+        if (clienteSelect) {
+            clienteSelect.innerHTML = '<option value="" disabled selected>Carregando clientes...</option>';
+            try {
+                const { data, error } = await supabaseClient
+                    .from('perfis')
+                    .select('nome')
+                    .eq('papel', 'cliente')
+                    .eq('status', 'ativo')
+                    .order('nome');
+                    
+                clienteSelect.innerHTML = '<option value="" disabled selected>Selecione um Cliente / Hospital</option>';
+                if (!error && data) {
+                    data.forEach(c => {
+                        const opt = document.createElement("option");
+                        opt.value = c.nome;
+                        opt.innerText = c.nome;
+                        clienteSelect.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error("Erro ao carregar clientes", err);
+                clienteSelect.innerHTML = '<option value="" disabled selected>Erro ao carregar clientes</option>';
+            }
+        }
+        
         openModal("modal-equipamento");
     });
     
@@ -4124,13 +4188,22 @@ window.openNovoChamado = function() {
     });
     
     document.getElementById("form-chamado").reset();
-    document.getElementById("cham-form-hospital").value = "";
+    
+    const hospInput = document.getElementById("cham-form-hospital");
+    if (isCliente) {
+        hospInput.value = state.currentUser.nome;
+        hospInput.readOnly = true;
+    } else {
+        hospInput.value = "";
+        hospInput.readOnly = false;
+    }
     
     // Vincula o preenchimento automático do hospital ao selecionar o equipamento
     select.addEventListener("change", (e) => {
+        if (isCliente) return; // Se for cliente, não muda o campo
         const eqSelected = state.equipments.find(item => item.id === e.target.value);
         if (eqSelected) {
-            document.getElementById("cham-form-hospital").value = eqSelected.cliente;
+            hospInput.value = eqSelected.cliente;
         }
     });
     

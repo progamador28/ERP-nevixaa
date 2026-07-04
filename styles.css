@@ -1564,6 +1564,7 @@ body.role-cliente #btn-add-calibrador,
 body.role-cliente #btn-add-cotacao,
 body.role-cliente .col-hide-tecnico,
 body.role-cliente .col-hide-cliente,
+body.role-cliente #filter-equipamento-cliente,
 body.role-cliente #btn-view-logs {
     display: none !important;
 }
