@@ -2228,7 +2228,7 @@ window.deleteTimesheet = function(tsId, invoiceId) {
 };
 
 window.unlinkTransaction = function(transId, invoiceId) {
-    if (confirm("Tem certeza que deseja desvincular esta despesa da OS?\\n(A despesa continuará existindo no seu Fluxo de Caixa Geral, mas deixará de reduzir o lucro desta Nota Fiscal).")) {
+    uiConfirm("Tem certeza que deseja desvincular esta despesa da OS?\n(A despesa continuará existindo no seu Fluxo de Caixa Geral, mas deixará de reduzir o lucro desta Nota Fiscal).", () => {
         const trans = state.transactions.find(t => t.id === transId);
         if (trans) {
             trans.notaFiscalId = "";
@@ -2237,7 +2237,7 @@ window.unlinkTransaction = function(transId, invoiceId) {
             updateInvoiceDetailsModal(invoiceId);
             renderApp();
         }
-    }
+    });
 };
 
 // ==========================================================================
@@ -3072,6 +3072,28 @@ function openConfigTributariaModal() {
 // ==========================================================================
 // MODAL CONTROLLER (ABRIR / FECHAR)
 // ==========================================================================
+let confirmCallback = null;
+window.uiConfirm = function(message, callback) {
+    const msgEl = document.getElementById("confirm-custom-message");
+    if (msgEl) msgEl.innerText = message;
+    confirmCallback = callback;
+    openModal("modal-confirm-custom");
+};
+
+// Listeners para os botões do confirm customizado
+safeAddEventListener("btn-confirm-custom-cancel", "click", () => {
+    closeModal("modal-confirm-custom");
+    confirmCallback = null;
+});
+
+safeAddEventListener("btn-confirm-custom-ok", "click", () => {
+    closeModal("modal-confirm-custom");
+    if (confirmCallback) {
+        confirmCallback();
+        confirmCallback = null;
+    }
+});
+
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
