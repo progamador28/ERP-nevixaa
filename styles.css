@@ -2152,33 +2152,14 @@ body.light-mode .desgaste-tubo-box {
         backdrop-filter: none !important;
     }
 
-    body.print-mode-rat-novo #modal-detalhes-rat {
+    body.print-mode-rat-novo #modal-detalhes-rat * {
         color: black !important;
-    }
-
-    body.print-mode-rat-novo #modal-detalhes-rat h2,
-    body.print-mode-rat-novo #modal-detalhes-rat h3,
-    body.print-mode-rat-novo #modal-detalhes-rat h4,
-    body.print-mode-rat-novo #modal-detalhes-rat p,
-    body.print-mode-rat-novo #modal-detalhes-rat span:not(.badge),
-    body.print-mode-rat-novo #modal-detalhes-rat strong {
-        color: black !important;
-    }
-    
-    body.print-mode-rat-novo .badge {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
+        background: transparent !important;
+        border-color: #64748b !important;
     }
 
     body.print-mode-rat-novo #rat-print-area {
         padding: 20px !important;
-        overflow: visible !important;
-        max-height: none !important;
-    }
-    
-    body.print-mode-rat-novo .certificado-cabecalho {
-        display: flex !important;
-        page-break-inside: avoid;
     }
 }
 
