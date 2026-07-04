@@ -1106,21 +1106,16 @@ function renderNotasTable() {
         
         const row = document.createElement("tr");
         
-        const columnsLucroMargem = state.currentUser.papel === "tecnico" 
-            ? "" 
+        const columnsLucroMargem = state.currentUser && (state.currentUser.papel === "tecnico" || state.currentUser.papel === "cliente")
+            ? `<td class="col-hide-tecnico">-</td><td class="col-hide-tecnico">-</td>`
             : `
-                <td class="font-numeric ${lucroLiquido >= 0 ? 'val-receita' : 'val-despesa'}">${formatCurrency(lucroLiquido)}</td>
-                <td>
+                <td class="font-numeric col-hide-tecnico ${lucroLiquido >= 0 ? 'val-receita' : 'val-despesa'}">${formatCurrency(lucroLiquido)}</td>
+                <td class="col-hide-tecnico">
                     <span class="badge ${percLucro >= 35 ? 'badge-success' : percLucro >= 20 ? 'badge-info' : percLucro > 0 ? 'badge-warning' : 'badge-danger'}">
                         ${percLucro.toFixed(1)}%
                     </span>
                 </td>
             `;
-
-    const columnsLucroMargem = state.currentUser && (state.currentUser.papel === "tecnico" || state.currentUser.papel === "cliente")
-            ? `<td class="col-hide-tecnico">-</td><td class="col-hide-tecnico">-</td>`
-            : `<td class="font-numeric col-hide-tecnico ${lucroLiquido >= 0 ? 'text-success' : 'text-danger'}">${formatCurrency(lucroLiquido)}</td>
-               <td class="font-numeric col-hide-tecnico ${percLucro >= 30 ? 'text-success' : 'text-danger'}">${percLucro.toFixed(1)}%</td>`;
         
         let acoesHtml = `
             <button class="btn btn-outline btn-sm" onclick="gerarPDFNota('${inv.id}')" title="Baixar Espelho da Nota">
