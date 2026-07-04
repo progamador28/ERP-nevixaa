@@ -27,7 +27,7 @@ async function realizarLoginReal(email, senha) {
         });
 
         if (authError) {
-            alert("Erro de Autenticação: E-mail ou senha incorretos.");
+            uiAlert("Erro de Autenticação: E-mail ou senha incorretos.");
             exibirCarregamentoLogin(false);
             return;
         }
@@ -42,7 +42,7 @@ async function realizarLoginReal(email, senha) {
             .single();
 
         if (perfilError || !perfil) {
-            alert("Erro ao carregar perfil. Entre em contato com o suporte.");
+            uiAlert("Erro ao carregar perfil. Entre em contato com o suporte.");
             await supabaseClient.auth.signOut();
             exibirCarregamentoLogin(false);
             return;
@@ -50,14 +50,14 @@ async function realizarLoginReal(email, senha) {
 
         // 3. Regra de Negócio Crítica: Bloqueio de usuários Pendentes ou Bloqueados
         if (perfil.status === 'pendente') {
-            alert("Acesso Negado: O seu cadastro foi recebido com sucesso, mas está aguardando a aprovação do Administrador da NEVIXA ENGENHARIA.");
+            uiAlert("Acesso Negado: O seu cadastro foi recebido com sucesso, mas está aguardando a aprovação do Administrador da NEVIXA ENGENHARIA.");
             await supabaseClient.auth.signOut();
             exibirCarregamentoLogin(false);
             return;
         }
 
         if (perfil.status === 'bloqueado') {
-            alert("Acesso Negado: Esta conta de usuário encontra-se desativada/bloqueada no sistema.");
+            uiAlert("Acesso Negado: Esta conta de usuário encontra-se desativada/bloqueada no sistema.");
             await supabaseClient.auth.signOut();
             exibirCarregamentoLogin(false);
             return;
@@ -80,7 +80,7 @@ async function realizarLoginReal(email, senha) {
 
     } catch (err) {
         console.error("Erro inesperado no login:", err);
-        alert("Ocorreu um erro interno ao tentar realizar o login.");
+        uiAlert("Ocorreu um erro interno ao tentar realizar o login.");
     } finally {
         exibirCarregamentoLogin(false);
     }
@@ -103,7 +103,7 @@ async function realizarCadastroReal(nome, email, senha, papelEscolhido) {
         });
 
         if (error) {
-            alert("Erro ao criar conta: " + error.message);
+            uiAlert("Erro ao criar conta: " + error.message);
             return;
         }
 
@@ -123,7 +123,7 @@ async function realizarCadastroReal(nome, email, senha, papelEscolhido) {
                 console.warn("Aviso: Falha ao inserir perfil no banco.", insertError);
             }
 
-            alert("Cadastro realizado com sucesso! Aguarde até que um Administrador da NEVIXA ENGENHARIA aprove o seu acesso para poder entrar no sistema.");
+            uiAlert("Cadastro realizado com sucesso! Aguarde até que um Administrador da NEVIXA ENGENHARIA aprove o seu acesso para poder entrar no sistema.");
             
             // Fazer o signOut (deslogar) imediatamente, pois ele está pendente e não deve entrar
             await supabaseClient.auth.signOut();
@@ -134,7 +134,7 @@ async function realizarCadastroReal(nome, email, senha, papelEscolhido) {
 
     } catch (err) {
         console.error("Erro no processo de cadastro:", err);
-        alert("Não foi possível processar o cadastro solicitado.");
+        uiAlert("Não foi possível processar o cadastro solicitado.");
     }
 }
 
@@ -1630,7 +1630,7 @@ window.aprovarCotacao = function(id) {
         addAuditLog("Aprovação de Peça", `Compra aprovada: ${q.peca} - Valor: ${formatCurrency(q.valor)}`);
         saveStateToLocalStorage();
         renderApp();
-        alert(`Sucesso! A cotação foi aprovada e um débito de ${formatCurrency(q.valor)} sob a categoria Peças foi criado no Fluxo de Caixa.`);
+        uiAlert(`Sucesso! A cotação foi aprovada e um débito de ${formatCurrency(q.valor)} sob a categoria Peças foi criado no Fluxo de Caixa.`);
     }
 };
 
@@ -1752,7 +1752,7 @@ window.iniciarAtendimentoChamado = function(id) {
     addAuditLog("Atendimento Iniciado", `Técnico iniciou o atendimento presencial para a OS ${tk.numero}`);
     saveStateToLocalStorage();
     renderApp();
-    alert(`Atendimento da OS ${tk.numero} iniciado com sucesso! O horário de início do serviço foi registrado.`);
+    uiAlert(`Atendimento da OS ${tk.numero} iniciado com sucesso! O horário de início do serviço foi registrado.`);
 };
 
 window.abrirExecucaoChamado = function(id) {
@@ -2418,7 +2418,7 @@ function salvarAssinatura() {
         inv.assinaturaRAT = dataURL;
         addAuditLog("Assinatura RAT Salva", `Relatório de Atendimento Técnico assinado digitalmente na nota ${inv.numeroNota}`);
         saveStateToLocalStorage();
-        alert("Assinatura digital do RAT salva com sucesso para faturamento!");
+        uiAlert("Assinatura digital do RAT salva com sucesso para faturamento!");
     }
 }
 
@@ -2497,12 +2497,12 @@ if (btnToggleOffline) {
             icon.className = "fa-solid fa-wifi-slash text-danger";
             txt.innerText = "Offline";
             btn.classList.add("btn-danger-outline"); // visual warning
-            alert("Sistema em modo OFFLINE. Todas as alterações serão mantidas localmente de forma resiliente.");
+            uiAlert("Sistema em modo OFFLINE. Todas as alterações serão mantidas localmente de forma resiliente.");
         } else {
             icon.className = "fa-solid fa-wifi text-success";
             txt.innerText = "Online";
             btn.classList.remove("btn-danger-outline");
-            alert("Conexão restabelecida! Sincronização dos dados locais concluída com sucesso.");
+            uiAlert("Conexão restabelecida! Sincronização dos dados locais concluída com sucesso.");
             addAuditLog("Sincronização de Rede", "Sessão offline sincronizada com os servidores centrais da Nevixa.");
         }
     });
@@ -2586,7 +2586,7 @@ if (btnExportContabil) {
         downloadAnchor.remove();
         
         addAuditLog("Exportação Contábil", "Arquivos de integração contábil e SPD gerados e baixados pelo Administrador.");
-        alert("Exportação Contábil CSV gerada com sucesso e formatada para o Microsoft Excel!");
+        uiAlert("Exportação Contábil CSV gerada com sucesso e formatada para o Microsoft Excel!");
     });
 }
 
@@ -2641,7 +2641,7 @@ if (formNota) {
             valorServicos = parseCurrencyBR(document.getElementById("nota-valor-servicos").value) || 0;
             
             if (Math.abs((valorPecas + valorServicos) - valorTotal) > 0.02) {
-                alert("A soma do valor de peças e serviços deve ser exatamente igual ao Valor Total da Nota informado!");
+                uiAlert("A soma do valor de peças e serviços deve ser exatamente igual ao Valor Total da Nota informado!");
                 return;
             }
         }
@@ -2649,7 +2649,7 @@ if (formNota) {
         if (!id) {
             const notaDuplicada = state.invoices.find(n => n.numeroNota.toLowerCase() === numeroNota.toLowerCase());
             if (notaDuplicada) {
-                alert(`O número de Nota/OS "${numeroNota}" já foi cadastrado para o cliente ${notaDuplicada.cliente}.`);
+                uiAlert(`O número de Nota/OS "${numeroNota}" já foi cadastrado para o cliente ${notaDuplicada.cliente}.`);
                 return;
             }
         }
@@ -2683,7 +2683,7 @@ if (formNota) {
             btnSalvar.disabled = false;
 
             if (uploadError) {
-                alert("Erro ao fazer upload do arquivo (verifique se o bucket 'arquivos-nevixa' é público/permitido): " + uploadError.message);
+                uiAlert("Erro ao fazer upload do arquivo (verifique se o bucket 'arquivos-nevixa' é público/permitido): " + uploadError.message);
                 return;
             }
 
@@ -3002,7 +3002,7 @@ if (formTransacao) {
         
         // Se for offline, avisa o usuário do salvamento local (Melhoria 17)
         if (state.isOffline) {
-            alert("Registro gravado no dispositivo (Offline). Será sincronizado quando a conexão retornar.");
+            uiAlert("Registro gravado no dispositivo (Offline). Será sincronizado quando a conexão retornar.");
         }
         
         saveStateToLocalStorage();
@@ -3138,7 +3138,7 @@ if (formConfigTributaria) {
         closeModal("modal-config-tributaria");
         renderApp();
         
-        alert("Configurações tributárias salvas e impostos recalculados!");
+        uiAlert("Configurações tributárias salvas e impostos recalculados!");
     });
 }
 
@@ -3179,6 +3179,45 @@ window.uiConfirm = function(message, callback) {
     confirmCallback = callback;
     openModal("modal-confirm-custom");
 };
+
+window.uiAlert = function(message, type = "info", callback = null) {
+    const msgEl = document.getElementById("alert-custom-message");
+    const iconEl = document.getElementById("alert-custom-icon");
+    const titleText = document.getElementById("alert-custom-title-text");
+    
+    if (msgEl) msgEl.innerText = message;
+    
+    if (iconEl) {
+        iconEl.className = ""; // Reset
+        if (type === "success") {
+            iconEl.className = "fa-solid fa-circle-check text-success";
+            if (titleText) titleText.innerText = "Sucesso";
+        } else if (type === "error") {
+            iconEl.className = "fa-solid fa-circle-xmark text-danger";
+            if (titleText) titleText.innerText = "Erro";
+        } else if (type === "warning") {
+            iconEl.className = "fa-solid fa-triangle-exclamation text-warning";
+            if (titleText) titleText.innerText = "Atenção";
+        } else {
+            iconEl.className = "fa-solid fa-circle-info text-info";
+            if (titleText) titleText.innerText = "Aviso";
+        }
+        iconEl.style.fontSize = "2rem";
+        iconEl.style.display = "block";
+        iconEl.style.marginBottom = "15px";
+    }
+    
+    window._alertCallback = callback;
+    openModal("modal-alert-custom");
+};
+
+safeAddEventListener("btn-alert-custom-ok", "click", () => {
+    closeModal("modal-alert-custom");
+    if (window._alertCallback) {
+        window._alertCallback();
+        window._alertCallback = null;
+    }
+});
 
 // Listeners para os botões do confirm customizado
 safeAddEventListener("btn-confirm-custom-cancel", "click", () => {
@@ -3286,6 +3325,7 @@ window.carregarUsuarios = async function() {
                         <option value="tecnico" ${user.papel === 'tecnico' ? 'selected' : ''} style="background: var(--bg-card);">Técnico de Campo</option>
                         <option value="financeiro" ${user.papel === 'financeiro' ? 'selected' : ''} style="background: var(--bg-card);">Financeiro</option>
                         <option value="admin" ${user.papel === 'admin' ? 'selected' : ''} style="background: var(--bg-card);">Administrador</option>
+                        <option value="cliente" ${user.papel === 'cliente' ? 'selected' : ''} style="background: var(--bg-card);">Cliente (Hospital / Clínica)</option>
                     </select>
                 </td>
                 <td>${statusBadge}</td>
@@ -3311,11 +3351,11 @@ window.alterarStatusUsuario = async function(id, novoStatus) {
     try {
         const { error } = await supabaseClient.from('perfis').update({ status: novoStatus }).eq('id', id);
         if (error) throw error;
-        alert("Status atualizado com sucesso!");
+        uiAlert("Status atualizado com sucesso!");
         carregarUsuarios();
     } catch (err) {
         console.error("Erro ao alterar status:", err);
-        alert("Erro ao alterar o status do usuário.");
+        uiAlert("Erro ao alterar o status do usuário.");
     }
 };
 
@@ -3325,7 +3365,7 @@ window.alterarPapelUsuario = async function(id, novoPapel) {
         if (error) throw error;
     } catch (err) {
         console.error("Erro ao alterar papel:", err);
-        alert("Erro ao alterar a função do usuário.");
+        uiAlert("Erro ao alterar a função do usuário.");
         carregarUsuarios(); 
     }
 };
@@ -3577,13 +3617,13 @@ function setupEventListeners() {
                             
                             closeModal("modal-backup");
                             renderApp();
-                            alert("Backup restaurado com sucesso!");
+                            uiAlert("Backup restaurado com sucesso!");
                         }
                     } else {
-                        alert("Estrutura do arquivo de backup inválida. Certifique-se de usar um arquivo JSON gerado pelo sistema.");
+                        uiAlert("Estrutura do arquivo de backup inválida. Certifique-se de usar um arquivo JSON gerado pelo sistema.");
                     }
                 } catch (err) {
-                    alert("Erro ao ler o arquivo JSON. O arquivo está corrompido ou em formato incorreto.");
+                    uiAlert("Erro ao ler o arquivo JSON. O arquivo está corrompido ou em formato incorreto.");
                 }
             };
             fileReader.readAsText(file);
@@ -3755,7 +3795,7 @@ function setupEventListeners() {
         saveStateToLocalStorage();
         closeModal("modal-novo-calibrador");
         renderApp();
-        alert(`Sucesso! O calibrador "${nome}" foi cadastrado e sua calibração está válida por 1 ano.`);
+        uiAlert(`Sucesso! O calibrador "${nome}" foi cadastrado e sua calibração está válida por 1 ano.`);
     });
 
     safeAddEventListener("form-cotacao", "submit", (e) => {
@@ -3849,7 +3889,7 @@ function executarConciliacaoOFXSimulada() {
     const notasPendentes = state.invoices.filter(inv => inv.status === "Pendente");
     
     if (notasPendentes.length === 0) {
-        alert("Não existem Notas Fiscais pendentes na base para conciliação no momento.");
+        uiAlert("Não existem Notas Fiscais pendentes na base para conciliação no momento.");
         closeModal("modal-ofx");
         return;
     }
@@ -3892,7 +3932,7 @@ function executarConciliacaoOFXSimulada() {
     closeModal("modal-ofx");
     renderApp();
     
-    alert(`Sucesso! Conciliação OFX realizada: \n- ${conciliadas} Notas Fiscais baixadas como Pagas.\n- Entrada de faturamento integrada.\n- Tarifa bancária de conciliação debitada.`);
+    uiAlert(`Sucesso! Conciliação OFX realizada: \n- ${conciliadas} Notas Fiscais baixadas como Pagas.\n- Entrada de faturamento integrada.\n- Tarifa bancária de conciliação debitada.`);
 }
 
 function renderChecklistTecnico(inv) {
@@ -4197,7 +4237,7 @@ document.addEventListener("submit", (e) => {
         saveStateToLocalStorage();
         closeModal("modal-executar-chamado");
         renderApp();
-        alert(`OS ${tk.numero} concluída com sucesso! Laudo RAT emitido e assinado digitalmente.`);
+        uiAlert(`OS ${tk.numero} concluída com sucesso! Laudo RAT emitido e assinado digitalmente.`);
     }
 });
 

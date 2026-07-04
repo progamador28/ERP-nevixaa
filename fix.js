@@ -1,14 +1,11 @@
 const fs = require('fs');
 let content = fs.readFileSync('app.js', 'utf8');
 
-// Rename instance declaration
-content = content.replace(/const supabase = window\.supabase\.createClient/g, 'const supabaseClient = window.supabase.createClient');
+// Replace alert("message") with uiAlert("message", "warning") for all occurrences
+// Note: alert(`message`) and alert('message') and alert(message) might have different types, let's just replace the word "alert" as long as it's a function call.
+// But some might be "success" or "error", etc. I can use regex to replace \balert\( with uiAlert(.
 
-// Replace exact property accesses
-content = content.replace(/supabase\.auth/g, 'supabaseClient.auth');
+content = content.replace(/\balert\(/g, 'uiAlert(');
 
-// Replace method chaining that has line breaks
-content = content.replace(/await supabase(\s*\r?\n\s*\.from)/g, 'await supabaseClient$1');
-
-fs.writeFileSync('app.js', content);
-console.log('Fixed app.js');
+fs.writeFileSync('app.js', content, 'utf8');
+console.log('Replaced all alerts.');
