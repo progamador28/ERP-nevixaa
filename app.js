@@ -697,8 +697,13 @@ function switchTab(tabName) {
     const sectionSubtitle = document.getElementById("current-section-subtitle");
     
     if (tabName === "dashboard") {
-        sectionTitle.innerText = "Dashboard Geral";
-        sectionSubtitle.innerText = "Visão consolidada da saúde financeira da empresa";
+        if (state.currentUser && (state.currentUser.role === "Cliente" || state.currentUser.role === "Cliente (Hospital / Clínica)")) {
+            sectionTitle.innerText = "Área do Cliente";
+            sectionSubtitle.innerText = "Acompanhe o status dos seus equipamentos e notas fiscais";
+        } else {
+            sectionTitle.innerText = "Dashboard Geral";
+            sectionSubtitle.innerText = "Visão consolidada da saúde financeira da empresa";
+        }
     } else if (tabName === "notas") {
         sectionTitle.innerText = "Central de Notas Fiscais";
         sectionSubtitle.innerText = "Gestão de faturamentos de serviço e centros de custos";
