@@ -1865,18 +1865,18 @@ window.iniciarAtendimentoChamado = function(id) {
     if (!tk) return;
     
     // Admin seleciona/digita o nome do técnico a ser direcionado
-    const tecnico = prompt(`Direcionar Chamado/OS ${tk.numero}\nDigite o nome do técnico responsável:`, "Técnico de Campo");
-    
-    if (tecnico === null) return; // Cancelou o direcionamento
-    
-    tk.status = "Em Atendimento";
-    tk.responsavelNome = tecnico.trim() || "Técnico Não Identificado";
-    tk.dataInicioAtendimento = new Date().toISOString();
-    
-    addAuditLog("OS Direcionada/Iniciada", `OS ${tk.numero} direcionada para o técnico ${tk.responsavelNome}`);
-    saveStateToLocalStorage();
-    renderApp();
-    uiAlert(`Atendimento da OS ${tk.numero} direcionado para ${tk.responsavelNome} com sucesso!`);
+    uiPrompt(`Direcionar Chamado/OS ${tk.numero}\nDigite o nome do técnico responsável:`, "Técnico de Campo", (tecnico) => {
+        if (tecnico === null || tecnico === "") return; // Cancelou o direcionamento ou deixou vazio
+        
+        tk.status = "Em Atendimento";
+        tk.responsavelNome = tecnico.trim() || "Técnico Não Identificado";
+        tk.dataInicioAtendimento = new Date().toISOString();
+        
+        addAuditLog("OS Direcionada/Iniciada", `OS ${tk.numero} direcionada para o técnico ${tk.responsavelNome}`);
+        saveStateToLocalStorage();
+        renderApp();
+        uiAlert(`Atendimento da OS ${tk.numero} direcionado para ${tk.responsavelNome} com sucesso!`);
+    });
 };
 
 window.abrirExecucaoChamado = function(id) {
@@ -3354,6 +3354,39 @@ safeAddEventListener("btn-confirm-custom-ok", "click", () => {
     if (confirmCallback) {
         confirmCallback();
         confirmCallback = null;
+    }
+});
+
+let promptCallback = null;
+window.uiPrompt = function(message, defaultText, callback) {
+    const msgEl = document.getElementById("prompt-custom-message");
+    const inputEl = document.getElementById("prompt-custom-input");
+    if (msgEl) msgEl.innerText = message;
+    if (inputEl) inputEl.value = defaultText || "";
+    promptCallback = callback;
+    openModal("modal-prompt-custom");
+    
+    // Focus no input após um pequeno delay para a animação do modal
+    setTimeout(() => {
+        if (inputEl) {
+            inputEl.focus();
+            inputEl.select();
+        }
+    }, 100);
+};
+
+safeAddEventListener("btn-prompt-custom-cancel", "click", () => {
+    closeModal("modal-prompt-custom");
+    promptCallback = null;
+});
+
+safeAddEventListener("btn-prompt-custom-ok", "click", () => {
+    const inputEl = document.getElementById("prompt-custom-input");
+    const val = inputEl ? inputEl.value : "";
+    closeModal("modal-prompt-custom");
+    if (promptCallback) {
+        promptCallback(val);
+        promptCallback = null;
     }
 });
 
