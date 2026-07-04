@@ -1867,7 +1867,7 @@ window.iniciarAtendimentoChamado = async function(id) {
     if (!tk) return;
     
     try {
-        const { data: tecnicos, error } = await supabase
+        const { data: tecnicos, error } = await supabaseClient
             .from('perfis')
             .select('nome')
             .eq('papel', 'tecnico')
