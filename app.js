@@ -1647,7 +1647,13 @@ function renderCotacoes() {
     state.quotations.forEach(q => {
         if (isCliente) {
             // Verifica se o equipamento da cotação pertence ao hospital do cliente
-            const eqAssociado = state.equipments.find(e => q.equipamento && q.equipamento.includes(e.nome));
+            let eqAssociado = null;
+            if (q.equipamentoId) {
+                eqAssociado = state.equipments.find(e => e.id === q.equipamentoId);
+            } else {
+                eqAssociado = state.equipments.find(e => e.nome === q.equipamento && e.cliente === state.currentUser.nome);
+            }
+            
             if (!eqAssociado || eqAssociado.cliente !== state.currentUser.nome) {
                 return; // Esconde a cotação se não for do hospital do cliente
             }
@@ -3947,6 +3953,7 @@ function setupEventListeners() {
             id: generateUUID(),
             peca,
             equipamento: equipamentoNome,
+            equipamentoId: eqId,
             solicitante,
             fornecedor,
             valor,
