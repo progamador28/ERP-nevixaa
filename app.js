@@ -1,4 +1,4 @@
-﻿/**
+/**
  * NEVIXA FINANCE & ERP - SISTEMA DE GESTï¾ƒã‚° FINANCEIRA E OPERAï¾ƒï¿½é«­S
  * Motor de controle da aplicaï¾ƒï½§ï¾ƒï½£o SPA Avanï¾ƒï½§ada
  */
@@ -48,12 +48,11 @@ async function realizarLoginReal(email, senha) {
             return;
         }
 
-        // 3. Regra de Negï¾ƒï½³cio Crï¾ƒï½­tica: Bloqueio de usuï¾ƒï½¡rios Pendentes ou Bloqueados
+        // 3. Regra de Negócio: Aprovação automática de contas pendentes para testes
         if (perfil.status === 'pendente') {
-            uiAlert("Acesso Negado: O seu cadastro foi recebido com sucesso, mas estï¾ƒï½¡ aguardando a aprovaï¾ƒï½§ï¾ƒï½£o do Administrador da NEVIXA ENGENHARIA.");
-            await supabaseClient.auth.signOut();
-            exibirCarregamentoLogin(false);
-            return;
+            // Auto-ativa o perfil para não bloquear o usuário durante a fase de testes
+            perfil.status = 'ativo';
+            await supabaseClient.from('perfis').update({ status: 'ativo' }).eq('id', perfil.id);
         }
 
         if (perfil.status === 'bloqueado') {
