@@ -249,6 +249,17 @@
                                     <span class="trend trend-up">No seu parque instalado</span>
                                 </div>
                             </div>
+                            <!-- Card Chamados Abertos -->
+                            <div class="metric-card card-saidas" style="cursor: pointer;" onclick="document.querySelector('[data-tab=\'operacoes\']').click(); setTimeout(() => document.querySelector('.sub-tab-btn[data-subtab=\'chamados\']').click(), 100);">
+                                <div class="metric-header">
+                                    <span class="metric-title">Chamados Abertos</span>
+                                    <div class="metric-icon"><i class="fa-solid fa-headset text-danger"></i></div>
+                                </div>
+                                <div class="metric-value" id="dash-cliente-chamados-count">0</div>
+                                <div class="metric-footer">
+                                    <span class="trend trend-neutral">Clique para gerenciar SLAs</span>
+                                </div>
+                            </div>
                             <!-- Card Última Calibração -->
                             <div class="metric-card card-entradas">
                                 <div class="metric-header">
@@ -328,6 +339,22 @@
                                 <div class="progress-bar-container">
                                     <div class="progress-bar-fill" id="dash-margem-bar" style="width: 0%"></div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Chamados Abertos (Geral) -->
+                        <div class="metric-card card-saidas" style="cursor: pointer;" onclick="document.querySelector('[data-tab=\'operacoes\']').click(); setTimeout(() => document.querySelector('.sub-tab-btn[data-subtab=\'chamados\']').click(), 100);">
+                            <div class="metric-header">
+                                <span class="metric-title">Chamados em Aberto</span>
+                                <div class="metric-icon">
+                                    <i class="fa-solid fa-headset text-danger"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value" id="dash-chamados-count">0</div>
+                            <div class="metric-footer">
+                                <span class="trend trend-neutral">
+                                    Aguardando Direcionamento/Atendimento
+                                </span>
                             </div>
                         </div>
                     </div>

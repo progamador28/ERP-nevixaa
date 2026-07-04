@@ -794,6 +794,11 @@ function renderDashboardCliente() {
         elStatus.innerText = "Regular";
         elStatus.style.color = "var(--color-success)";
     }
+
+    // Chamados Abertos
+    const clientTickets = state.tickets.filter(tk => tk.hospital === nomeCliente && (tk.status === "Pendente" || tk.status === "Em Atendimento"));
+    const chamadosEl = document.getElementById("dash-cliente-chamados-count");
+    if (chamadosEl) chamadosEl.innerText = clientTickets.length;
 }
 
 function renderDashboard() {
@@ -860,6 +865,15 @@ function renderDashboard() {
     
     document.getElementById("dash-margem").innerText = `${margemGeral.toFixed(1)}%`;
     document.getElementById("dash-margem-bar").style.width = `${Math.max(0, Math.min(100, margemGeral))}%`;
+
+    // Equipamentos Instalados (Admin)
+    const equipEl = document.getElementById("dash-equip-count");
+    if (equipEl) equipEl.innerText = state.equipments.length;
+
+    // Chamados em Aberto (Admin/Corporativo)
+    const chamadosCorp = state.tickets.filter(tk => tk.status === "Pendente" || tk.status === "Em Atendimento" || tk.status === "Aguardando Peça");
+    const chamadosCorpEl = document.getElementById("dash-chamados-count");
+    if (chamadosCorpEl) chamadosCorpEl.innerText = chamadosCorp.length;
     
     renderDashboardCharts();
     renderDashboardAlerts();
@@ -1540,9 +1554,11 @@ function renderCalibradores() {
                     <button class="btn btn-outline btn-sm" onclick="visualizarCertificadoRBC('${c.id}')" title="Ver Certificado RBC">
                         <i class="fa-solid fa-medal text-secondary"></i> Certificado
                     </button>
+                    ${state.currentUser && state.currentUser.papel === "cliente" ? "" : `
                     <button class="btn btn-outline btn-sm text-danger" onclick="deleteCalibrador('${c.id}')">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
+                    `}
                 </div>
             </td>
         `;
@@ -1589,8 +1605,17 @@ function renderCotacoes() {
     const tbody = document.getElementById("table-cotacoes-body");
     if (!tbody) return;
     tbody.innerHTML = "";
+    const isCliente = state.currentUser && state.currentUser.papel === "cliente";
     
     state.quotations.forEach(q => {
+        if (isCliente) {
+            // Verifica se o equipamento da cotação pertence ao hospital do cliente
+            const eqAssociado = state.equipments.find(e => q.equipamento && q.equipamento.includes(e.nome));
+            if (!eqAssociado || eqAssociado.cliente !== state.currentUser.nome) {
+                return; // Esconde a cotação se não for do hospital do cliente
+            }
+        }
+        
         let actionBtn = "";
         let statusClass = "badge-neutral";
         
@@ -1675,7 +1700,11 @@ function renderChamados() {
     
     const hoje = new Date();
     
+    const isCliente = state.currentUser && state.currentUser.papel === "cliente";
+    
     state.tickets.forEach(tk => {
+        if (isCliente && tk.hospital !== state.currentUser.nome) return;
+        
         let statusClass = "badge-info";
         if (tk.status === "Pendente") statusClass = "badge-warning";
         else if (tk.status === "Aguardando Peça") statusClass = "badge-warning";
@@ -1727,18 +1756,31 @@ function renderChamados() {
                 `;
             }
             
-            if (tk.status === "Pendente") {
-                actionBtn = `
-                    <button class="btn btn-success btn-sm" onclick="iniciarAtendimentoChamado('${tk.id}')" title="Iniciar Atendimento Técnico">
-                        <i class="fa-solid fa-play"></i> Iniciar OS
-                    </button>
-                `;
+            if (isCliente) {
+                // Cliente apenas visualiza o status e pode ver o RAT se encerrado
+                if (tk.status === "Encerrado") {
+                    actionBtn = `
+                        <button class="btn btn-secondary btn-sm" onclick="visualizarLaudoRAT('${tk.id}')" title="Visualizar RAT Completo">
+                            <i class="fa-solid fa-file-invoice"></i> Laudo RAT
+                        </button>
+                    `;
+                } else {
+                    actionBtn = `<span class="text-muted" style="font-size:0.8rem">Aguardando</span>`;
+                }
             } else {
-                actionBtn = `
-                    <button class="btn btn-primary btn-sm" onclick="abrirExecucaoChamado('${tk.id}')" style="background:#581c87; border-color:#581c87;" title="Executar Manutenção e Assinar RAT">
-                        <i class="fa-solid fa-clipboard-check"></i> Executar OS
-                    </button>
-                `;
+                if (tk.status === "Pendente") {
+                    actionBtn = `
+                        <button class="btn btn-success btn-sm" onclick="iniciarAtendimentoChamado('${tk.id}')" title="Direcionar e Iniciar Atendimento Técnico">
+                            <i class="fa-solid fa-play"></i> Direcionar OS
+                        </button>
+                    `;
+                } else if (tk.status !== "Encerrado") {
+                    actionBtn = `
+                        <button class="btn btn-primary btn-sm" onclick="abrirExecucaoChamado('${tk.id}')" style="background:#581c87; border-color:#581c87;" title="Executar Manutenção e Assinar RAT">
+                            <i class="fa-solid fa-clipboard-check"></i> Executar OS
+                        </button>
+                    `;
+                }
             }
         }
         
@@ -1768,13 +1810,19 @@ window.iniciarAtendimentoChamado = function(id) {
     const tk = state.tickets.find(t => t.id === id);
     if (!tk) return;
     
+    // Admin seleciona/digita o nome do técnico a ser direcionado
+    const tecnico = prompt(`Direcionar Chamado/OS ${tk.numero}\nDigite o nome do técnico responsável:`, "Técnico de Campo");
+    
+    if (tecnico === null) return; // Cancelou o direcionamento
+    
     tk.status = "Em Atendimento";
+    tk.responsavelNome = tecnico.trim() || "Técnico Não Identificado";
     tk.dataInicioAtendimento = new Date().toISOString();
     
-    addAuditLog("Atendimento Iniciado", `Técnico iniciou o atendimento presencial para a OS ${tk.numero}`);
+    addAuditLog("OS Direcionada/Iniciada", `OS ${tk.numero} direcionada para o técnico ${tk.responsavelNome}`);
     saveStateToLocalStorage();
     renderApp();
-    uiAlert(`Atendimento da OS ${tk.numero} iniciado com sucesso! O horário de início do serviço foi registrado.`);
+    uiAlert(`Atendimento da OS ${tk.numero} direcionado para ${tk.responsavelNome} com sucesso!`);
 };
 
 window.abrirExecucaoChamado = function(id) {
@@ -3869,6 +3917,8 @@ function setupEventListeners() {
         // Gerar um número de OS sequencial
         const numOS = `OS-2026${String(state.tickets.length + 501).padStart(3, "0")}`;
         
+        const isCliente = state.currentUser && state.currentUser.papel === "cliente";
+        
         const novoChamado = {
             id: generateUUID(),
             numero: numOS,
@@ -3876,8 +3926,9 @@ function setupEventListeners() {
             equipamento: equipamentoNome,
             tipo,
             dataAbertura: new Date().toISOString(),
-            status: "Em Atendimento",
-            slaHoras: sla
+            status: isCliente ? "Pendente" : "Em Atendimento",
+            slaHoras: sla,
+            assunto: assunto // Guardar o assunto/descrição para o admin ver
         };
         
         state.tickets.push(novoChamado);
@@ -4061,7 +4112,11 @@ window.openNovoChamado = function() {
     if (!select) return;
     select.innerHTML = '<option value="" disabled selected>Selecione o Equipamento...</option>';
     
+    const isCliente = state.currentUser && state.currentUser.papel === "cliente";
+    
     state.equipments.forEach(eq => {
+        if (isCliente && eq.cliente !== state.currentUser.nome) return;
+        
         const opt = document.createElement("option");
         opt.value = eq.id;
         opt.innerText = `${eq.tag} - ${eq.nome}`;
