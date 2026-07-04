@@ -2227,6 +2227,19 @@ window.deleteTimesheet = function(tsId, invoiceId) {
     }
 };
 
+window.unlinkTransaction = function(transId, invoiceId) {
+    if (confirm("Tem certeza que deseja desvincular esta despesa da OS?\\n(A despesa continuará existindo no seu Fluxo de Caixa Geral, mas deixará de reduzir o lucro desta Nota Fiscal).")) {
+        const trans = state.transactions.find(t => t.id === transId);
+        if (trans) {
+            trans.notaFiscalId = "";
+            addAuditLog("Despesa Desvinculada", `Transação ${transId} desvinculada da nota ${invoiceId}`);
+            saveStateToLocalStorage();
+            updateInvoiceDetailsModal(invoiceId);
+            renderApp();
+        }
+    }
+};
+
 // ==========================================================================
 // ASSINATURA DIGITAL RAT CANVAS LÓGICA (Melhoria 8)
 // ==========================================================================
