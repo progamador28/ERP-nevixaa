@@ -4509,6 +4509,7 @@ window.visualizarLaudoRAT = function(id) {
     document.getElementById("rat-view-equipamento").innerText = tk.equipamento;
     document.getElementById("rat-view-tipo").innerText = tk.tipo;
     document.getElementById("rat-view-sla").innerText = `${tk.slaHoras} horas`;
+    document.getElementById("rat-view-tecnico").innerText = tk.responsavelNome || "Não informado";
     
     document.getElementById("rat-view-horario-inicio").innerText = formatDateTime(tk.dataInicioAtendimento || tk.dataAbertura);
     document.getElementById("rat-view-horario-fim").innerText = formatDateTime(tk.dataFimAtendimento || new Date().toISOString());
