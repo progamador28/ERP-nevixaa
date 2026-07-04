@@ -1,11 +1,17 @@
+
 const fs = require('fs');
-let content = fs.readFileSync('app.js', 'utf8');
+const currStr = fs.readFileSync('app.js', 'utf8');
+const oldStr = require('child_process').execSync('git show 901c03e:app.js').toString('latin1'); // Old was Windows-1252
 
-// Replace alert("message") with uiAlert("message", "warning") for all occurrences
-// Note: alert(`message`) and alert('message') and alert(message) might have different types, let's just replace the word "alert" as long as it's a function call.
-// But some might be "success" or "error", etc. I can use regex to replace \balert\( with uiAlert(.
+// Find the corrupted substrings in currStr. Usually they start with ï.
+let badPattern = /[^\x00-\x7F]+/g;
+let matches = currStr.match(badPattern);
+if (matches) {
+    let unique = Array.from(new Set(matches)).filter(m => m.includes('ï') || m.includes('ã') || m.includes('é'));
+    for (let bad of unique) {
+        let idx = currStr.indexOf(bad);
+        let ctx = currStr.substring(Math.max(0, idx - 15), Math.min(currStr.length, idx + bad.length + 15)).replace(/\n/g, ' ');
+        console.log(bad + '  ==>  ' + ctx);
+    }
+}
 
-content = content.replace(/\balert\(/g, 'uiAlert(');
-
-fs.writeFileSync('app.js', content, 'utf8');
-console.log('Replaced all alerts.');
