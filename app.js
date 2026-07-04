@@ -4582,8 +4582,11 @@ document.addEventListener("click", (e) => {
         if (ratPrintArea) ratPrintArea.scrollTop = 0;
         if (modalRat) modalRat.scrollTop = 0;
         document.body.classList.add("print-mode-rat-novo");
-        window.print();
-        document.body.classList.remove("print-mode-rat-novo");
+        
+        setTimeout(() => {
+            window.print();
+            document.body.classList.remove("print-mode-rat-novo");
+        }, 150);
     }
 });
 
