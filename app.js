@@ -4577,6 +4577,10 @@ window.visualizarLaudoRAT = function(id) {
 document.addEventListener("click", (e) => {
     if (e.target && e.target.id === "btn-imprimir-rat-novo") {
         e.preventDefault();
+        const ratPrintArea = document.getElementById("rat-print-area");
+        const modalRat = document.getElementById("modal-detalhes-rat");
+        if (ratPrintArea) ratPrintArea.scrollTop = 0;
+        if (modalRat) modalRat.scrollTop = 0;
         document.body.classList.add("print-mode-rat-novo");
         window.print();
         document.body.classList.remove("print-mode-rat-novo");
