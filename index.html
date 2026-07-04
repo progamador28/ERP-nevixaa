@@ -1064,9 +1064,14 @@
                 <div class="detalhes-custos-secao">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4><i class="fa-solid fa-list-check"></i> Custos e Despesas Vinculados a esta Nota</h4>
-                        <button id="btn-add-despesa-direta" class="btn btn-sm btn-secondary">
-                            <i class="fa-solid fa-plus"></i> Adicionar Custo Direto
-                        </button>
+                        <div class="d-flex gap-2">
+                            <button id="btn-add-deslocamento" class="btn btn-sm btn-outline" style="border: 1px solid var(--color-primary); color: var(--color-primary); background: transparent;">
+                                <i class="fa-solid fa-car-side"></i> Frota / Deslocamento
+                            </button>
+                            <button id="btn-add-despesa-direta" class="btn btn-sm btn-secondary">
+                                <i class="fa-solid fa-plus"></i> Adicionar Custo Direto
+                            </button>
+                        </div>
                     </div>
 
                     <div class="table-responsive">
@@ -1147,6 +1152,70 @@
                     <strong>Atenção:</strong> Ao importar um novo arquivo de backup, todos os dados cadastrados atualmente no navegador serão substituídos.
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL FROTA E DESLOCAMENTO (Melhoria 4) -->
+    <div id="modal-deslocamento" class="modal-overlay">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-car-side text-primary"></i> Lançar Despesa de Frota / Deslocamento</h3>
+                <button class="modal-close" data-close-modal="modal-deslocamento">&times;</button>
+            </div>
+            <form id="form-deslocamento">
+                <input type="hidden" id="form-deslocamento-nota-id">
+                <div class="modal-body">
+                    <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 20px;">
+                        Calcule o custo exato do deslocamento para a execução deste serviço. O total será lançado automaticamente como uma despesa direta na nota e descontado do DRE.
+                    </p>
+                    
+                    <div class="form-group">
+                        <label for="desloc-rota">Destino / Rota Percorrida *</label>
+                        <input type="text" id="desloc-rota" required placeholder="Ex: Sede Nevixa -> Hospital Estadual -> Sede Nevixa">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group col-6">
+                            <label for="desloc-km">Distância Total Percorrida (Km) *</label>
+                            <input type="number" id="desloc-km" step="0.1" min="0" required placeholder="0">
+                        </div>
+                        <div class="form-group col-6">
+                            <label for="desloc-preco-km">Custo Base por Km (R$) *</label>
+                            <input type="number" id="desloc-preco-km" step="0.01" min="0.01" value="1.50" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row mt-2">
+                        <div class="form-group col-4">
+                            <label for="desloc-pedagio">Pedágios (R$)</label>
+                            <input type="text" id="desloc-pedagio" class="input-money" value="0,00" oninput="mascaraMoeda(this)">
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="desloc-estadia">Estadia/Alimentação</label>
+                            <input type="text" id="desloc-estadia" class="input-money" value="0,00" oninput="mascaraMoeda(this)">
+                        </div>
+                        <div class="form-group col-4">
+                            <label for="desloc-outros">Outros Gastos</label>
+                            <input type="text" id="desloc-outros" class="input-money" value="0,00" oninput="mascaraMoeda(this)">
+                        </div>
+                    </div>
+                    
+                    <div class="alert d-flex align-items-center justify-content-between mt-3" style="padding: 15px; border-radius: 8px; border: 1px solid var(--color-primary); background: rgba(30, 58, 138, 0.05);">
+                        <div>
+                            <span style="font-weight: 600; color: var(--color-primary-dark);">Custo Total da Viagem:</span><br>
+                            <span style="font-size: 0.75rem; color: var(--color-text-muted);">Reduzirá o Lucro Líquido Real</span>
+                        </div>
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--color-primary-dark);" id="desloc-total-display">
+                            R$ 0,00
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-outline" data-close-modal="modal-deslocamento">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Lançar Despesa de Frota</button>
+                </div>
+            </form>
         </div>
     </div>
 

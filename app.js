@@ -2030,12 +2030,15 @@ function updateInvoiceDetailsModal(invoiceId) {
                 ? `<span class="badge badge-purple" style="font-size:0.65rem">Imposto Automático</span>`
                 : `<button class="btn btn-outline btn-sm text-danger" onclick="unlinkTransaction('${c.id}', '${invoiceId}')"><i class="fa-solid fa-link-slash"></i></button>`;
                 
+            let iconCat = "";
+            if (c.categoria === "Deslocamento") iconCat = `<i class="fa-solid fa-car-side" style="margin-right:4px; color: var(--color-primary);"></i>`;
+                
             const row = document.createElement("tr");
             row.innerHTML = `
                 <td class="text-muted">${formatDate(c.data)}</td>
                 <td><strong>${c.descricao}</strong></td>
                 <td class="font-numeric val-despesa">- ${formatCurrency(c.valor)}</td>
-                <td><span class="badge badge-neutral">${c.categoria}</span></td>
+                <td><span class="badge badge-neutral">${iconCat}${c.categoria}</span></td>
                 <td>${garantiaText}</td>
                 <td>${statusDespesa}</td>
                 <td>${acoesHTML}</td>
@@ -3320,6 +3323,22 @@ function setupEventListeners() {
         document.getElementById("trans-data").valueAsDate = new Date();
         
         openModal("modal-transacao");
+    });
+    
+    // Botão na gaveta de detalhes da nota para adicionar deslocamento/frota
+    safeAddEventListener("btn-add-deslocamento", "click", () => {
+        const activeInvoiceId = document.getElementById("modal-detalhes-nota").getAttribute("data-active-invoice-id");
+        if (!activeInvoiceId) return;
+        
+        document.getElementById("form-deslocamento-nota-id").value = activeInvoiceId;
+        document.getElementById("desloc-rota").value = "";
+        document.getElementById("desloc-km").value = "";
+        document.getElementById("desloc-pedagio").value = "0,00";
+        document.getElementById("desloc-estadia").value = "0,00";
+        document.getElementById("desloc-outros").value = "0,00";
+        calcularTotalDeslocamento();
+        
+        openModal("modal-deslocamento");
     });
     
     // 5. Filtros Dinâmicos de Busca (Notas Fiscais)
