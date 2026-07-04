@@ -1,40 +1,40 @@
 /**
- * NEVIXA FINANCE & ERP - SISTEMA DE GESTÃO FINANCEIRA E OPERAÇÕES
- * Motor de controle da aplicação SPA Avançada
+ * NEVIXA FINANCE & ERP - SISTEMA DE GESTﾃグ FINANCEIRA E OPERAﾃ�髭S
+ * Motor de controle da aplicaﾃｧﾃ｣o SPA Avanﾃｧada
  */
 // ==========================================================================
-// CONFIGURAÇÃO DO SUPABASE & AUTENTICAÇÃO REAL - NEVIXA ENGENHARIA
+// CONFIGURAﾃ�グ DO SUPABASE & AUTENTICAﾃ�グ REAL - NEVIXA ENGENHARIA
 // ==========================================================================
 const SUPABASE_URL = "https://lwfjnmudtlybnnfgtgag.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZmpubXVkdGx5Ym5uZmd0Z2FnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NTAzNTIsImV4cCI6MjA5ODUyNjM1Mn0.plYp6N1-gQDk3O8mY6IbGcyVyCby0oCg9rGtodD6WK4"; // <-- Cole aqui a sua chave anon pública
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZmpubXVkdGx5Ym5uZmd0Z2FnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NTAzNTIsImV4cCI6MjA5ODUyNjM1Mn0.plYp6N1-gQDk3O8mY6IbGcyVyCby0oCg9rGtodD6WK4"; // <-- Cole aqui a sua chave anon pﾃｺblica
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Nome oficializado para relatórios, cabeçalhos e logs do sistema ERP
+// Nome oficializado para relatﾃｳrios, cabeﾃｧalhos e logs do sistema ERP
 const EMPRESA_NOME_OFICIAL = "NEVIXA ENGENHARIA COMERCIO & SERVICOS LTDA";
 
 // ==========================================================================
-// NOVA FUNÇÃO DE LOGIN (Substitui a lógica antiga do MOCK_USERS)
+// NOVA FUNﾃ�グ DE LOGIN (Substitui a lﾃｳgica antiga do MOCK_USERS)
 // ==========================================================================
 async function realizarLoginReal(email, senha) {
     exibirCarregamentoLogin(true);
 
     try {
-        // 1. Autentica o usuário na camada de Auth do Supabase
+        // 1. Autentica o usuﾃ｡rio na camada de Auth do Supabase
         const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
             email: email,
             password: senha
         });
 
         if (authError) {
-            uiAlert("Erro de Autenticação: E-mail ou senha incorretos.");
+            uiAlert("Erro de Autenticaﾃｧﾃ｣o: E-mail ou senha incorretos.");
             exibirCarregamentoLogin(false);
             return;
         }
 
         const userId = authData.user.id;
 
-        // 2. Busca os dados de permissão e status na tabela pública "perfis"
+        // 2. Busca os dados de permissﾃ｣o e status na tabela pﾃｺblica "perfis"
         const { data: perfil, error: perfilError } = await supabaseClient
             .from('perfis')
             .select('*')
@@ -48,22 +48,22 @@ async function realizarLoginReal(email, senha) {
             return;
         }
 
-        // 3. Regra de Negócio Crítica: Bloqueio de usuários Pendentes ou Bloqueados
+        // 3. Regra de Negﾃｳcio Crﾃｭtica: Bloqueio de usuﾃ｡rios Pendentes ou Bloqueados
         if (perfil.status === 'pendente') {
-            uiAlert("Acesso Negado: O seu cadastro foi recebido com sucesso, mas está aguardando a aprovação do Administrador da NEVIXA ENGENHARIA.");
+            uiAlert("Acesso Negado: O seu cadastro foi recebido com sucesso, mas estﾃ｡ aguardando a aprovaﾃｧﾃ｣o do Administrador da NEVIXA ENGENHARIA.");
             await supabaseClient.auth.signOut();
             exibirCarregamentoLogin(false);
             return;
         }
 
         if (perfil.status === 'bloqueado') {
-            uiAlert("Acesso Negado: Esta conta de usuário encontra-se desativada/bloqueada no sistema.");
+            uiAlert("Acesso Negado: Esta conta de usuﾃ｡rio encontra-se desativada/bloqueada no sistema.");
             await supabaseClient.auth.signOut();
             exibirCarregamentoLogin(false);
             return;
         }
 
-        // 4. Sucesso! Usuário aprovado. Salva a sessão localmente
+        // 4. Sucesso! Usuﾃ｡rio aprovado. Salva a sessﾃ｣o localmente
         const usuarioSessao = {
             id: perfil.id,
             email: perfil.email,
@@ -76,7 +76,12 @@ async function realizarLoginReal(email, senha) {
         
         // Esconde a tela de login e inicializa o painel do sistema
         document.getElementById("login-overlay").classList.remove("active");
-        checkAuth(); 
+        checkAuth();
+        
+        // Log de Auditoria
+        if (typeof addAuditLog === 'function') {
+            addAuditLog("Login Efetuado", "Autenticação");
+        }
 
     } catch (err) {
         console.error("Erro inesperado no login:", err);
@@ -87,11 +92,11 @@ async function realizarLoginReal(email, senha) {
 }
 
 // ==========================================================================
-// NOVA FUNÇÃO DE CADASTRO (Criar nova conta de Técnico ou Financeiro)
+// NOVA FUNﾃ�グ DE CADASTRO (Criar nova conta de Tﾃｩcnico ou Financeiro)
 // ==========================================================================
 async function realizarCadastroReal(nome, email, senha, papelEscolhido) {
     try {
-        // 1. Cria o usuário no Supabase Auth passando metadados (nome)
+        // 1. Cria o usuﾃ｡rio no Supabase Auth passando metadados (nome)
         const { data, error } = await supabaseClient.auth.signUp({
             email: email,
             password: senha,
@@ -108,7 +113,7 @@ async function realizarCadastroReal(nome, email, senha, papelEscolhido) {
             return;
         }
 
-        // 2. Garantir a criação do perfil no banco como 'pendente'
+        // 2. Garantir a criaﾃｧﾃ｣o do perfil no banco como 'pendente'
         if (data?.user) {
             const { error: insertError } = await supabaseClient
                 .from('perfis')
@@ -124,23 +129,23 @@ async function realizarCadastroReal(nome, email, senha, papelEscolhido) {
                 console.warn("Aviso: Falha ao inserir perfil no banco.", insertError);
             }
 
-            uiAlert("Cadastro realizado com sucesso! Aguarde até que um Administrador da NEVIXA ENGENHARIA aprove o seu acesso para poder entrar no sistema.");
+            uiAlert("Cadastro realizado com sucesso! Aguarde atﾃｩ que um Administrador da NEVIXA ENGENHARIA aprove o seu acesso para poder entrar no sistema.");
             
-            // Fazer o signOut (deslogar) imediatamente, pois ele está pendente e não deve entrar
+            // Fazer o signOut (deslogar) imediatamente, pois ele estﾃ｡ pendente e nﾃ｣o deve entrar
             await supabaseClient.auth.signOut();
             
-            // Força o retorno para a tela de login limpa
+            // Forﾃｧa o retorno para a tela de login limpa
             alternarModoJanelaLogin('login'); 
         }
 
     } catch (err) {
         console.error("Erro no processo de cadastro:", err);
         exibirCarregamentoLogin(false);
-        uiAlert("Não foi possível processar o cadastro solicitado.");
+        uiAlert("Nﾃ｣o foi possﾃｭvel processar o cadastro solicitado.");
     }
 }
 
-// Função auxiliar para dar feedback visual no botão enquanto consulta a nuvem
+// Funﾃｧﾃ｣o auxiliar para dar feedback visual no botﾃ｣o enquanto consulta a nuvem
 function exibirCarregamentoLogin(carregando) {
     const btnLogin = document.querySelector("#form-login button[type='submit']");
     const btnRegister = document.querySelector("#form-register button[type='submit']");
@@ -159,16 +164,16 @@ function exibirCarregamentoLogin(carregando) {
 // DADOS MOCK INICIAIS (Se o localStorage estiver vazio)
 // ==========================================================================
 const MOCK_EQUIPMENTS = [
-    { id: "eq-1", tag: "EQ-RM-001", nome: "Ressonância Magnética Philips Achieva 1.5T", cliente: "Clínica Radiosul", serial: "RM987654", status: "Operacional", ultimaPreventiva: "2026-05-10" },
-    { id: "eq-2", tag: "EQ-CT-001", nome: "Tomógrafo Computadorizado GE Optima 660", cliente: "Hospital Albert Einstein", serial: "CT123456", status: "Atenção (Manutenção Necessária)", ultimaPreventiva: "2026-07-02" },
-    { id: "eq-3", tag: "EQ-RX-001", nome: "Raio-X Digital Siemens Multix", cliente: "Santa Casa de Misericórdia", serial: "RX882211", status: "Parado (Aguardando Peça)", ultimaPreventiva: "2026-04-15" },
-    { id: "eq-4", tag: "EQ-US-001", nome: "Ultrassom Doppler Colorido Mindray DC-70", cliente: "Clínica UltraScan", serial: "US556633", status: "Operacional", ultimaPreventiva: "2026-07-12" }
+    { id: "eq-1", tag: "EQ-RM-001", nome: "Ressonﾃ｢ncia Magnﾃｩtica Philips Achieva 1.5T", cliente: "Clﾃｭnica Radiosul", serial: "RM987654", status: "Operacional", ultimaPreventiva: "2026-05-10" },
+    { id: "eq-2", tag: "EQ-CT-001", nome: "Tomﾃｳgrafo Computadorizado GE Optima 660", cliente: "Hospital Albert Einstein", serial: "CT123456", status: "Atenﾃｧﾃ｣o (Manutenﾃｧﾃ｣o Necessﾃ｡ria)", ultimaPreventiva: "2026-07-02" },
+    { id: "eq-3", tag: "EQ-RX-001", nome: "Raio-X Digital Siemens Multix", cliente: "Santa Casa de Misericﾃｳrdia", serial: "RX882211", status: "Parado (Aguardando Peﾃｧa)", ultimaPreventiva: "2026-04-15" },
+    { id: "eq-4", tag: "EQ-US-001", nome: "Ultrassom Doppler Colorido Mindray DC-70", cliente: "Clﾃｭnica UltraScan", serial: "US556633", status: "Operacional", ultimaPreventiva: "2026-07-12" }
 ];
 
 const MOCK_CALIBRATORS = [
     { id: "cal-1", nome: "Medidor de kV/Dose Barracuda (Piranha)", serial: "BC-9981", ultimaCalibracao: "2025-08-15", proximaCalibracao: "2026-08-15" },
-    { id: "cal-2", nome: "Simulador de Fantoma de Água para Tomografia", serial: "PH-1200", ultimaCalibracao: "2026-01-10", proximaCalibracao: "2027-01-10" },
-    { id: "cal-3", nome: "Câmara de Ionização de Radiação 10cc", serial: "CI-0044", ultimaCalibracao: "2025-06-20", proximaCalibracao: "2026-06-20" } // Calibração Vencida!
+    { id: "cal-2", nome: "Simulador de Fantoma de ﾃ“ua para Tomografia", serial: "PH-1200", ultimaCalibracao: "2026-01-10", proximaCalibracao: "2027-01-10" },
+    { id: "cal-3", nome: "Cﾃ｢mara de Ionizaﾃｧﾃ｣o de Radiaﾃｧﾃ｣o 10cc", serial: "CI-0044", ultimaCalibracao: "2025-06-20", proximaCalibracao: "2026-06-20" } // Calibraﾃｧﾃ｣o Vencida!
 ];
 
 const MOCK_TICKETS = [
@@ -176,14 +181,14 @@ const MOCK_TICKETS = [
         id: "tk-1", 
         numero: "OS-2026501", 
         hospital: "Hospital Albert Einstein", 
-        equipamento: "Tomógrafo GE Optima", 
+        equipamento: "Tomﾃｳgrafo GE Optima", 
         tipo: "Corretiva", 
         dataAbertura: "2026-07-01T15:30:00", 
         dataInicioAtendimento: "2026-07-01T16:00:00",
         dataFimAtendimento: "2026-07-01T18:45:00",
-        descricaoServico: "Substituição de escovas de carvão desgastadas no motor do gantry, limpeza dos filtros de ar de refrigeração e testes de calibração final com calibrador biométrico fluke. Equipamento testado e liberado para uso clínico.",
+        descricaoServico: "Substituiﾃｧﾃ｣o de escovas de carvﾃ｣o desgastadas no motor do gantry, limpeza dos filtros de ar de refrigeraﾃｧﾃ｣o e testes de calibraﾃｧﾃ｣o final com calibrador biomﾃｩtrico fluke. Equipamento testado e liberado para uso clﾃｭnico.",
         responsavelNome: "Dra. Mariana Ramos",
-        responsavelCargo: "Diretora de Engenharia Clínica",
+        responsavelCargo: "Diretora de Engenharia Clﾃｭnica",
         responsavelAssinatura: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='60'><path d='M10,40 C50,10 90,20 130,5 C170,-10 180,45 100,35 C50,30 20,40 160,30' fill='none' stroke='%232563eb' stroke-width='3'/></svg>",
         fotos: [
             { titulo: "Antes (Defeito no Motor)", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='120'><rect width='100%' height='100%' fill='%232a1010'/><line x1='20' y1='20' x2='140' y2='100' stroke='%23ef4444' stroke-width='4'/><line x1='140' y1='20' x2='20' y2='100' stroke='%23ef4444' stroke-width='4'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%23f87171' font-size='12' font-family='sans-serif'>BOBINA QUEIMADA</text></svg>" },
@@ -195,7 +200,7 @@ const MOCK_TICKETS = [
     { 
         id: "tk-2", 
         numero: "OS-2026502", 
-        hospital: "Santa Casa de Misericórdia", 
+        hospital: "Santa Casa de Misericﾃｳrdia", 
         equipamento: "Raio-X Siemens", 
         tipo: "Corretiva", 
         dataAbertura: "2026-07-02T08:00:00", 
@@ -212,8 +217,8 @@ const MOCK_TICKETS = [
     { 
         id: "tk-3", 
         numero: "OS-2026503", 
-        hospital: "Clínica Radiosul", 
-        equipamento: "Ressonância Philips", 
+        hospital: "Clﾃｭnica Radiosul", 
+        equipamento: "Ressonﾃ｢ncia Philips", 
         tipo: "Preventiva", 
         dataAbertura: "2026-07-02T10:00:00", 
         dataInicioAtendimento: "2026-07-02T11:00:00",
@@ -229,9 +234,9 @@ const MOCK_TICKETS = [
 ];
 
 const MOCK_QUOTATIONS = [
-    { id: "q-1", peca: "Tubo de Raios-X de Reposição (CT GE)", equipamento: "Tomógrafo GE Optima", solicitante: "Rodrigo Lima (Técnico)", fornecedor: "GE Healthcare Brasil", valor: 28000.00, status: "Aprovado" },
-    { id: "q-2", peca: "Placa de Controle de Colimação Sobressalente", equipamento: "Raio-X Siemens", solicitante: "Rodrigo Lima (Técnico)", fornecedor: "Siemens Healthineers", valor: 7500.00, status: "Aprovado" },
-    { id: "q-3", peca: "Bobina de Cabeça de 8 Canais para RM", equipamento: "Ressonância Philips", solicitante: "Rodrigo Lima (Técnico)", fornecedor: "Philips Medical", valor: 14500.00, status: "Pendente" }
+    { id: "q-1", peca: "Tubo de Raios-X de Reposiﾃｧﾃ｣o (CT GE)", equipamento: "Tomﾃｳgrafo GE Optima", solicitante: "Rodrigo Lima (Tﾃｩcnico)", fornecedor: "GE Healthcare Brasil", valor: 28000.00, status: "Aprovado" },
+    { id: "q-2", peca: "Placa de Controle de Colimaﾃｧﾃ｣o Sobressalente", equipamento: "Raio-X Siemens", solicitante: "Rodrigo Lima (Tﾃｩcnico)", fornecedor: "Siemens Healthineers", valor: 7500.00, status: "Aprovado" },
+    { id: "q-3", peca: "Bobina de Cabeﾃｧa de 8 Canais para RM", equipamento: "Ressonﾃ｢ncia Philips", solicitante: "Rodrigo Lima (Tﾃｩcnico)", fornecedor: "Philips Medical", valor: 14500.00, status: "Pendente" }
 ];
 
 const MOCK_TIMESHEETS = [
@@ -241,32 +246,32 @@ const MOCK_TIMESHEETS = [
 ];
 
 const MOCK_INVOICES = [
-    { id: "inv-1", numeroNota: "NF-2026001", equipamentoId: "eq-2", cliente: "Hospital Albert Einstein", descricao: "Manutenção corretiva com troca de tubos no equipamento de Tomografia Computadora GE Optima", valorTotal: 45000.00, dataEmissao: "2026-07-02", status: "Recebido", calcularImpostos: true },
-    { id: "inv-2", numeroNota: "NF-2026002", equipamentoId: "eq-1", cliente: "Clínica Radiosul", descricao: "Calibração anual e manutenção preventiva de Ressonância Magnética Philips Achieva 1.5T", valorTotal: 18500.00, dataEmissao: "2026-07-05", status: "Pendente", calcularImpostos: true },
-    { id: "inv-3", numeroNota: "NF-2026003", equipamentoId: "eq-3", cliente: "Santa Casa de Misericórdia", descricao: "Conserto emergencial no sistema de colimação do Raio-X Digital Siemens Multix", valorTotal: 8900.00, dataEmissao: "2026-07-08", status: "Recebido", calcularImpostos: true },
-    { id: "inv-4", numeroNota: "NF-2026004", equipamentoId: "eq-4", cliente: "Clínica UltraScan", descricao: "Manutenção preventiva em 4 aparelhos de Ultrassonografia Doppler Colorido", valorTotal: 12000.00, dataEmissao: "2026-07-12", status: "Recebido", calcularImpostos: false }
+    { id: "inv-1", numeroNota: "NF-2026001", equipamentoId: "eq-2", cliente: "Hospital Albert Einstein", descricao: "Manutenﾃｧﾃ｣o corretiva com troca de tubos no equipamento de Tomografia Computadora GE Optima", valorTotal: 45000.00, dataEmissao: "2026-07-02", status: "Recebido", calcularImpostos: true },
+    { id: "inv-2", numeroNota: "NF-2026002", equipamentoId: "eq-1", cliente: "Clﾃｭnica Radiosul", descricao: "Calibraﾃｧﾃ｣o anual e manutenﾃｧﾃ｣o preventiva de Ressonﾃ｢ncia Magnﾃｩtica Philips Achieva 1.5T", valorTotal: 18500.00, dataEmissao: "2026-07-05", status: "Pendente", calcularImpostos: true },
+    { id: "inv-3", numeroNota: "NF-2026003", equipamentoId: "eq-3", cliente: "Santa Casa de Misericﾃｳrdia", descricao: "Conserto emergencial no sistema de colimaﾃｧﾃ｣o do Raio-X Digital Siemens Multix", valorTotal: 8900.00, dataEmissao: "2026-07-08", status: "Recebido", calcularImpostos: true },
+    { id: "inv-4", numeroNota: "NF-2026004", equipamentoId: "eq-4", cliente: "Clﾃｭnica UltraScan", descricao: "Manutenﾃｧﾃ｣o preventiva em 4 aparelhos de Ultrassonografia Doppler Colorido", valorTotal: 12000.00, dataEmissao: "2026-07-12", status: "Recebido", calcularImpostos: false }
 ];
 
 const MOCK_TRANSACTIONS = [
-    // Impostos Automáticos (DAS Simples Nacional - 8.0%)
-    { id: "tax-1", data: "2026-07-02", descricao: "Imposto DAS - Simples Nacional (8.0%) sobre NF NF-2026001", tipo: "Saída", valor: 3600.00, categoria: "Impostos", status: "Pendente", notaFiscalId: "inv-1", isImpostoAuto: true },
-    { id: "tax-2", data: "2026-07-05", descricao: "Imposto DAS - Simples Nacional (8.0%) sobre NF NF-2026002", tipo: "Saída", valor: 1480.00, categoria: "Impostos", status: "Pendente", notaFiscalId: "inv-2", isImpostoAuto: true },
-    { id: "tax-3", data: "2026-07-08", descricao: "Imposto DAS - Simples Nacional (8.0%) sobre NF NF-2026003", tipo: "Saída", valor: 712.00, categoria: "Impostos", status: "Pendente", notaFiscalId: "inv-3", isImpostoAuto: true },
+    // Impostos Automﾃ｡ticos (DAS Simples Nacional - 8.0%)
+    { id: "tax-1", data: "2026-07-02", descricao: "Imposto DAS - Simples Nacional (8.0%) sobre NF NF-2026001", tipo: "Saﾃｭda", valor: 3600.00, categoria: "Impostos", status: "Pendente", notaFiscalId: "inv-1", isImpostoAuto: true },
+    { id: "tax-2", data: "2026-07-05", descricao: "Imposto DAS - Simples Nacional (8.0%) sobre NF NF-2026002", tipo: "Saﾃｭda", valor: 1480.00, categoria: "Impostos", status: "Pendente", notaFiscalId: "inv-2", isImpostoAuto: true },
+    { id: "tax-3", data: "2026-07-08", descricao: "Imposto DAS - Simples Nacional (8.0%) sobre NF NF-2026003", tipo: "Saﾃｭda", valor: 712.00, categoria: "Impostos", status: "Pendente", notaFiscalId: "inv-3", isImpostoAuto: true },
 
-    // Despesas Diretas com Peças e Km
-    { id: "t-1", data: "2026-07-03", descricao: "Importação do tubo de raios-x de reposição (peça direta)", tipo: "Saída", valor: 28000.00, categoria: "Peças", status: "Pago", notaFiscalId: "inv-1", garantiaMeses: 12 },
-    { id: "t-3", data: "2026-07-04", descricao: "Deslocamento técnico - 150Km rodados (Reembolso)", tipo: "Saída", valor: 450.00, categoria: "Deslocamento", status: "Pago", notaFiscalId: "inv-1", kmRodados: 150 },
+    // Despesas Diretas com Peﾃｧas e Km
+    { id: "t-1", data: "2026-07-03", descricao: "Importaﾃｧﾃ｣o do tubo de raios-x de reposiﾃｧﾃ｣o (peﾃｧa direta)", tipo: "Saﾃｭda", valor: 28000.00, categoria: "Peﾃｧas", status: "Pago", notaFiscalId: "inv-1", garantiaMeses: 12 },
+    { id: "t-3", data: "2026-07-04", descricao: "Deslocamento tﾃｩcnico - 150Km rodados (Reembolso)", tipo: "Saﾃｭda", valor: 450.00, categoria: "Deslocamento", status: "Pago", notaFiscalId: "inv-1", kmRodados: 150 },
     
     // Despesas Preventiva Philips RM
-    { id: "t-4", data: "2026-07-06", descricao: "Locação de kit de ferramentas e calibração de hélio líquido", tipo: "Saída", valor: 2500.00, categoria: "Serviços", status: "Pago", notaFiscalId: "inv-2" },
-    { id: "t-5", data: "2026-07-06", descricao: "Despesas com hospedagem dos engenheiros de campo (3 dias)", tipo: "Saída", valor: 820.00, categoria: "Deslocamento", status: "Pago", notaFiscalId: "inv-2" },
+    { id: "t-4", data: "2026-07-06", descricao: "Locaﾃｧﾃ｣o de kit de ferramentas e calibraﾃｧﾃ｣o de hﾃｩlio lﾃｭquido", tipo: "Saﾃｭda", valor: 2500.00, categoria: "Serviﾃｧos", status: "Pago", notaFiscalId: "inv-2" },
+    { id: "t-5", data: "2026-07-06", descricao: "Despesas com hospedagem dos engenheiros de campo (3 dias)", tipo: "Saﾃｭda", valor: 820.00, categoria: "Deslocamento", status: "Pago", notaFiscalId: "inv-2" },
     
     // Despesa Santa Casa
-    { id: "t-6", data: "2026-07-09", descricao: "Compra de placa de controle de colimação sobressalente", tipo: "Saída", valor: 7500.00, categoria: "Peças", status: "Pago", notaFiscalId: "inv-3", garantiaMeses: 6 },
+    { id: "t-6", data: "2026-07-09", descricao: "Compra de placa de controle de colimaﾃｧﾃ｣o sobressalente", tipo: "Saﾃｭda", valor: 7500.00, categoria: "Peﾃｧas", status: "Pago", notaFiscalId: "inv-3", garantiaMeses: 6 },
     
     // Custos fixos
-    { id: "t-8", data: "2026-07-05", descricao: "Honorários contabilidade mensal Nevixa", tipo: "Saída", valor: 1200.00, categoria: "Outros", status: "Pago", notaFiscalId: "" },
-    { id: "t-9", data: "2026-07-10", descricao: "Retirada Pró-labore Sócios", tipo: "Saída", valor: 8000.00, categoria: "Salários", status: "Pago", notaFiscalId: "" },
+    { id: "t-8", data: "2026-07-05", descricao: "Honorﾃ｡rios contabilidade mensal Nevixa", tipo: "Saﾃｭda", valor: 1200.00, categoria: "Outros", status: "Pago", notaFiscalId: "" },
+    { id: "t-9", data: "2026-07-10", descricao: "Retirada Prﾃｳ-labore Sﾃｳcios", tipo: "Saﾃｭda", valor: 8000.00, categoria: "Salﾃ｡rios", status: "Pago", notaFiscalId: "" },
     { id: "t-10", data: "2026-07-11", descricao: "Entrada de reembolso de seguro de viagem anterior", tipo: "Entrada", valor: 1500.00, categoria: "Outros", status: "Pago", notaFiscalId: "" }
 ];
 
@@ -277,7 +282,7 @@ const DEFAULT_TAX_CONFIG = {
 };
 
 // ==========================================================================
-// ESTADO GLOBAL DA APLICAÇÃO
+// ESTADO GLOBAL DA APLICAﾃ�グ
 // ==========================================================================
 const state = {
     invoices: [],
@@ -289,7 +294,7 @@ const state = {
     timesheets: [],
     auditLogs: [],
     taxConfig: {},
-    rateioConfig: 10, // 10% rateio padrão (Melhoria 14)
+    rateioConfig: 10, // 10% rateio padrﾃ｣o (Melhoria 14)
     currentUser: null,
     activeTab: "dashboard",
     activeSubTab: "equipamentos",
@@ -317,10 +322,16 @@ window.prefillLogin = function(email, senha) {
 };
 
 // ==========================================================================
-// INICIALIZAÇÃO DA APLICAÇÃO
+// INICIALIZAﾃ�グ DA APLICAﾃ�グ
 // ==========================================================================
 document.addEventListener("DOMContentLoaded", async () => {
     await initDatabase(); // Inicializa o banco de dados (localStorage ou Mock)
+    
+    // Auto-gerar preventivas se necessﾃ｡rio
+    if (typeof checkPreventivasAutomaticas === 'function') {
+        checkPreventivasAutomaticas();
+    }
+    
     checkAuth();
     initMobileNavigation();
     setupEventListeners();
@@ -328,7 +339,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     setCurrentDateHeader();
     applyThemePreference();
 
-    // Sincronização multi-abas em tempo real (Sincronismo Operacional)
+    // Sincronizaﾃｧﾃ｣o multi-abas em tempo real (Sincronismo Operacional)
     window.addEventListener("storage", async (e) => {
         if (e.key && e.key.startsWith("nevixa_")) {
             await initDatabase();
@@ -336,7 +347,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
     
-    // Iniciar Polling de sincronização entre guias anônimas/normais (Fase 4C)
+    // Iniciar Polling de sincronizaﾃｧﾃ｣o entre guias anﾃｴnimas/normais (Fase 4C)
     // startStateSyncPolling();
 });
 
@@ -365,12 +376,12 @@ async function initDatabase() {
             const inputRateio = document.getElementById("input-bi-rateio-perc");
             if (inputRateio) inputRateio.value = state.rateioConfig;
             
-            saveStateToLocalStorageOnly(); // Mantém cache local atualizado
+            saveStateToLocalStorageOnly(); // Mantﾃｩm cache local atualizado
             console.log("Banco de dados sincronizado com a Nuvem (Supabase) com sucesso!");
             return;
         }
     } catch (err) {
-        console.warn("Aviso: Nuvem não inicializada ou vazia, usando LocalStorage...", err);
+        console.warn("Aviso: Nuvem nﾃ｣o inicializada ou vazia, usando LocalStorage...", err);
     }
 
     const storedInvoices = localStorage.getItem("nevixa_invoices");
@@ -384,10 +395,10 @@ async function initDatabase() {
     const storedTaxConfig = localStorage.getItem("nevixa_tax_config");
     const storedRateio = localStorage.getItem("nevixa_rateio_perc");
     
-    // Configurações tributárias/rateios
+    // Configuraﾃｧﾃｵes tributﾃ｡rias/rateios
     state.taxConfig = storedTaxConfig ? JSON.parse(storedTaxConfig) : DEFAULT_TAX_CONFIG;
     if (state.taxConfig && state.taxConfig.simplesAliquota === 8.0) {
-        state.taxConfig.simplesAliquota = 5.0; // Atualiza defaults para base local também
+        state.taxConfig.simplesAliquota = 5.0; // Atualiza defaults para base local tambﾃｩm
     }
     state.rateioConfig = storedRateio ? parseFloat(storedRateio) : 10;
     
@@ -414,7 +425,7 @@ async function initDatabase() {
         state.tickets = MOCK_TICKETS;
         state.timesheets = MOCK_TIMESHEETS;
         state.auditLogs = [
-            { timestamp: new Date().toISOString(), usuario: "Sistema", operacao: "Banco Inicializado", descricao: "Banco de dados preenchido com dados fictícios de demonstração." }
+            { timestamp: new Date().toISOString(), usuario: "Sistema", operacao: "Banco Inicializado", descricao: "Banco de dados preenchido com dados fictﾃｭcios de demonstraﾃｧﾃ｣o." }
         ];
     }
     saveStateToLocalStorage();
@@ -444,7 +455,7 @@ async function saveStateToLocalStorage() {
             
         if (error) console.error('Erro ao salvar estado no Supabase:', error);
     } catch (err) {
-        console.error('Falha de conexão ao salvar na nuvem:', err);
+        console.error('Falha de conexﾃ｣o ao salvar na nuvem:', err);
     }
 }
 
@@ -474,18 +485,18 @@ function addAuditLog(operacao, descricao) {
     saveStateToLocalStorage();
 }
 
-// Define o cabeçalho com a data atual formatada
+// Define o cabeﾃｧalho com a data atual formatada
 function setCurrentDateHeader() {
     const dataAtual = new Date();
     const meses = [
-        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+        "Janeiro", "Fevereiro", "Marﾃｧo", "Abril", "Maio", "Junho",
         "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
     ];
     document.getElementById("header-date").innerText = `${meses[dataAtual.getMonth()]} ${dataAtual.getFullYear()}`;
 }
 
 // ==========================================================================
-// AUTENTICAÇÃO E SESSÃO DE USUÁRIO
+// AUTENTICAﾃ�グ E SESSﾃグ DE USUﾃヽIO
 // ==========================================================================
 function checkAuth() {
     const storedUser = sessionStorage.getItem("nevixa_current_user");
@@ -548,13 +559,16 @@ function applyUserProfile(user) {
     // Dashboard toggle
     const dashCliente = document.getElementById("dashboard-cliente");
     const dashCorp = document.getElementById("dashboard-corporativo");
+    const dashGeral = document.getElementById("dashboard-geral");
     if (dashCliente && dashCorp) {
         if (user.papel === "cliente") {
             dashCliente.classList.remove("d-none");
             dashCorp.classList.add("d-none");
+            if (dashGeral) dashGeral.classList.add("d-none");
         } else {
             dashCliente.classList.add("d-none");
             dashCorp.classList.remove("d-none");
+            if (dashGeral) dashGeral.classList.remove("d-none");
         }
     }
 }
@@ -615,7 +629,7 @@ function generateUUID() {
 }
 
 // ==========================================================================
-// CONTROLE DE NAVEGAÇÃO E RESPONSIVIDADE MOBILE
+// CONTROLE DE NAVEGAﾃ�グ E RESPONSIVIDADE MOBILE
 // ==========================================================================
 function initMobileNavigation() {
     const appContainer = document.querySelector(".app-container");
@@ -637,7 +651,7 @@ function initMobileNavigation() {
         </a>
         <a href="#" class="mobile-nav-link" data-tab="operacoes" id="mob-menu-operacoes">
             <i class="fa-solid fa-helmet-safety"></i>
-            <span>Op. Técnicas</span>
+            <span>Op. Tﾃｩcnicas</span>
         </a>
         <a href="#" class="mobile-nav-link" data-tab="relatorios" id="mob-menu-relatorios">
             <i class="fa-solid fa-chart-line"></i>
@@ -708,27 +722,27 @@ function switchTab(tabName) {
     const sectionSubtitle = document.getElementById("current-section-subtitle");
     
     if (tabName === "dashboard") {
-        if (state.currentUser && (state.currentUser.role === "Cliente" || state.currentUser.role === "Cliente (Hospital / Clínica)")) {
-            sectionTitle.innerText = "Área do Cliente";
+        if (state.currentUser && (state.currentUser.role === "Cliente" || state.currentUser.role === "Cliente (Hospital / Clﾃｭnica)")) {
+            sectionTitle.innerText = "ﾃ〉ea do Cliente";
             sectionSubtitle.innerText = "Acompanhe o status dos seus equipamentos e notas fiscais";
         } else {
             sectionTitle.innerText = "Dashboard Geral";
-            sectionSubtitle.innerText = "Visão consolidada da saúde financeira da empresa";
+            sectionSubtitle.innerText = "Visﾃ｣o consolidada da saﾃｺde financeira da empresa";
         }
     } else if (tabName === "notas") {
         sectionTitle.innerText = "Central de Notas Fiscais";
-        sectionSubtitle.innerText = "Gestão de faturamentos de serviço e centros de custos";
+        sectionSubtitle.innerText = "Gestﾃ｣o de faturamentos de serviﾃｧo e centros de custos";
     } else if (tabName === "fluxo") {
         sectionTitle.innerText = "Fluxo de Caixa Geral";
-        sectionSubtitle.innerText = "Histórico geral de todas as entradas e saídas da empresa";
+        sectionSubtitle.innerText = "Histﾃｳrico geral de todas as entradas e saﾃｭdas da empresa";
     } else if (tabName === "operacoes") {
-        sectionTitle.innerText = "Operações Técnicas de Campo";
-        sectionSubtitle.innerText = "Prontuários de equipamentos, calibradores, cotações e controle de chamados SLA";
+        sectionTitle.innerText = "Operaﾃｧﾃｵes Tﾃｩcnicas de Campo";
+        sectionSubtitle.innerText = "Prontuﾃ｡rios de equipamentos, calibradores, cotaﾃｧﾃｵes e controle de chamados SLA";
     } else if (tabName === "relatorios") {
-        sectionTitle.innerText = "BI & Relatórios Contábeis";
-        sectionSubtitle.innerText = "Demonstrativos de Resultados (DRE), Ponto de Equilíbrio, Margem Real e Prospecção";
+        sectionTitle.innerText = "BI & Relatﾃｳrios Contﾃ｡beis";
+        sectionSubtitle.innerText = "Demonstrativos de Resultados (DRE), Ponto de Equilﾃｭbrio, Margem Real e Prospecﾃｧﾃ｣o";
     } else if (tabName === "acessos") {
-        sectionTitle.innerText = "Gestão de Acessos";
+        sectionTitle.innerText = "Gestﾃ｣o de Acessos";
         sectionSubtitle.innerText = "Aprove ou bloqueie a entrada de colaboradores no sistema";
         carregarUsuarios(); // Sempre que entrar na aba, recarrega a lista
     }
@@ -799,7 +813,7 @@ function renderDashboardCliente() {
     
     const elStatus = document.getElementById("dash-cliente-status-prev");
     if (temAtrasado) {
-        elStatus.innerText = "Atenção (Vencidos)";
+        elStatus.innerText = "Atenﾃｧﾃ｣o (Vencidos)";
         elStatus.style.color = "var(--color-danger)";
     } else {
         elStatus.innerText = "Regular";
@@ -817,6 +831,28 @@ function renderDashboard() {
         renderDashboardCliente();
         return;
     }
+
+    // ==== DASHBOARD GERAL (ENGENHARIA/ADMIN) ====
+    const elAb = document.getElementById("dash-geral-os-abertas");
+    const elAtr = document.getElementById("dash-geral-os-atrasadas");
+    const elEq = document.getElementById("dash-geral-equip-count");
+    if (elAb && elAtr && elEq) {
+        let countAbertas = 0;
+        let countAtrasadas = 0;
+        const now = new Date();
+        state.tickets.forEach(tk => {
+            if (tk.status !== "Concluﾃｭdo" && tk.status !== "Cancelado") {
+                countAbertas++;
+                if (tk.slaVencimento && new Date(tk.slaVencimento) < now) {
+                    countAtrasadas++;
+                }
+            }
+        });
+        elAb.innerText = countAbertas;
+        elAtr.innerText = countAtrasadas;
+        elEq.innerText = state.equipments.length;
+    }
+
 
     const dataAtual = new Date();
     const anoAtual = dataAtual.getFullYear();
@@ -844,13 +880,13 @@ function renderDashboard() {
 
     const totalEntradas = faturamentoNotasRecebido + receitasAvulsasPagas;
     
-    // Saídas = Transações de Saída confirmadas
+    // Saﾃｭdas = Transaﾃｧﾃｵes de Saﾃｭda confirmadas
     const totalSaidas = currentMonthTransactions
-        .filter(t => t.tipo === "Saída" && t.status === "Pago")
+        .filter(t => t.tipo === "Saﾃｭda" && t.status === "Pago")
         .reduce((sum, t) => sum + t.valor, 0);
 
     const totalSaidasPendentes = currentMonthTransactions
-        .filter(t => t.tipo === "Saída" && t.status === "Pendente")
+        .filter(t => t.tipo === "Saﾃｭda" && t.status === "Pendente")
         .reduce((sum, t) => sum + t.valor, 0);
         
     const lucroLiquido = totalEntradas - totalSaidas;
@@ -871,7 +907,7 @@ function renderDashboard() {
     } else {
         lucroElement.className = "metric-value val-despesa";
         lucroTrendElement.className = "trend trend-down";
-        lucroTrendElement.innerHTML = `<i class="fa-solid fa-arrow-trend-down"></i> Resultado deficitário`;
+        lucroTrendElement.innerHTML = `<i class="fa-solid fa-arrow-trend-down"></i> Resultado deficitﾃ｡rio`;
     }
     
     document.getElementById("dash-margem").innerText = `${margemGeral.toFixed(1)}%`;
@@ -882,7 +918,7 @@ function renderDashboard() {
     if (equipEl) equipEl.innerText = state.equipments.length;
 
     // Chamados em Aberto (Admin/Corporativo)
-    const chamadosCorp = state.tickets.filter(tk => tk.status === "Pendente" || tk.status === "Em Atendimento" || tk.status === "Aguardando Peça");
+    const chamadosCorp = state.tickets.filter(tk => tk.status === "Pendente" || tk.status === "Em Atendimento" || tk.status === "Aguardando Peﾃｧa");
     const chamadosCorpEl = document.getElementById("dash-chamados-count");
     if (chamadosCorpEl) chamadosCorpEl.innerText = chamadosCorp.length;
     
@@ -899,12 +935,12 @@ function renderDashboardAlerts() {
     state.invoices.forEach(inv => {
         if (inv.status === "Cancelado") return;
         
-        // Custos das Transações
+        // Custos das Transaﾃｧﾃｵes
         const custosTrans = state.transactions
-            .filter(t => t.notaFiscalId === inv.id && t.tipo === "Saída")
+            .filter(t => t.notaFiscalId === inv.id && t.tipo === "Saﾃｭda")
             .reduce((sum, t) => sum + t.valor, 0);
             
-        // Custos de Timesheet Mão de Obra
+        // Custos de Timesheet Mﾃ｣o de Obra
         const custosTS = state.timesheets
             .filter(ts => ts.notaFiscalId === inv.id)
             .reduce((sum, ts) => sum + ts.custoTotal, 0);
@@ -922,7 +958,7 @@ function renderDashboardAlerts() {
         alertBody.innerHTML = `
             <tr>
                 <td colspan="7" class="text-center text-muted py-4">
-                    <i class="fa-solid fa-circle-check text-success mr-1"></i> Excelentes margens de lucro! Nenhuma nota fiscal está com baixa rentabilidade.
+                    <i class="fa-solid fa-circle-check text-success mr-1"></i> Excelentes margens de lucro! Nenhuma nota fiscal estﾃ｡ com baixa rentabilidade.
                 </td>
             </tr>
         `;
@@ -968,7 +1004,7 @@ function renderDashboardCharts() {
         const nomesMesesCurtos = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         mesesLabels.push(`${nomesMesesCurtos[mesIndex]}/${String(ano).substr(2)}`);
         
-        // Entradas no Mês
+        // Entradas no Mﾃｪs
         const totalEntradasMes = state.invoices
             .filter(inv => {
                 if (inv.status !== "Recebido") return false;
@@ -984,10 +1020,10 @@ function renderDashboardCharts() {
             })
             .reduce((sum, t) => sum + t.valor, 0);
 
-        // Saídas no Mês
+        // Saﾃｭdas no Mﾃｪs
         const totalSaidasMes = state.transactions
             .filter(t => {
-                if (t.tipo !== "Saída" || t.status !== "Pago") return false;
+                if (t.tipo !== "Saﾃｭda" || t.status !== "Pago") return false;
                 const p = t.data.split("-");
                 return parseInt(p[0]) === ano && (parseInt(p[1]) - 1) === mesIndex;
             })
@@ -1012,7 +1048,7 @@ function renderDashboardCharts() {
                 labels: mesesLabels,
                 datasets: [
                     { label: 'Entradas (Faturamento)', data: entradasData, backgroundColor: '#10b981', borderRadius: 4 },
-                    { label: 'Saídas (Custos)', data: saidasData, backgroundColor: '#ef4444', borderRadius: 4 }
+                    { label: 'Saﾃｭdas (Custos)', data: saidasData, backgroundColor: '#ef4444', borderRadius: 4 }
                 ]
             },
             options: {
@@ -1028,20 +1064,20 @@ function renderDashboardCharts() {
             }
         });
     } catch (e) {
-        console.error("Falha ao inicializar o gráfico de fluxo. CDN offline ou bloqueada.", e);
-        ctxFluxo.canvas.parentNode.innerHTML = `<div class="text-center text-muted py-4" style="font-size:0.8rem;"><i class="fa-solid fa-triangle-exclamation text-warning"></i> Gráfico indisponível (CDN offline ou bloqueada).</div>`;
+        console.error("Falha ao inicializar o grﾃ｡fico de fluxo. CDN offline ou bloqueada.", e);
+        ctxFluxo.canvas.parentNode.innerHTML = `<div class="text-center text-muted py-4" style="font-size:0.8rem;"><i class="fa-solid fa-triangle-exclamation text-warning"></i> Grﾃ｡fico indisponﾃｭvel (CDN offline ou bloqueada).</div>`;
     }
 
-    // Despesas Donut (Mês Atual)
+    // Despesas Donut (Mﾃｪs Atual)
     const dataAtual = new Date();
     const anoAtual = dataAtual.getFullYear();
     const mesAtual = dataAtual.getMonth();
     
-    const categoriasValores = { "Peças": 0, "Deslocamento": 0, "Impostos": 0, "Serviços": 0, "Salários": 0, "Outros": 0 };
+    const categoriasValores = { "Peﾃｧas": 0, "Deslocamento": 0, "Impostos": 0, "Serviﾃｧos": 0, "Salﾃ｡rios": 0, "Outros": 0 };
     
     state.transactions
         .filter(t => {
-            if (t.tipo !== "Saída" || t.status !== "Pago") return false;
+            if (t.tipo !== "Saﾃｭda" || t.status !== "Pago") return false;
             const p = t.data.split("-");
             return parseInt(p[0]) === anoAtual && (parseInt(p[1]) - 1) === mesAtual;
         })
@@ -1053,7 +1089,7 @@ function renderDashboardCharts() {
             }
         });
         
-    const descCategoriaTraduzida = { "Peças": "Peças de Reposição", "Deslocamento": "Deslocamento / Viagens", "Impostos": "Impostos & Tributos", "Serviços": "Serviços Terceirizados", "Salários": "Salários & Pró-labore", "Outros": "Outros Custos" };
+    const descCategoriaTraduzida = { "Peﾃｧas": "Peﾃｧas de Reposiﾃｧﾃ｣o", "Deslocamento": "Deslocamento / Viagens", "Impostos": "Impostos & Tributos", "Serviﾃｧos": "Serviﾃｧos Terceirizados", "Salﾃ｡rios": "Salﾃ｡rios & Prﾃｳ-labore", "Outros": "Outros Custos" };
     const despesasCategorias = Object.keys(categoriasValores);
     const despesasValores = Object.values(categoriasValores);
     const totalDespesas = despesasValores.reduce((sum, v) => sum + v, 0);
@@ -1063,7 +1099,7 @@ function renderDashboardCharts() {
         if (totalDespesas === 0) {
             state.charts.despesas = new Chart(ctxDespesas, {
                 type: 'doughnut',
-                data: { labels: ['Sem despesas no mês'], datasets: [{ data: [1], backgroundColor: ['rgba(255,255,255,0.05)'] }] },
+                data: { labels: ['Sem despesas no mﾃｪs'], datasets: [{ data: [1], backgroundColor: ['rgba(255,255,255,0.05)'] }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         } else {
@@ -1088,8 +1124,8 @@ function renderDashboardCharts() {
             });
         }
     } catch (e) {
-        console.error("Falha ao inicializar o gráfico de despesas. CDN offline ou bloqueada.", e);
-        ctxDespesas.canvas.parentNode.innerHTML = `<div class="text-center text-muted py-4" style="font-size:0.8rem;"><i class="fa-solid fa-triangle-exclamation text-warning"></i> Gráfico indisponível (CDN offline ou bloqueada).</div>`;
+        console.error("Falha ao inicializar o grﾃ｡fico de despesas. CDN offline ou bloqueada.", e);
+        ctxDespesas.canvas.parentNode.innerHTML = `<div class="text-center text-muted py-4" style="font-size:0.8rem;"><i class="fa-solid fa-triangle-exclamation text-warning"></i> Grﾃ｡fico indisponﾃｭvel (CDN offline ou bloqueada).</div>`;
     }
 }
 
@@ -1121,7 +1157,7 @@ function renderNotasTable() {
         if (state.taxConfig && state.taxConfig.regime) {
             badgeRegime.textContent = `${state.taxConfig.regime} (${state.taxConfig.simplesAliquota}%)`;
         } else {
-            badgeRegime.textContent = "Não Configurado";
+            badgeRegime.textContent = "Nﾃ｣o Configurado";
         }
     }
     
@@ -1133,7 +1169,7 @@ function renderNotasTable() {
     filteredInvoices.sort((a, b) => new Date(b.dataEmissao) - new Date(a.dataEmissao));
     
     filteredInvoices.forEach(inv => {
-        const despesasNota = state.transactions.filter(t => t.notaFiscalId === inv.id && t.tipo === "Saída");
+        const despesasNota = state.transactions.filter(t => t.notaFiscalId === inv.id && t.tipo === "Saﾃｭda");
         const totalCustosTrans = despesasNota.reduce((sum, t) => sum + t.valor, 0);
         
         const totalCustosTS = state.timesheets
@@ -1235,7 +1271,7 @@ function renderFluxoTable() {
     });
     
     if (filteredTransactions.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-5">Nenhum lançamento encontrado.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-5">Nenhum lanﾃｧamento encontrado.</td></tr>`;
         return;
     }
     
@@ -1252,7 +1288,7 @@ function renderFluxoTable() {
         
         const tipoBadge = t.tipo === "Entrada" 
             ? `<span class="badge badge-success"><i class="fa-solid fa-circle-arrow-up"></i> Entrada</span>`
-            : `<span class="badge badge-danger"><i class="fa-solid fa-circle-arrow-down"></i> Saída</span>`;
+            : `<span class="badge badge-danger"><i class="fa-solid fa-circle-arrow-down"></i> Saﾃｭda</span>`;
             
         const statusBadge = t.status === "Pago" ? `<span class="badge badge-success">Confirmado</span>` : `<span class="badge badge-warning">Pendente</span>`;
             
@@ -1283,7 +1319,7 @@ function renderFluxoTable() {
 }
 
 /* --------------------------------------------------------------------------
-   D. ABA OPERAÇÕES TÉCNICAS (NOVA)
+   D. ABA OPERAﾃ�髭S Tﾃ韻NICAS (NOVA)
    -------------------------------------------------------------------------- */
 function renderEquipamentos() {
     const tbody = document.getElementById("table-equipamentos-body");
@@ -1322,7 +1358,7 @@ function renderEquipamentos() {
         
         notasEquip.forEach(inv => {
             const custosTrans = state.transactions
-                .filter(t => t.notaFiscalId === inv.id && t.tipo === "Saída")
+                .filter(t => t.notaFiscalId === inv.id && t.tipo === "Saﾃｭda")
                 .reduce((sum, t) => sum + t.valor, 0);
             const custosTS = state.timesheets
                 .filter(ts => ts.notaFiscalId === inv.id)
@@ -1330,7 +1366,7 @@ function renderEquipamentos() {
             totalCustos += (custosTrans + custosTS);
         });
         
-        // Calcular preventiva atrasada (Ciclo configurado em eq.periodicidade ou 6 meses padrão)
+        // Calcular preventiva atrasada (Ciclo configurado em eq.periodicidade ou 6 meses padrﾃ｣o)
         const mesesCiclo = eq.periodicidade || 6;
         const dataPreventiva = new Date(eq.ultimaPreventiva);
         const dataLimite = new Date(dataPreventiva);
@@ -1344,17 +1380,17 @@ function renderEquipamentos() {
             dataPreventivaHTML = `
                 <div class="d-flex flex-column gap-1">
                     <span>${formatDate(eq.ultimaPreventiva)}</span>
-                    <span class="badge badge-danger" style="font-size:0.55rem; padding: 2px 4px;">⚠️ Vencida (${diffDias}d)</span>
+                    <span class="badge badge-danger" style="font-size:0.55rem; padding: 2px 4px;">笞��� Vencida (${diffDias}d)</span>
                 </div>
             `;
             if (eq.status === "Operacional") {
-                eq.status = "Atenção (Preventiva Atrasada)";
+                eq.status = "Atenﾃｧﾃ｣o (Preventiva Atrasada)";
             }
         }
         
         // Status class
         let statusClass = "badge-success";
-        if (eq.status.includes("Atenção")) statusClass = "badge-warning";
+        if (eq.status.includes("Atenﾃｧﾃ｣o")) statusClass = "badge-warning";
         else if (eq.status.includes("Parado")) statusClass = "badge-danger";
         
         const row = document.createElement("tr");
@@ -1370,7 +1406,7 @@ function renderEquipamentos() {
             <td class="font-numeric val-despesa">${formatCurrency(totalCustos)}</td>
             <td>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-outline btn-sm" onclick="abrirProntuarioEquipamento('${eq.id}')" title="Ver Prontuário Completo">
+                    <button class="btn btn-outline btn-sm" onclick="abrirProntuarioEquipamento('${eq.id}')" title="Ver Prontuﾃ｡rio Completo">
                         <i class="fa-solid fa-file-medical"></i> Laudos
                     </button>
                     ${isCliente ? '' : `
@@ -1421,10 +1457,10 @@ window.abrirProntuarioEquipamento = function(eqId) {
     badge.innerText = eq.status;
     badge.className = "badge";
     if (eq.status.includes("Operacional")) badge.classList.add("badge-success");
-    else if (eq.status.includes("Atenção")) badge.classList.add("badge-warning");
+    else if (eq.status.includes("Atenﾃｧﾃ｣o")) badge.classList.add("badge-warning");
     else badge.classList.add("badge-danger");
     
-    // Encontrar todas as intervenções/Notas
+    // Encontrar todas as intervenﾃｧﾃｵes/Notas
     const tbody = document.getElementById("table-prontuario-historico-body");
     tbody.innerHTML = "";
     
@@ -1432,13 +1468,13 @@ window.abrirProntuarioEquipamento = function(eqId) {
     let custoTotalAcumulado = 0;
     
     if (notasEquip.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Nenhuma ordem de serviço ou preventiva registrada para este equipamento.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Nenhuma ordem de serviﾃｧo ou preventiva registrada para este equipamento.</td></tr>`;
     } else {
         notasEquip.sort((a, b) => new Date(b.dataEmissao) - new Date(a.dataEmissao));
         notasEquip.forEach(inv => {
-            // Custos de Peças e Viagem
+            // Custos de Peﾃｧas e Viagem
             const despesasPecasViagem = state.transactions
-                .filter(t => t.notaFiscalId === inv.id && t.tipo === "Saída" && (t.categoria === "Peças" || t.categoria === "Deslocamento"))
+                .filter(t => t.notaFiscalId === inv.id && t.tipo === "Saﾃｭda" && (t.categoria === "Peﾃｧas" || t.categoria === "Deslocamento"))
                 .reduce((sum, t) => sum + t.valor, 0);
             
             // Custos de Timesheet
@@ -1453,7 +1489,7 @@ window.abrirProntuarioEquipamento = function(eqId) {
             row.innerHTML = `
                 <td><strong>${inv.numeroNota}</strong></td>
                 <td class="text-muted" style="font-size:0.75rem">${formatDate(inv.dataEmissao)}</td>
-                <td style="font-size:0.775rem">${inv.descricao || "Manutenção preventiva padrão."}</td>
+                <td style="font-size:0.775rem">${inv.descricao || "Manutenﾃｧﾃ｣o preventiva padrﾃ｣o."}</td>
                 <td class="font-numeric val-receita">${formatCurrency(inv.valorTotal)}</td>
                 <td class="font-numeric val-despesa">${formatCurrency(despesasPecasViagem)}</td>
                 <td class="font-numeric val-despesa">${formatCurrency(despesasMaoObra)}</td>
@@ -1470,10 +1506,10 @@ window.abrirProntuarioEquipamento = function(eqId) {
     const desgasteBar = document.getElementById("prontuario-desgaste-tubo-bar");
     const desgasteLabel = document.getElementById("prontuario-desgaste-tubo-label");
     
-    if (eq.nome.includes("Tomógrafo") || eq.nome.includes("Raio-X")) {
+    if (eq.nome.includes("Tomﾃｳgrafo") || eq.nome.includes("Raio-X")) {
         desgasteBox.style.display = "block";
         
-        // Simulação baseada no número de OS/intervenções acumuladas (ex: 22% por OS, limite 100%)
+        // Simulaﾃｧﾃ｣o baseada no nﾃｺmero de OS/intervenﾃｧﾃｵes acumuladas (ex: 22% por OS, limite 100%)
         const totalOS = notasEquip.length;
         const desgastePerc = Math.min(100, Math.max(15, totalOS * 22));
         
@@ -1481,15 +1517,15 @@ window.abrirProntuarioEquipamento = function(eqId) {
         
         if (desgastePerc < 50) {
             desgasteBar.style.backgroundColor = "var(--color-success)";
-            desgasteLabel.innerText = `${desgastePerc}% - Excelente (Vida útil estável)`;
+            desgasteLabel.innerText = `${desgastePerc}% - Excelente (Vida ﾃｺtil estﾃ｡vel)`;
             desgasteLabel.className = "desgaste-status-label text-success";
         } else if (desgastePerc < 80) {
             desgasteBar.style.backgroundColor = "var(--color-warning)";
-            desgasteLabel.innerText = `${desgastePerc}% - Atenção (Planejar manutenção corretiva preventiva)`;
+            desgasteLabel.innerText = `${desgastePerc}% - Atenﾃｧﾃ｣o (Planejar manutenﾃｧﾃ｣o corretiva preventiva)`;
             desgasteLabel.className = "desgaste-status-label text-warning";
         } else {
             desgasteBar.style.backgroundColor = "var(--color-danger)";
-            desgasteLabel.innerText = `${desgastePerc}% - Crítico! Recomenda-se substituição do tubo imediatamente.`;
+            desgasteLabel.innerText = `${desgastePerc}% - Crﾃｭtico! Recomenda-se substituiﾃｧﾃ｣o do tubo imediatamente.`;
             desgasteLabel.className = "desgaste-status-label text-danger";
         }
     } else {
@@ -1499,7 +1535,7 @@ window.abrirProntuarioEquipamento = function(eqId) {
     openModal("modal-prontuario");
 };
 
-// CRUD Equipamentos Lógica
+// CRUD Equipamentos Lﾃｳgica
 window.editEquipamento = async function(id) {
     const eq = state.equipments.find(e => e.id === id);
     if (!eq) return;
@@ -1547,7 +1583,7 @@ window.editEquipamento = async function(id) {
     }
     
     document.getElementById("eq-form-cliente").value = eq.cliente;
-    document.getElementById("eq-form-status").value = eq.status.includes("Atenção") ? "Atenção" : eq.status.includes("Parado") ? "Parado" : "Operacional";
+    document.getElementById("eq-form-status").value = eq.status.includes("Atenﾃｧﾃ｣o") ? "Atenﾃｧﾃ｣o" : eq.status.includes("Parado") ? "Parado" : "Operacional";
     document.getElementById("eq-form-preventiva").value = eq.ultimaPreventiva;
     document.getElementById("eq-form-periodicidade").value = eq.periodicidade || 6;
     
@@ -1560,7 +1596,7 @@ window.deleteEquipamento = function(id) {
     
     uiConfirm(`Deseja realmente remover o equipamento ${eq.tag} (${eq.nome}) do parque instalado?`, () => {
         state.equipments = state.equipments.filter(e => e.id !== id);
-        addAuditLog("Equipamento Excluído", `Remoção do equipamento ${eq.tag} do hospital ${eq.cliente}`);
+        addAuditLog("Equipamento Excluﾃｭdo", `Remoﾃｧﾃ｣o do equipamento ${eq.tag} do hospital ${eq.cliente}`);
         saveStateToLocalStorage();
         renderApp();
     });
@@ -1578,14 +1614,14 @@ function renderCalibradores() {
         const diffTempo = dataProxima - hoje;
         const diffDias = Math.ceil(diffTempo / (1000 * 60 * 60 * 24));
         
-        let statusText = "Laudo Válido";
+        let statusText = "Laudo Vﾃ｡lido";
         let statusClass = "badge-success";
         
         if (diffDias <= 0) {
-            statusText = "🔴 BLOQUEADO PARA USO";
+            statusText = "�閥 BLOQUEADO PARA USO";
             statusClass = "badge-danger-glow";
         } else if (diffDias < 30) {
-            statusText = "Calibração Próxima";
+            statusText = "Calibraﾃｧﾃ｣o Prﾃｳxima";
             statusClass = "badge-warning-glow";
         }
         
@@ -1630,7 +1666,7 @@ window.visualizarCertificadoRBC = function(id) {
     document.getElementById("cert-engenheiro").innerText = cal.engenheiro || "Eng. Felipe de Souza Monte";
     document.getElementById("cert-crea").innerText = cal.crea || "507189332-A";
     
-    // Gerar um número de laudo aleatório mas persistente baseado no serial
+    // Gerar um nﾃｺmero de laudo aleatﾃｳrio mas persistente baseado no serial
     const hashNum = cal.serial.replace(/[^0-9]/g, "") || "488192";
     document.getElementById("cert-numero").innerText = `L-${hashNum}/2026`;
     
@@ -1641,9 +1677,9 @@ window.deleteCalibrador = function(id) {
     const cal = state.calibrators.find(c => c.id === id);
     if (!cal) return;
     
-    uiConfirm(`Excluir o calibrador biométrico ${cal.nome} (${cal.serial}) da base de ferramentas?`, () => {
+    uiConfirm(`Excluir o calibrador biomﾃｩtrico ${cal.nome} (${cal.serial}) da base de ferramentas?`, () => {
         state.calibrators = state.calibrators.filter(c => c.id !== id);
-        addAuditLog("Calibrador Excluído", `Remoção do calibrador ${cal.nome}`);
+        addAuditLog("Calibrador Excluﾃｭdo", `Remoﾃｧﾃ｣o do calibrador ${cal.nome}`);
         saveStateToLocalStorage();
         renderApp();
     });
@@ -1657,7 +1693,7 @@ function renderCotacoes() {
     
     state.quotations.forEach(q => {
         if (isCliente) {
-            // Verifica se o equipamento da cotação pertence ao hospital do cliente
+            // Verifica se o equipamento da cotaﾃｧﾃ｣o pertence ao hospital do cliente
             let eqAssociado = null;
             if (q.equipamentoId) {
                 eqAssociado = state.equipments.find(e => e.id === q.equipamentoId);
@@ -1666,7 +1702,7 @@ function renderCotacoes() {
             }
             
             if (!eqAssociado || eqAssociado.cliente !== state.currentUser.nome) {
-                return; // Esconde a cotação se não for do hospital do cliente
+                return; // Esconde a cotaﾃｧﾃ｣o se nﾃ｣o for do hospital do cliente
             }
         }
         
@@ -1675,11 +1711,11 @@ function renderCotacoes() {
         
         if (q.status === "Pendente") {
             statusClass = "badge-warning";
-            // Admin ou Financeiro podem aprovar cotação
+            // Admin ou Financeiro podem aprovar cotaﾃｧﾃ｣o
             if (state.currentUser.papel !== "tecnico") {
                 actionBtn = `
                     <button class="btn btn-secondary btn-sm" onclick="aprovarCotacao('${q.id}')">
-                        <i class="fa-solid fa-thumbs-up"></i> Aprovar Peça
+                        <i class="fa-solid fa-thumbs-up"></i> Aprovar Peﾃｧa
                     </button>
                 `;
             }
@@ -1698,7 +1734,7 @@ function renderCotacoes() {
             <td>
                 <div class="d-flex gap-2">
                     ${actionBtn}
-                    <button class="btn btn-outline btn-sm text-danger" onclick="deleteCotacao('${q.id}')" title="Excluir Cotação">
+                    <button class="btn btn-outline btn-sm text-danger" onclick="deleteCotacao('${q.id}')" title="Excluir Cotaﾃｧﾃ｣o">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
@@ -1712,26 +1748,26 @@ window.aprovarCotacao = function(id) {
     const q = state.quotations.find(cot => cot.id === id);
     if (!q) return;
     
-    uiConfirm(`Aprovar a compra da peça "${q.peca}" no valor de ${formatCurrency(q.valor)}?`, () => {
+    uiConfirm(`Aprovar a compra da peﾃｧa "${q.peca}" no valor de ${formatCurrency(q.valor)}?`, () => {
         q.status = "Aprovado";
         
-        // Gera automaticamente um lançamento de despesa no Fluxo de Caixa (Saída)
+        // Gera automaticamente um lanﾃｧamento de despesa no Fluxo de Caixa (Saﾃｭda)
         const novaDespesa = {
             id: generateUUID(),
             data: new Date().toISOString().slice(0,10),
-            descricao: `Aprovação Compra Peça: ${q.peca}`,
-            tipo: "Saída",
+            descricao: `Aprovaﾃｧﾃ｣o Compra Peﾃｧa: ${q.peca}`,
+            tipo: "Saﾃｭda",
             valor: q.valor,
-            categoria: "Peças",
+            categoria: "Peﾃｧas",
             status: "Pendente", // Fica pendente de pagamento
-            notaFiscalId: "" // avulsa até vincularem
+            notaFiscalId: "" // avulsa atﾃｩ vincularem
         };
         state.transactions.push(novaDespesa);
         
-        addAuditLog("Aprovação de Peça", `Compra aprovada: ${q.peca} - Valor: ${formatCurrency(q.valor)}`);
+        addAuditLog("Aprovaﾃｧﾃ｣o de Peﾃｧa", `Compra aprovada: ${q.peca} - Valor: ${formatCurrency(q.valor)}`);
         saveStateToLocalStorage();
         renderApp();
-        uiAlert(`Sucesso! A cotação foi aprovada e um débito de ${formatCurrency(q.valor)} sob a categoria Peças foi criado no Fluxo de Caixa.`);
+        uiAlert(`Sucesso! A cotaﾃｧﾃ｣o foi aprovada e um dﾃｩbito de ${formatCurrency(q.valor)} sob a categoria Peﾃｧas foi criado no Fluxo de Caixa.`);
     });
 };
 
@@ -1739,9 +1775,9 @@ window.deleteCotacao = function(id) {
     const q = state.quotations.find(cot => cot.id === id);
     if (!q) return;
     
-    uiConfirm(`Excluir a requisição de cotação da peça "${q.peca}"?`, () => {
+    uiConfirm(`Excluir a requisiﾃｧﾃ｣o de cotaﾃｧﾃ｣o da peﾃｧa "${q.peca}"?`, () => {
         state.quotations = state.quotations.filter(cot => cot.id !== id);
-        addAuditLog("Cotação Excluída", `Remoção da cotação de ${q.peca}`);
+        addAuditLog("Cotaﾃｧﾃ｣o Excluﾃｭda", `Remoﾃｧﾃ｣o da cotaﾃｧﾃ｣o de ${q.peca}`);
         saveStateToLocalStorage();
         renderApp();
     });
@@ -1763,7 +1799,7 @@ function renderChamados() {
         
         let statusClass = "badge-info";
         if (tk.status === "Pendente") statusClass = "badge-warning";
-        else if (tk.status === "Aguardando Peça") statusClass = "badge-warning";
+        else if (tk.status === "Aguardando Peﾃｧa") statusClass = "badge-warning";
         else if (tk.status === "Encerrado") statusClass = "badge-success";
         
         // Calcular tempo restante do SLA regressivo
@@ -1775,7 +1811,7 @@ function renderChamados() {
         let actionBtn = "";
         
         if (tk.status === "Encerrado") {
-            tempoRestanteHTML = `<span class="badge badge-success-glow"><i class="fa-solid fa-check-double"></i> OS Concluída</span>`;
+            tempoRestanteHTML = `<span class="badge badge-success-glow"><i class="fa-solid fa-check-double"></i> OS Concluﾃｭda</span>`;
             actionBtn = `
                 <button class="btn btn-secondary btn-sm" onclick="visualizarLaudoRAT('${tk.id}')" title="Visualizar RAT Completo">
                     <i class="fa-solid fa-file-invoice"></i> Laudo RAT
@@ -1790,7 +1826,7 @@ function renderChamados() {
             if (diffTime <= 0) {
                 tempoRestanteHTML = `
                     <div class="d-flex flex-column gap-1">
-                        <span class="text-danger font-weight-bold" style="font-size:0.75rem">⚠️ SLA Estourado</span>
+                        <span class="text-danger font-weight-bold" style="font-size:0.75rem">笞��� SLA Estourado</span>
                         <div class="progress-bar-container" style="margin-top:0; width: 100px; height: 6px;">
                             <div class="progress-bar-fill" style="width: 100%; background:var(--color-danger)"></div>
                         </div>
@@ -1826,13 +1862,13 @@ function renderChamados() {
             } else {
                 if (tk.status === "Pendente") {
                     actionBtn = `
-                        <button class="btn btn-primary btn-sm" onclick="iniciarAtendimentoChamado('${tk.id}')" title="Direcionar e Iniciar Atendimento Técnico">
+                        <button class="btn btn-primary btn-sm" onclick="iniciarAtendimentoChamado('${tk.id}')" title="Direcionar e Iniciar Atendimento Tﾃｩcnico">
                             <i class="fa-solid fa-play"></i> Direcionar OS
                         </button>
                     `;
                 } else if (tk.status !== "Encerrado") {
                     actionBtn = `
-                        <button class="btn btn-primary btn-sm" onclick="abrirExecucaoChamado('${tk.id}')" style="background:#581c87; border-color:#581c87;" title="Executar Manutenção e Assinar RAT">
+                        <button class="btn btn-primary btn-sm" onclick="abrirExecucaoChamado('${tk.id}')" style="background:#581c87; border-color:#581c87;" title="Executar Manutenﾃｧﾃ｣o e Assinar RAT">
                             <i class="fa-solid fa-clipboard-check"></i> Executar OS
                         </button>
                     `;
@@ -1876,27 +1912,27 @@ window.iniciarAtendimentoChamado = async function(id) {
         if (error) throw error;
         
         if (!tecnicos || tecnicos.length === 0) {
-            uiAlert("Nenhum técnico ativo encontrado na Gestão de Acessos.", "warning");
+            uiAlert("Nenhum tﾃｩcnico ativo encontrado na Gestﾃ｣o de Acessos.", "warning");
             return;
         }
         
         const options = tecnicos.map(t => t.nome);
         
-        uiSelectPrompt(`Direcionar Chamado/OS ${tk.numero}\nSelecione o técnico responsável:`, options, (tecnico) => {
+        uiSelectPrompt(`Direcionar Chamado/OS ${tk.numero}\nSelecione o tﾃｩcnico responsﾃ｡vel:`, options, (tecnico) => {
             if (!tecnico) return; // Cancelou
             
             tk.status = "Em Atendimento";
             tk.responsavelNome = tecnico;
             tk.dataInicioAtendimento = new Date().toISOString();
             
-            addAuditLog("OS Direcionada/Iniciada", `OS ${tk.numero} direcionada para o técnico ${tk.responsavelNome}`);
+            addAuditLog("OS Direcionada/Iniciada", `OS ${tk.numero} direcionada para o tﾃｩcnico ${tk.responsavelNome}`);
             saveStateToLocalStorage();
             renderApp();
             uiAlert(`Atendimento da OS ${tk.numero} direcionado para ${tk.responsavelNome} com sucesso!`);
         });
     } catch(err) {
-        console.error("Erro ao buscar técnicos:", err);
-        uiAlert("Ocorreu um erro ao buscar os técnicos disponíveis.", "error");
+        console.error("Erro ao buscar tﾃｩcnicos:", err);
+        uiAlert("Ocorreu um erro ao buscar os tﾃｩcnicos disponﾃｭveis.", "error");
     }
 };
 
@@ -1910,21 +1946,21 @@ window.abrirExecucaoChamado = function(id) {
     document.getElementById("rat-info-hospital").innerText = tk.hospital;
     document.getElementById("rat-info-inicio").innerText = formatDateTime(tk.dataInicioAtendimento || tk.dataAbertura);
     
-    // Limpar formulário de execução
+    // Limpar formulﾃ｡rio de execuﾃｧﾃ｣o
     document.getElementById("rat-exec-servico").value = "";
     document.getElementById("rat-exec-resp-nome").value = "";
     document.getElementById("rat-exec-resp-cargo").value = "";
     
     // Limpar previews de fotos
     const preview = document.getElementById("rat-photos-preview");
-    preview.innerHTML = `<span class="text-muted" style="font-size:0.75rem;">Nenhuma foto selecionada. Use o simulador para testes rápidos!</span>`;
+    preview.innerHTML = `<span class="text-muted" style="font-size:0.75rem;">Nenhuma foto selecionada. Use o simulador para testes rﾃ｡pidos!</span>`;
     preview.dataset.photosJson = "[]";
     
     // Inicializar o canvas de desenho de assinatura
     setTimeout(() => {
         clearSignatureCanvas("rat-signature-canvas");
         clearSignatureCanvas("rat-tecnico-signature-canvas");
-        // Configuramos os listeners (se já configurado antes, eles sobrepõem, mas idealmente seria só na primeira vez)
+        // Configuramos os listeners (se jﾃ｡ configurado antes, eles sobrepﾃｵem, mas idealmente seria sﾃｳ na primeira vez)
         setupRatSignatureCanvas();
     }, 200);
     
@@ -1941,22 +1977,22 @@ window.deleteChamado = function(id) {
     const tk = state.tickets.find(t => t.id === id);
     if (!tk) return;
     
-    uiConfirm(`Remover chamado técnico ${tk.numero} da base?`, () => {
+    uiConfirm(`Remover chamado tﾃｩcnico ${tk.numero} da base?`, () => {
         state.tickets = state.tickets.filter(t => t.id !== id);
-        addAuditLog("Chamado Excluído", `Remoção do chamado ${tk.numero}`);
+        addAuditLog("Chamado Excluﾃｭdo", `Remoﾃｧﾃ｣o do chamado ${tk.numero}`);
         saveStateToLocalStorage();
         renderApp();
     });
 };
 
 /* --------------------------------------------------------------------------
-   E. ABA BI & RELATÓRIOS CONTÁBEIS (NOVA)
+   E. ABA BI & RELATﾃ迭IOS CONTﾃ。EIS (NOVA)
    -------------------------------------------------------------------------- */
 function renderRelatorios() {
-    // 1. Calcular Ponto de Equilíbrio
-    // Custos fixos = Salários (sem nota) + Contabilidade/Outros (sem nota)
+    // 1. Calcular Ponto de Equilﾃｭbrio
+    // Custos fixos = Salﾃ｡rios (sem nota) + Contabilidade/Outros (sem nota)
     const custosFixosGerais = state.transactions
-        .filter(t => t.tipo === "Saída" && t.status === "Pago" && !t.notaFiscalId && (t.categoria === "Salários" || t.categoria === "Outros"))
+        .filter(t => t.tipo === "Saﾃｭda" && t.status === "Pago" && !t.notaFiscalId && (t.categoria === "Salﾃ｡rios" || t.categoria === "Outros"))
         .reduce((sum, t) => sum + t.valor, 0);
 
     // Rateio geral (Melhoria 14)
@@ -1969,9 +2005,9 @@ function renderRelatorios() {
     const custoFixoRateado = faturamentoBruto * taxaRateio;
     const totalCustosFixos = custosFixosGerais + custoFixoRateado;
     
-    // Margem de contribuição média (lucro antes dos custos fixos / faturamento)
-    // Para simplificar, usamos a margem operacional média da empresa
-    const margemMedia = 0.40; // 40% de margem operacional padrão
+    // Margem de contribuiﾃｧﾃ｣o mﾃｩdia (lucro antes dos custos fixos / faturamento)
+    // Para simplificar, usamos a margem operacional mﾃｩdia da empresa
+    const margemMedia = 0.40; // 40% de margem operacional padrﾃ｣o
     const pontoEquilibrio = totalCustosFixos / margemMedia;
     
     document.getElementById("bi-break-even-value").innerText = formatCurrency(pontoEquilibrio);
@@ -1981,7 +2017,7 @@ function renderRelatorios() {
     document.getElementById("bi-break-even-bar").style.width = `${Math.min(100, percProgressoMeta)}%`;
     document.getElementById("bi-break-even-label").innerText = `Faturado: ${formatCurrency(faturamentoBruto)} (${percProgressoMeta.toFixed(0)}% da Meta)`;
 
-    // 2. Projeção de Caixa (30 dias)
+    // 2. Projeﾃｧﾃ｣o de Caixa (30 dias)
     const saldoAtual = state.transactions
         .filter(t => t.status === "Pago")
         .reduce((sum, t) => sum + (t.tipo === "Entrada" ? t.valor : -t.valor), 0) + 
@@ -1994,9 +2030,9 @@ function renderRelatorios() {
         .filter(inv => inv.status === "Pendente")
         .reduce((sum, inv) => sum + inv.valorTotal, 0);
 
-    // Contas a pagar (Transações pendentes)
+    // Contas a pagar (Transaﾃｧﾃｵes pendentes)
     const aPagar = state.transactions
-        .filter(t => t.status === "Pendente" && t.tipo === "Saída")
+        .filter(t => t.status === "Pendente" && t.tipo === "Saﾃｭda")
         .reduce((sum, t) => sum + t.valor, 0);
 
     const saldoProjetado = saldoAtual + aReceber - aPagar;
@@ -2005,7 +2041,7 @@ function renderRelatorios() {
     const projStatus = document.getElementById("bi-projection-status");
     if (saldoProjetado >= 0) {
         projStatus.className = "trend trend-up";
-        projStatus.innerHTML = `<i class="fa-solid fa-circle-check"></i> Caixa saudável`;
+        projStatus.innerHTML = `<i class="fa-solid fa-circle-check"></i> Caixa saudﾃ｡vel`;
     } else {
         projStatus.className = "trend trend-down";
         projStatus.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Risco de caixa`;
@@ -2017,7 +2053,7 @@ function renderRelatorios() {
     // 4. Renderizar Curva ABC (Melhoria 3)
     renderCurvaABC();
 
-    // 5. Renderizar Gráfico de Projeção (Melhoria 4)
+    // 5. Renderizar Grﾃ｡fico de Projeﾃｧﾃ｣o (Melhoria 4)
     renderProjectionChart(saldoAtual, aReceber, aPagar);
 }
 
@@ -2027,14 +2063,14 @@ function renderDRETable(faturamentoBruto, custoFixoRateado, custosFixosGerais) {
     
     // Impostos Totais Retidos nas Notas Recebidas
     const totalImpostos = state.transactions
-        .filter(t => t.tipo === "Saída" && t.categoria === "Impostos" && t.notaFiscalId)
+        .filter(t => t.tipo === "Saﾃｭda" && t.categoria === "Impostos" && t.notaFiscalId)
         .reduce((sum, t) => sum + t.valor, 0);
 
     const receitaLiquida = faturamentoBruto - totalImpostos - custoFixoRateado;
 
-    // Custos diretos (Peças, Deslocamentos de campo, Serviços diretos e Mão de Obra Timesheet das Notas recebidas)
+    // Custos diretos (Peﾃｧas, Deslocamentos de campo, Serviﾃｧos diretos e Mﾃ｣o de Obra Timesheet das Notas recebidas)
     const custosDiretosTrans = state.transactions
-        .filter(t => t.tipo === "Saída" && t.notaFiscalId && t.categoria !== "Impostos")
+        .filter(t => t.tipo === "Saﾃｭda" && t.notaFiscalId && t.categoria !== "Impostos")
         .reduce((sum, t) => sum + t.valor, 0);
 
     const custosDiretosTS = state.timesheets.reduce((sum, ts) => sum + ts.custoTotal, 0);
@@ -2044,19 +2080,19 @@ function renderDRETable(faturamentoBruto, custoFixoRateado, custosFixosGerais) {
     const resultadoExercicio = margemBruta - custosFixosGerais;
     
     const rows = [
-        { desc: "(=) RECEITA BRUTA DE SERVIÇOS", valor: faturamentoBruto, classe: "dre-total" },
-        { desc: "(-) Impostos s/ Faturamento (Retenções)", valor: totalImpostos, classe: "dre-sub val-despesa" },
+        { desc: "(=) RECEITA BRUTA DE SERVIﾃ⑯S", valor: faturamentoBruto, classe: "dre-total" },
+        { desc: "(-) Impostos s/ Faturamento (Retenﾃｧﾃｵes)", valor: totalImpostos, classe: "dre-sub val-despesa" },
         { desc: "(-) Rateio de Custos Fixo Corporativo", valor: custoFixoRateado, classe: "dre-sub val-despesa" },
-        { desc: "(=) RECEITA LÍQUIDA DE SERVIÇOS", valor: receitaLiquida, classe: "dre-total" },
-        { desc: "(-) Custos dos Serviços Prestados (CSP)", valor: custoServicoPrestado, classe: "dre-sub val-despesa" },
-        { desc: "    • Peças de Reposição & Materiais", valor: state.transactions.filter(t => t.notaFiscalId && t.categoria === "Peças").reduce((sum, t) => sum + t.valor, 0), classNested: true },
-        { desc: "    • Deslocamento & Estadias", valor: state.transactions.filter(t => t.notaFiscalId && t.categoria === "Deslocamento").reduce((sum, t) => sum + t.valor, 0), classNested: true },
-        { desc: "    • Mão de Obra Direta (Timesheet)", valor: custosDiretosTS, classNested: true },
-        { desc: "(=) MARGEM BRUTA DE SERVIÇOS", valor: margemBruta, classe: "dre-total" },
+        { desc: "(=) RECEITA Lﾃ慌UIDA DE SERVIﾃ⑯S", valor: receitaLiquida, classe: "dre-total" },
+        { desc: "(-) Custos dos Serviﾃｧos Prestados (CSP)", valor: custoServicoPrestado, classe: "dre-sub val-despesa" },
+        { desc: "    窶｢ Peﾃｧas de Reposiﾃｧﾃ｣o & Materiais", valor: state.transactions.filter(t => t.notaFiscalId && t.categoria === "Peﾃｧas").reduce((sum, t) => sum + t.valor, 0), classNested: true },
+        { desc: "    窶｢ Deslocamento & Estadias", valor: state.transactions.filter(t => t.notaFiscalId && t.categoria === "Deslocamento").reduce((sum, t) => sum + t.valor, 0), classNested: true },
+        { desc: "    窶｢ Mﾃ｣o de Obra Direta (Timesheet)", valor: custosDiretosTS, classNested: true },
+        { desc: "(=) MARGEM BRUTA DE SERVIﾃ⑯S", valor: margemBruta, classe: "dre-total" },
         { desc: "(-) Despesas Administrativas / Fixas", valor: custosFixosGerais, classe: "dre-sub val-despesa" },
-        { desc: "    • Honorários de Contabilidade", valor: state.transactions.filter(t => !t.notaFiscalId && t.descricao && t.descricao.toLowerCase().includes("contabilidade")).reduce((sum, t) => sum + t.valor, 0), classNested: true },
-        { desc: "    • Retiradas de Sócios (Salários)", valor: state.transactions.filter(t => !t.notaFiscalId && t.categoria === "Salários").reduce((sum, t) => sum + t.valor, 0), classNested: true },
-        { desc: "(=) RESULTADO LÍQUIDO DO EXERCÍCIO (LUCRO)", valor: resultadoExercicio, classe: "dre-net-profit" }
+        { desc: "    窶｢ Honorﾃ｡rios de Contabilidade", valor: state.transactions.filter(t => !t.notaFiscalId && t.descricao && t.descricao.toLowerCase().includes("contabilidade")).reduce((sum, t) => sum + t.valor, 0), classNested: true },
+        { desc: "    窶｢ Retiradas de Sﾃｳcios (Salﾃ｡rios)", valor: state.transactions.filter(t => !t.notaFiscalId && t.categoria === "Salﾃ｡rios").reduce((sum, t) => sum + t.valor, 0), classNested: true },
+        { desc: "(=) RESULTADO Lﾃ慌UIDO DO EXERCﾃ垢IO (LUCRO)", valor: resultadoExercicio, classe: "dre-net-profit" }
     ];
     
     rows.forEach(r => {
@@ -2101,7 +2137,7 @@ function renderCurvaABC() {
         
         // Somar custos vinculados
         const custosTrans = state.transactions
-            .filter(t => t.notaFiscalId === inv.id && t.tipo === "Saída")
+            .filter(t => t.notaFiscalId === inv.id && t.tipo === "Saﾃｭda")
             .reduce((sum, t) => sum + t.valor, 0);
         const custosTS = state.timesheets
             .filter(ts => ts.notaFiscalId === inv.id)
@@ -2201,22 +2237,22 @@ function renderProjectionChart(saldoAtual, aReceber, aPagar) {
             }
         });
     } catch (e) {
-        console.error("Falha ao inicializar o gráfico de projeção. CDN offline ou bloqueada.", e);
-        ctx.canvas.parentNode.innerHTML = `<div class="text-center text-muted py-4" style="font-size:0.8rem;"><i class="fa-solid fa-triangle-exclamation text-warning"></i> Gráfico indisponível (CDN offline ou bloqueada).</div>`;
+        console.error("Falha ao inicializar o grﾃ｡fico de projeﾃｧﾃ｣o. CDN offline ou bloqueada.", e);
+        ctx.canvas.parentNode.innerHTML = `<div class="text-center text-muted py-4" style="font-size:0.8rem;"><i class="fa-solid fa-triangle-exclamation text-warning"></i> Grﾃ｡fico indisponﾃｭvel (CDN offline ou bloqueada).</div>`;
     }
 }
 
 // ==========================================================================
-// GAVETA DE DETALHES DA NOTA (TIMESHEET, COBRANÇAS, ASSINATURA)
+// GAVETA DE DETALHES DA NOTA (TIMESHEET, COBRANﾃ②S, ASSINATURA)
 // ==========================================================================
 function updateInvoiceDetailsModal(invoiceId) {
     const inv = state.invoices.find(n => n.id === invoiceId);
     if (!inv) return;
     
-    // Dados de Cabeçalho da Nota
+    // Dados de Cabeﾃｧalho da Nota
     document.getElementById("detalhe-nota-numero").innerText = `Centro de Custos: ${inv.numeroNota}`;
     document.getElementById("detalhe-nota-cliente").innerText = inv.cliente;
-    document.getElementById("detalhe-nota-descricao").innerText = inv.descricao || "Nenhuma descrição fornecida.";
+    document.getElementById("detalhe-nota-descricao").innerText = inv.descricao || "Nenhuma descriﾃｧﾃ｣o fornecida.";
     document.getElementById("detalhe-nota-data").innerText = formatDate(inv.dataEmissao);
     
     // Setar badge de status
@@ -2229,9 +2265,9 @@ function updateInvoiceDetailsModal(invoiceId) {
     
     // 1. Filtrar despesas vinculadas a esta nota
     const custosVinculados = state.transactions.filter(t => t.notaFiscalId === invoiceId);
-    const totalCustosTrans = custosVinculados.filter(t => t.tipo === "Saída").reduce((sum, t) => sum + t.valor, 0);
+    const totalCustosTrans = custosVinculados.filter(t => t.tipo === "Saﾃｭda").reduce((sum, t) => sum + t.valor, 0);
     
-    // Custos do Timesheet (Mão de Obra)
+    // Custos do Timesheet (Mﾃ｣o de Obra)
     const custosTS = state.timesheets.filter(ts => ts.notaFiscalId === invoiceId);
     const totalCustosTS = custosTS.reduce((sum, ts) => sum + ts.custoTotal, 0);
         
@@ -2268,14 +2304,14 @@ function updateInvoiceDetailsModal(invoiceId) {
         custosVinculados.forEach(c => {
             const statusDespesa = c.status === "Pago" ? `<span class="badge badge-success">Confirmado</span>` : `<span class="badge badge-warning">Pendente</span>`;
             
-            // Exibir garantia se for peça (Melhoria 10)
+            // Exibir garantia se for peﾃｧa (Melhoria 10)
             let garantiaText = "-";
-            if (c.categoria === "Peças" && c.garantiaMeses) {
+            if (c.categoria === "Peﾃｧas" && c.garantiaMeses) {
                 garantiaText = `<span class="badge badge-success" style="font-size:0.65rem">${c.garantiaMeses} Meses</span>`;
             }
             
             let acoesHTML = c.isImpostoAuto 
-                ? `<span class="badge badge-purple" style="font-size:0.65rem">Imposto Automático</span>`
+                ? `<span class="badge badge-purple" style="font-size:0.65rem">Imposto Automﾃ｡tico</span>`
                 : `<button class="btn btn-outline btn-sm text-danger" onclick="unlinkTransaction('${c.id}', '${invoiceId}')"><i class="fa-solid fa-link-slash"></i></button>`;
                 
             let iconCat = "";
@@ -2300,7 +2336,7 @@ function updateInvoiceDetailsModal(invoiceId) {
     tsBody.innerHTML = "";
     
     if (custosTS.length === 0) {
-        tsBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-2" style="font-size:0.75rem">Nenhuma hora técnica lançada para esta nota.</td></tr>`;
+        tsBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-2" style="font-size:0.75rem">Nenhuma hora tﾃｩcnica lanﾃｧada para esta nota.</td></tr>`;
     } else {
         custosTS.forEach(ts => {
             const row = document.createElement("tr");
@@ -2322,7 +2358,7 @@ function updateInvoiceDetailsModal(invoiceId) {
     // 4. Carregar assinaturas RAT se existirem (Melhoria 8)
     carregarAssinaturaRAT(invoiceId);
 
-    // Sincronizar: Ocultar controles de laudo RAT e checklist técnico se a OS do equipamento não estiver encerrada
+    // Sincronizar: Ocultar controles de laudo RAT e checklist tﾃｩcnico se a OS do equipamento nﾃ｣o estiver encerrada
     const eq = state.equipments.find(e => e.id === inv.equipamentoId);
     const chamadoAberto = state.tickets.find(t => 
         (t.equipamento === (eq ? eq.nome : "") || t.hospital === inv.cliente) && 
@@ -2343,13 +2379,13 @@ function updateInvoiceDetailsModal(invoiceId) {
         if (signatureRATBox) signatureRATBox.style.display = "block";
     }
 
-    // 5. Régua de Cobrança Preventiva (Melhoria 13)
+    // 5. Rﾃｩgua de Cobranﾃｧa Preventiva (Melhoria 13)
     renderReguaCobranca(inv);
     
-    // 6. Checklist Técnico Dinâmico por Equipamento (Melhoria 2)
+    // 6. Checklist Tﾃｩcnico Dinﾃ｢mico por Equipamento (Melhoria 2)
     renderChecklistTecnico(inv);
     
-    // 7. Botão do PDF Anexo
+    // 7. Botﾃ｣o do PDF Anexo
     const btnPdf = document.getElementById("btn-ver-pdf-nota");
     if (btnPdf) {
         if (inv.arquivoUrl) {
@@ -2361,13 +2397,13 @@ function updateInvoiceDetailsModal(invoiceId) {
     }
 }
 
-// Régua de cobrança preventiva simulada (Melhoria 13)
+// Rﾃｩgua de cobranﾃｧa preventiva simulada (Melhoria 13)
 function renderReguaCobranca(inv) {
     const list = document.getElementById("billing-reminders-list");
     list.innerHTML = "";
     
     if (inv.status === "Recebido") {
-        list.innerHTML = `<li><i class="fa-solid fa-circle-check text-success"></i> <strong>Nota Paga</strong>: Régua finalizada.</li>`;
+        list.innerHTML = `<li><i class="fa-solid fa-circle-check text-success"></i> <strong>Nota Paga</strong>: Rﾃｩgua finalizada.</li>`;
         return;
     }
     
@@ -2380,8 +2416,8 @@ function renderReguaCobranca(inv) {
     
     const rems = [
         { desc: "Lembrete Preventivo (5 dias antes)", data: d5Antes, status: d5Antes <= hoje ? "Enviado" : "Agendado" },
-        { desc: "Fatura de Serviço (Dia do Vencimento)", data: dNoVencimento, status: dNoVencimento <= hoje ? "Enviado" : "Agendado" },
-        { desc: "Aviso de Cobrança e Atraso (3 dias depois)", data: d3Pos, status: d3Pos <= hoje ? "Enviado" : "Agendado" }
+        { desc: "Fatura de Serviﾃｧo (Dia do Vencimento)", data: dNoVencimento, status: dNoVencimento <= hoje ? "Enviado" : "Agendado" },
+        { desc: "Aviso de Cobranﾃｧa e Atraso (3 dias depois)", data: d3Pos, status: d3Pos <= hoje ? "Enviado" : "Agendado" }
     ];
     
     rems.forEach(r => {
@@ -2394,7 +2430,7 @@ function renderReguaCobranca(inv) {
         list.appendChild(li);
     });
 
-    // Multas e Juros Moratórios Automatizados (Melhoria 16)
+    // Multas e Juros Moratﾃｳrios Automatizados (Melhoria 16)
     if (inv.status === "Pendente" && dataEmissao < hoje) {
         const diffTime = Math.abs(hoje - dataEmissao);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -2409,10 +2445,10 @@ function renderReguaCobranca(inv) {
         alertBox.style.borderRadius = "var(--radius-sm)";
         alertBox.innerHTML = `
             <i class="fa-solid fa-triangle-exclamation"></i> <strong>Fatura Atrasada (${diffDays} dias):</strong><br>
-            • Valor Original: ${formatCurrency(inv.valorTotal)}<br>
-            • Multa de Atraso (2.0%): ${formatCurrency(multa)}<br>
-            • Juros Simples (1.0% a.m.): ${formatCurrency(juros)}<br>
-            • <strong>Total Atual com Mora: ${formatCurrency(totalComAcrecimos)}</strong>
+            窶｢ Valor Original: ${formatCurrency(inv.valorTotal)}<br>
+            窶｢ Multa de Atraso (2.0%): ${formatCurrency(multa)}<br>
+            窶｢ Juros Simples (1.0% a.m.): ${formatCurrency(juros)}<br>
+            窶｢ <strong>Total Atual com Mora: ${formatCurrency(totalComAcrecimos)}</strong>
         `;
         list.parentNode.appendChild(alertBox);
         
@@ -2422,7 +2458,7 @@ function renderReguaCobranca(inv) {
             oldAlert.remove();
         }
     } else {
-        // Se não está atrasado, remove alertas residuais antigos
+        // Se nﾃ｣o estﾃ｡ atrasado, remove alertas residuais antigos
         const oldAlert = list.parentNode.querySelector(".alert-danger");
         if (oldAlert) oldAlert.remove();
     }
@@ -2466,9 +2502,9 @@ if (formTimesheet) {
 }
 
 window.deleteTimesheet = function(tsId, invoiceId) {
-    uiConfirm("Deseja realmente excluir este lançamento de horas técnicas?", () => {
+    uiConfirm("Deseja realmente excluir este lanﾃｧamento de horas tﾃｩcnicas?", () => {
         state.timesheets = state.timesheets.filter(ts => ts.id !== tsId);
-        addAuditLog("Timesheet Excluído", `Horas técnicas id ${tsId} removidas da nota ${invoiceId}`);
+        addAuditLog("Timesheet Excluﾃｭdo", `Horas tﾃｩcnicas id ${tsId} removidas da nota ${invoiceId}`);
         saveStateToLocalStorage();
         updateInvoiceDetailsModal(invoiceId);
         renderApp();
@@ -2476,11 +2512,11 @@ window.deleteTimesheet = function(tsId, invoiceId) {
 };
 
 window.unlinkTransaction = function(transId, invoiceId) {
-    uiConfirm("Tem certeza que deseja desvincular esta despesa da OS?\n(A despesa continuará existindo no seu Fluxo de Caixa Geral, mas deixará de reduzir o lucro desta Nota Fiscal).", () => {
+    uiConfirm("Tem certeza que deseja desvincular esta despesa da OS?\n(A despesa continuarﾃ｡ existindo no seu Fluxo de Caixa Geral, mas deixarﾃ｡ de reduzir o lucro desta Nota Fiscal).", () => {
         const trans = state.transactions.find(t => t.id === transId);
         if (trans) {
             trans.notaFiscalId = "";
-            addAuditLog("Despesa Desvinculada", `Transação ${transId} desvinculada da nota ${invoiceId}`);
+            addAuditLog("Despesa Desvinculada", `Transaﾃｧﾃ｣o ${transId} desvinculada da nota ${invoiceId}`);
             saveStateToLocalStorage();
             updateInvoiceDetailsModal(invoiceId);
             renderApp();
@@ -2489,7 +2525,7 @@ window.unlinkTransaction = function(transId, invoiceId) {
 };
 
 // ==========================================================================
-// ASSINATURA DIGITAL RAT CANVAS LÓGICA (Melhoria 8)
+// ASSINATURA DIGITAL RAT CANVAS Lﾃ敵ICA (Melhoria 8)
 // ==========================================================================
 function setupSignatureCanvas() {
     sigCanvas = document.getElementById("signature-pad");
@@ -2564,7 +2600,7 @@ function salvarAssinatura() {
     const inv = state.invoices.find(n => n.id === invoiceId);
     if (inv) {
         inv.assinaturaRAT = dataURL;
-        addAuditLog("Assinatura RAT Salva", `Relatório de Atendimento Técnico assinado digitalmente na nota ${inv.numeroNota}`);
+        addAuditLog("Assinatura RAT Salva", `Relatﾃｳrio de Atendimento Tﾃｩcnico assinado digitalmente na nota ${inv.numeroNota}`);
         saveStateToLocalStorage();
         uiAlert("Assinatura digital do RAT salva com sucesso para faturamento!");
     }
@@ -2583,7 +2619,7 @@ function carregarAssinaturaRAT(invoiceId) {
 }
 
 // ==========================================================================
-// SIMULADOR DE COBRANÇAS PIX/BOLETO (Melhoria 12)
+// SIMULADOR DE COBRANﾃ②S PIX/BOLETO (Melhoria 12)
 // ==========================================================================
 const btnGerarCobranca = document.getElementById("btn-gerar-cobranca");
 if (btnGerarCobranca) {
@@ -2606,7 +2642,7 @@ if (btnGerarCobranca) {
         
         document.getElementById("cobranca-valor-total").innerText = formatCurrency(valorCobrado);
         
-        // Simula um código Pix copia e cola e linha digitável do boleto baseados no ID/valor
+        // Simula um cﾃｳdigo Pix copia e cola e linha digitﾃ｡vel do boleto baseados no ID/valor
         const hash = Math.random().toString(36).substring(2,15).toUpperCase();
         document.getElementById("cobranca-pix-string").value = `00020101021226870014BR.GOV.BCB.PIX2563nevixapix${hash}5204000053039865405${valorCobrado.toFixed(2)}5802BR5916NEVIXAENGENHARIA6009SAOPAULO62070503***6304`;
         document.getElementById("cobranca-boleto-string").value = `34191.79001 01043.513184 91020.150008 7 982000000${valorCobrado.toFixed(0)}00`;
@@ -2624,13 +2660,13 @@ const btnCobrancaWhatsApp = document.getElementById("btn-cobranca-whatsapp");
 if (btnCobrancaWhatsApp) {
     btnCobrancaWhatsApp.addEventListener("click", () => {
         const pixVal = document.getElementById("cobranca-pix-string").value;
-        const msg = encodeURIComponent(`Olá, segue a cobrança da Nevixa Engenharia para pagamento do serviço prestado.\n\nCódigo Pix Copia e Cola:\n${pixVal}`);
+        const msg = encodeURIComponent(`Olﾃ｡, segue a cobranﾃｧa da Nevixa Engenharia para pagamento do serviﾃｧo prestado.\n\nCﾃｳdigo Pix Copia e Cola:\n${pixVal}`);
         window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
     });
 }
 
 // ==========================================================================
-// SIMULADOR CONEXÃO OFFLINE (Melhoria 17)
+// SIMULADOR CONEXﾃグ OFFLINE (Melhoria 17)
 // ==========================================================================
 const btnToggleOffline = document.getElementById("btn-toggle-offline");
 if (btnToggleOffline) {
@@ -2645,19 +2681,19 @@ if (btnToggleOffline) {
             icon.className = "fa-solid fa-wifi-slash text-danger";
             txt.innerText = "Offline";
             btn.classList.add("btn-danger-outline"); // visual warning
-            uiAlert("Sistema em modo OFFLINE. Todas as alterações serão mantidas localmente de forma resiliente.");
+            uiAlert("Sistema em modo OFFLINE. Todas as alteraﾃｧﾃｵes serﾃ｣o mantidas localmente de forma resiliente.");
         } else {
             icon.className = "fa-solid fa-wifi text-success";
             txt.innerText = "Online";
             btn.classList.remove("btn-danger-outline");
-            uiAlert("Conexão restabelecida! Sincronização dos dados locais concluída com sucesso.");
-            addAuditLog("Sincronização de Rede", "Sessão offline sincronizada com os servidores centrais da Nevixa.");
+            uiAlert("Conexﾃ｣o restabelecida! Sincronizaﾃｧﾃ｣o dos dados locais concluﾃｭda com sucesso.");
+            addAuditLog("Sincronizaﾃｧﾃ｣o de Rede", "Sessﾃ｣o offline sincronizada com os servidores centrais da Nevixa.");
         }
     });
 }
 
 // ==========================================================================
-// CONFIGURAÇÕES TRIBUTÁRIAS & RATEIOS (Melhoria 14 / Opção 10)
+// CONFIGURAﾃ�髭S TRIBUTﾃヽIAS & RATEIOS (Melhoria 14 / Opﾃｧﾃ｣o 10)
 // ==========================================================================
 const inputBiRateioPerc = document.getElementById("input-bi-rateio-perc");
 if (inputBiRateioPerc) {
@@ -2666,13 +2702,13 @@ if (inputBiRateioPerc) {
         if (!isNaN(val) && val >= 0 && val <= 100) {
             state.rateioConfig = val;
             localStorage.setItem("nevixa_rateio_perc", val.toString());
-            addAuditLog("Alteração de Rateio", `A taxa de rateio de custos fixos corporativos foi atualizada para ${val}%`);
+            addAuditLog("Alteraﾃｧﾃ｣o de Rateio", `A taxa de rateio de custos fixos corporativos foi atualizada para ${val}%`);
             renderApp();
         }
     });
 }
 
-// Geração de logs no modal de logs de auditoria
+// Geraﾃｧﾃ｣o de logs no modal de logs de auditoria
 const btnViewLogs = document.getElementById("btn-view-logs");
 if (btnViewLogs) {
     btnViewLogs.addEventListener("click", () => {
@@ -2699,19 +2735,19 @@ if (btnViewLogs) {
     });
 }
 
-// Exportação Contábil Simulado (Melhoria 20)
+// Exportaﾃｧﾃ｣o Contﾃ｡bil Simulado (Melhoria 20)
 const btnExportContabil = document.getElementById("btn-export-contabil");
 if (btnExportContabil) {
     btnExportContabil.addEventListener("click", () => {
-        // Gerar um CSV do DRE e Notas do mês
+        // Gerar um CSV do DRE e Notas do mﾃｪs
         const faturamentoBruto = state.invoices
             .filter(inv => inv.status === "Recebido")
             .reduce((sum, inv) => sum + inv.valorTotal, 0);
         const totalImpostos = state.transactions
-            .filter(t => t.tipo === "Saída" && t.categoria === "Impostos" && t.notaFiscalId)
+            .filter(t => t.tipo === "Saﾃｭda" && t.categoria === "Impostos" && t.notaFiscalId)
             .reduce((sum, t) => sum + t.valor, 0);
     
-        // Formatar decimais com vírgula para compatibilidade com o Excel brasileiro
+        // Formatar decimais com vﾃｭrgula para compatibilidade com o Excel brasileiro
         const formatDecimalCSV = (val) => val.toFixed(2).replace(".", ",");
     
         let csvContent = "sep=;\r\n";
@@ -2733,13 +2769,13 @@ if (btnExportContabil) {
         downloadAnchor.click();
         downloadAnchor.remove();
         
-        addAuditLog("Exportação Contábil", "Arquivos de integração contábil e SPD gerados e baixados pelo Administrador.");
-        uiAlert("Exportação Contábil CSV gerada com sucesso e formatada para o Microsoft Excel!");
+        addAuditLog("Exportaﾃｧﾃ｣o Contﾃ｡bil", "Arquivos de integraﾃｧﾃ｣o contﾃ｡bil e SPD gerados e baixados pelo Administrador.");
+        uiAlert("Exportaﾃｧﾃ｣o Contﾃ｡bil CSV gerada com sucesso e formatada para o Microsoft Excel!");
     });
 }
 
 // ==========================================================================
-// FORMULÁRIOS & CADASTROS (CRUDS)
+// FORMULﾃヽIOS & CADASTROS (CRUDS)
 // ==========================================================================
 
 window.openInvoiceDetails = function(id) {
@@ -2749,7 +2785,7 @@ window.openInvoiceDetails = function(id) {
 };
 
 /* --------------------------------------------------------------------------
-   GESTÃO DE NOTAS FISCAIS & IMPOSTOS AUTOMÁTICOS
+   GESTﾃグ DE NOTAS FISCAIS & IMPOSTOS AUTOMﾃゝICOS
    -------------------------------------------------------------------------- */
 const formNota = document.getElementById("form-nota");
 if (formNota) {
@@ -2779,7 +2815,7 @@ if (formNota) {
         const status = document.getElementById("nota-status").value;
         const calcularImpostos = document.getElementById("nota-calcular-impostos").checked;
 
-        // Lógica do Faturamento Misto (Melhoria 18)
+        // Lﾃｳgica do Faturamento Misto (Melhoria 18)
         const isMisto = document.getElementById("nota-faturamento-misto").checked;
         let valorPecas = 0;
         let valorServicos = 0;
@@ -2789,7 +2825,7 @@ if (formNota) {
             valorServicos = parseCurrencyBR(document.getElementById("nota-valor-servicos").value) || 0;
             
             if (Math.abs((valorPecas + valorServicos) - valorTotal) > 0.02) {
-                uiAlert("A soma do valor de peças e serviços deve ser exatamente igual ao Valor Total da Nota informado!");
+                uiAlert("A soma do valor de peﾃｧas e serviﾃｧos deve ser exatamente igual ao Valor Total da Nota informado!");
                 return;
             }
         }
@@ -2797,7 +2833,7 @@ if (formNota) {
         if (!id) {
             const notaDuplicada = state.invoices.find(n => n.numeroNota.toLowerCase() === numeroNota.toLowerCase());
             if (notaDuplicada) {
-                uiAlert(`O número de Nota/OS "${numeroNota}" já foi cadastrado para o cliente ${notaDuplicada.cliente}.`);
+                uiAlert(`O nﾃｺmero de Nota/OS "${numeroNota}" jﾃ｡ foi cadastrado para o cliente ${notaDuplicada.cliente}.`);
                 return;
             }
         }
@@ -2831,7 +2867,7 @@ if (formNota) {
             btnSalvar.disabled = false;
 
             if (uploadError) {
-                uiAlert("Erro ao fazer upload do arquivo (verifique se o bucket 'arquivos-nevixa' é público/permitido): " + uploadError.message);
+                uiAlert("Erro ao fazer upload do arquivo (verifique se o bucket 'arquivos-nevixa' ﾃｩ pﾃｺblico/permitido): " + uploadError.message);
                 return;
             }
 
@@ -2851,14 +2887,14 @@ if (formNota) {
                     isMisto, valorPecas, valorServicos, arquivoUrl
                 };
             }
-            addAuditLog("Nota Fiscal Editada", `Atualização dos dados da nota ${numeroNota} - Valor: ${formatCurrency(valorTotal)}`);
+            addAuditLog("Nota Fiscal Editada", `Atualizaﾃｧﾃ｣o dos dados da nota ${numeroNota} - Valor: ${formatCurrency(valorTotal)}`);
         } else {
             const novaNota = { 
                 id: notaId, numeroNota, dataEmissao, equipamentoId, cliente, descricao, valorTotal, status, calcularImpostos,
                 isMisto, valorPecas, valorServicos, arquivoUrl
             };
             state.invoices.push(novaNota);
-            addAuditLog("Nota Fiscal Cadastrada", `Emissão de nota ${numeroNota} para ${cliente} - Valor: ${formatCurrency(valorTotal)}`);
+            addAuditLog("Nota Fiscal Cadastrada", `Emissﾃ｣o de nota ${numeroNota} para ${cliente} - Valor: ${formatCurrency(valorTotal)}`);
         }
         
         sincronizarImpostosNota(notaId, numeroNota, dataEmissao, valorTotal, calcularImpostos);
@@ -2869,7 +2905,7 @@ if (formNota) {
     });
 }
 
-// Vincula o preenchimento automático do cliente ao trocar de equipamento
+// Vincula o preenchimento automﾃ｡tico do cliente ao trocar de equipamento
 const inputEquipamentoNome = document.getElementById("nota-equipamento-nome");
 if (inputEquipamentoNome) {
     inputEquipamentoNome.addEventListener("change", (e) => {
@@ -2906,8 +2942,8 @@ function sincronizarImpostosNota(notaId, numeroNota, dataNota, valorNota, calcul
                 const impostoDAS = {
                     id: generateUUID(),
                     data: dataNota,
-                    descricao: `Imposto DAS - Simples Nacional (${config.simplesAliquota.toFixed(1)}%) sobre Serviços da NF ${numeroNota}`,
-                    tipo: "Saída",
+                    descricao: `Imposto DAS - Simples Nacional (${config.simplesAliquota.toFixed(1)}%) sobre Serviﾃｧos da NF ${numeroNota}`,
+                    tipo: "Saﾃｭda",
                     valor: valorDAS,
                     categoria: "Impostos",
                     status: "Pendente",
@@ -2918,12 +2954,12 @@ function sincronizarImpostosNota(notaId, numeroNota, dataNota, valorNota, calcul
             }
             
             if (valorBasePecas > 0) {
-                const valorICMS = valorBasePecas * 0.04; // 4% ICMS Simplificado Comércio
+                const valorICMS = valorBasePecas * 0.04; // 4% ICMS Simplificado Comﾃｩrcio
                 const impostoICMS = {
                     id: generateUUID(),
                     data: dataNota,
-                    descricao: `ICMS Simplificado (4.0%) sobre Venda de Peças da NF ${numeroNota}`,
-                    tipo: "Saída",
+                    descricao: `ICMS Simplificado (4.0%) sobre Venda de Peﾃｧas da NF ${numeroNota}`,
+                    tipo: "Saﾃｭda",
                     valor: valorICMS,
                     categoria: "Impostos",
                     status: "Pendente",
@@ -2935,7 +2971,7 @@ function sincronizarImpostosNota(notaId, numeroNota, dataNota, valorNota, calcul
         } else if (config.regime === "LucroPresumido") {
             const presumidoConfig = config.presumido;
             
-            // Impostos Federais/Municipais incidentes sobre o Serviço
+            // Impostos Federais/Municipais incidentes sobre o Serviﾃｧo
             const impostosLP = [
                 { nome: "PIS", aliquota: presumidoConfig.pis },
                 { nome: "COFINS", aliquota: presumidoConfig.cofins },
@@ -2950,8 +2986,8 @@ function sincronizarImpostosNota(notaId, numeroNota, dataNota, valorNota, calcul
                     const lancamentoImp = {
                         id: generateUUID(),
                         data: dataNota,
-                        descricao: `Retenção ${imp.nome} (${imp.aliquota.toFixed(2)}%) sobre Serviços da NF ${numeroNota}`,
-                        tipo: "Saída",
+                        descricao: `Retenﾃｧﾃ｣o ${imp.nome} (${imp.aliquota.toFixed(2)}%) sobre Serviﾃｧos da NF ${numeroNota}`,
+                        tipo: "Saﾃｭda",
                         valor: valorImp,
                         categoria: "Impostos",
                         status: "Pendente",
@@ -2962,10 +2998,10 @@ function sincronizarImpostosNota(notaId, numeroNota, dataNota, valorNota, calcul
                 }
             });
             
-            // Impostos Estaduais/Federais incidentes sobre as Peças (Ex: ICMS 18% e IPI 5% simulados no presumido)
+            // Impostos Estaduais/Federais incidentes sobre as Peﾃｧas (Ex: ICMS 18% e IPI 5% simulados no presumido)
             if (valorBasePecas > 0) {
                 const impostosPecasLP = [
-                    { nome: "ICMS Comércio", aliquota: 18.00 },
+                    { nome: "ICMS Comﾃｩrcio", aliquota: 18.00 },
                     { nome: "IPI Industrial", aliquota: 5.00 }
                 ];
                 
@@ -2974,8 +3010,8 @@ function sincronizarImpostosNota(notaId, numeroNota, dataNota, valorNota, calcul
                     const lancamentoImp = {
                         id: generateUUID(),
                         data: dataNota,
-                        descricao: `Imposto ${imp.nome} (${imp.aliquota.toFixed(2)}%) sobre Peças da NF ${numeroNota}`,
-                        tipo: "Saída",
+                        descricao: `Imposto ${imp.nome} (${imp.aliquota.toFixed(2)}%) sobre Peﾃｧas da NF ${numeroNota}`,
+                        tipo: "Saﾃｭda",
                         valor: valorImp,
                         categoria: "Impostos",
                         status: "Pendente",
@@ -3014,7 +3050,7 @@ function editInvoice(id) {
     document.getElementById("nota-status").value = inv.status;
     document.getElementById("nota-calcular-impostos").checked = inv.calcularImpostos !== false;
     
-    // Injetar valores do split no formulário
+    // Injetar valores do split no formulﾃ｡rio
     document.getElementById("nota-faturamento-misto").checked = inv.isMisto === true;
     document.getElementById("row-split-faturamento").style.display = inv.isMisto ? "flex" : "none";
     document.getElementById("nota-valor-pecas").value = inv.valorPecas ? formatInputCurrency(inv.valorPecas) : "";
@@ -3040,9 +3076,9 @@ function updateInvoicesDropdown() {
     const dropdown = document.getElementById("trans-nota");
     if (!dropdown) return;
     
-    dropdown.innerHTML = '<option value="">Despesa Geral (Sem vínculo com Nota/OS)</option>';
+    dropdown.innerHTML = '<option value="">Despesa Geral (Sem vﾃｭnculo com Nota/OS)</option>';
     
-    // Pegar todas as notas não canceladas
+    // Pegar todas as notas nﾃ｣o canceladas
     const notasValidas = state.invoices.filter(n => n.status !== "Cancelado");
     
     notasValidas.forEach(n => {
@@ -3060,11 +3096,11 @@ function deleteInvoice(id) {
     const despesasDiretas = state.transactions.filter(t => t.notaFiscalId === id && !t.isImpostoAuto).length;
     let confirmMsg = `Deseja realmente excluir a Nota Fiscal ${inv.numeroNota}?`;
     if (despesasDiretas > 0) {
-        confirmMsg = `ATENÇÃO: A Nota Fiscal ${inv.numeroNota} possui ${despesasDiretas} despesas diretas vinculadas. Se você excluí-la, essas despesas deixarão de estar associadas a esta nota, tornando-se despesas operacionais avulsas. Deseja prosseguir?`;
+        confirmMsg = `ATENﾃ�グ: A Nota Fiscal ${inv.numeroNota} possui ${despesasDiretas} despesas diretas vinculadas. Se vocﾃｪ excluﾃｭ-la, essas despesas deixarﾃ｣o de estar associadas a esta nota, tornando-se despesas operacionais avulsas. Deseja prosseguir?`;
     }
     
     uiConfirm(confirmMsg, () => {
-        addAuditLog("Nota Fiscal Excluída", `Exclusão da nota ${inv.numeroNota} de valor ${formatCurrency(inv.valorTotal)}`);
+        addAuditLog("Nota Fiscal Excluﾃｭda", `Exclusﾃ｣o da nota ${inv.numeroNota} de valor ${formatCurrency(inv.valorTotal)}`);
         
         state.invoices = state.invoices.filter(n => n.id !== id);
         state.transactions = state.transactions.filter(t => !(t.notaFiscalId === id && t.isImpostoAuto === true));
@@ -3081,7 +3117,7 @@ function deleteInvoice(id) {
 }
 
 /* --------------------------------------------------------------------------
-   GESTÃO DE TRANSAÇÕES
+   GESTﾃグ DE TRANSAﾃ�髭S
    -------------------------------------------------------------------------- */
 const formTransacao = document.getElementById("form-transacao");
 if (formTransacao) {
@@ -3097,7 +3133,7 @@ if (formTransacao) {
         const status = document.getElementById("trans-status").value;
         const notaFiscalId = document.getElementById("trans-nota").value;
         
-        // Cálculo de Km (Melhoria 7)
+        // Cﾃ｡lculo de Km (Melhoria 7)
         let km = parseFloat(document.getElementById("trans-km").value);
         let valorFinal = valorInput;
         let descFinal = descricao;
@@ -3108,11 +3144,11 @@ if (formTransacao) {
             descFinal = `${descricao} (Roteiro: ${km}Km rodados a R$ 3,00/Km)`;
         }
         
-        // Garantia de peça (Melhoria 10)
+        // Garantia de peﾃｧa (Melhoria 10)
         let garantia = parseInt(document.getElementById("trans-garantia").value);
         
         if (id) {
-            // Editar Transação Existente
+            // Editar Transaﾃｧﾃ｣o Existente
             const index = state.transactions.findIndex(t => t.id === id);
             if (index !== -1) {
                 const tAntiga = state.transactions[index];
@@ -3128,10 +3164,10 @@ if (formTransacao) {
                     kmRodados: km || undefined,
                     garantiaMeses: garantia || undefined
                 };
-                addAuditLog("Transação Editada", `Modificação da transação "${tAntiga.descricao}" -> "${descFinal}" no valor ${formatCurrency(valorFinal)}`);
+                addAuditLog("Transaﾃｧﾃ｣o Editada", `Modificaﾃｧﾃ｣o da transaﾃｧﾃ｣o "${tAntiga.descricao}" -> "${descFinal}" no valor ${formatCurrency(valorFinal)}`);
             }
         } else {
-            // Criar Nova Transação
+            // Criar Nova Transaﾃｧﾃ｣o
             const novaTrans = {
                 id: generateUUID(),
                 tipo,
@@ -3145,12 +3181,12 @@ if (formTransacao) {
                 garantiaMeses: garantia || undefined
             };
             state.transactions.push(novaTrans);
-            addAuditLog("Transação Lançada", `Registro de ${tipo}: "${descFinal}" no valor de ${formatCurrency(valorFinal)}`);
+            addAuditLog("Transaﾃｧﾃ｣o Lanﾃｧada", `Registro de ${tipo}: "${descFinal}" no valor de ${formatCurrency(valorFinal)}`);
         }
         
-        // Se for offline, avisa o usuário do salvamento local (Melhoria 17)
+        // Se for offline, avisa o usuﾃ｡rio do salvamento local (Melhoria 17)
         if (state.isOffline) {
-            uiAlert("Registro gravado no dispositivo (Offline). Será sincronizado quando a conexão retornar.");
+            uiAlert("Registro gravado no dispositivo (Offline). Serﾃ｡ sincronizado quando a conexﾃ｣o retornar.");
         }
         
         saveStateToLocalStorage();
@@ -3179,7 +3215,7 @@ if (inputCategoria) {
             garGroup.style.display = "none";
             valInput.placeholder = "Deixe em branco (calculado por Km)";
             valInput.required = false;
-        } else if (cat === "Peças") {
+        } else if (cat === "Peﾃｧas") {
             kmGroup.style.display = "none";
             garGroup.style.display = "flex";
             valInput.placeholder = "0,00";
@@ -3197,7 +3233,7 @@ function editTransaction(id) {
     const t = state.transactions.find(trans => trans.id === id);
     if (!t) return;
     
-    document.getElementById("modal-transacao-title").innerText = "Editar Movimentação Financeira";
+    document.getElementById("modal-transacao-title").innerText = "Editar Movimentaﾃｧﾃ｣o Financeira";
     document.getElementById("form-transacao-id").value = t.id;
     document.getElementById("trans-tipo").value = t.tipo;
     document.getElementById("trans-data").value = t.data;
@@ -3214,7 +3250,7 @@ function editTransaction(id) {
         kmGroup.style.display = "flex";
         garGroup.style.display = "none";
         document.getElementById("trans-km").value = t.kmRodados || "";
-    } else if (t.categoria === "Peças") {
+    } else if (t.categoria === "Peﾃｧas") {
         kmGroup.style.display = "none";
         garGroup.style.display = "flex";
         document.getElementById("trans-garantia").value = t.garantiaMeses || "";
@@ -3233,8 +3269,8 @@ function deleteTransaction(id) {
     const t = state.transactions.find(trans => trans.id === id);
     if (!t) return;
     
-    uiConfirm(`Deseja realmente excluir a transação "${t.descricao}" no valor de ${formatCurrency(t.valor)}?`, () => {
-        addAuditLog("Transação Excluída", `Exclusão de transação: "${t.descricao}" de valor ${formatCurrency(t.valor)}`);
+    uiConfirm(`Deseja realmente excluir a transaﾃｧﾃ｣o "${t.descricao}" no valor de ${formatCurrency(t.valor)}?`, () => {
+        addAuditLog("Transaﾃｧﾃ｣o Excluﾃｭda", `Exclusﾃ｣o de transaﾃｧﾃ｣o: "${t.descricao}" de valor ${formatCurrency(t.valor)}`);
         
         state.transactions = state.transactions.filter(trans => trans.id !== id);
         saveStateToLocalStorage();
@@ -3249,7 +3285,7 @@ function deleteTransaction(id) {
 }
 
 /* --------------------------------------------------------------------------
-   F. SUBMISSÃO DE CONFIGURAÇÕES TRIBUTÁRIAS & RATES
+   F. SUBMISSﾃグ DE CONFIGURAﾃ�髭S TRIBUTﾃヽIAS & RATES
    -------------------------------------------------------------------------- */
 const formConfigTributaria = document.getElementById("form-config-tributaria");
 if (formConfigTributaria) {
@@ -3260,7 +3296,7 @@ if (formConfigTributaria) {
         const simplesAliquota = parseFloat(document.getElementById("simples-aliquota").value);
         
         const pis = parseFloat(document.getElementById("presumido-pis").value);
-        const cofinancas = parseFloat(document.getElementById("presumido-cofins").value); // Evita colisão
+        const cofinancas = parseFloat(document.getElementById("presumido-cofins").value); // Evita colisﾃ｣o
         const cofins = parseFloat(document.getElementById("presumido-cofins").value);
         const csll = parseFloat(document.getElementById("presumido-csll").value);
         const irrf = parseFloat(document.getElementById("presumido-irrf").value);
@@ -3274,19 +3310,19 @@ if (formConfigTributaria) {
         
         localStorage.setItem("nevixa_tax_config", JSON.stringify(state.taxConfig));
         
-        // Recalcular impostos automáticos
+        // Recalcular impostos automﾃ｡ticos
         state.invoices.forEach(inv => {
             if (inv.status !== "Cancelado" && inv.calcularImpostos !== false) {
                 sincronizarImpostosNota(inv.id, inv.numeroNota, inv.dataEmissao, inv.valorTotal, true);
             }
         });
         
-        addAuditLog("Alteração de Impostos", `Regime de impostos configurado como ${regime}.`);
+        addAuditLog("Alteraﾃｧﾃ｣o de Impostos", `Regime de impostos configurado como ${regime}.`);
         saveStateToLocalStorage();
         closeModal("modal-config-tributaria");
         renderApp();
         
-        uiAlert("Configurações tributárias salvas e impostos recalculados!");
+        uiAlert("Configuraﾃｧﾃｵes tributﾃ｡rias salvas e impostos recalculados!");
     });
 }
 
@@ -3345,7 +3381,7 @@ window.uiAlert = function(message, type = "info", callback = null) {
             if (titleText) titleText.innerText = "Erro";
         } else if (type === "warning") {
             iconEl.className = "fa-solid fa-triangle-exclamation text-warning";
-            if (titleText) titleText.innerText = "Atenção";
+            if (titleText) titleText.innerText = "Atenﾃｧﾃ｣o";
         } else {
             iconEl.className = "fa-solid fa-circle-info text-info";
             if (titleText) titleText.innerText = "Aviso";
@@ -3367,7 +3403,7 @@ safeAddEventListener("btn-alert-custom-ok", "click", () => {
     }
 });
 
-// Listeners para os botões do confirm customizado
+// Listeners para os botﾃｵes do confirm customizado
 safeAddEventListener("btn-confirm-custom-cancel", "click", () => {
     closeModal("modal-confirm-custom");
     confirmCallback = null;
@@ -3390,7 +3426,7 @@ window.uiPrompt = function(message, defaultText, callback) {
     promptCallback = callback;
     openModal("modal-prompt-custom");
     
-    // Focus no input após um pequeno delay para a animação do modal
+    // Focus no input apﾃｳs um pequeno delay para a animaﾃｧﾃ｣o do modal
     setTimeout(() => {
         if (inputEl) {
             inputEl.focus();
@@ -3471,10 +3507,10 @@ function closeModal(modalId) {
         } else if (modalId === "modal-transacao") {
             document.getElementById("form-transacao").reset();
             document.getElementById("form-transacao-id").value = "";
-            document.getElementById("modal-transacao-title").innerText = "Lançar Movimentação Financeira";
+            document.getElementById("modal-transacao-title").innerText = "Lanﾃｧar Movimentaﾃｧﾃ｣o Financeira";
             document.getElementById("trans-data").valueAsDate = new Date();
             
-            // Ocultar campos estendidos por padrão
+            // Ocultar campos estendidos por padrﾃ｣o
             document.getElementById("group-km-deslocamento").style.display = "none";
             document.getElementById("group-garantia-peca").style.display = "none";
         }
@@ -3482,8 +3518,8 @@ function closeModal(modalId) {
 }
 
 // ==========================================================================
-// CONFIGURAÇÃO DOS EVENTOS (EVENT LISTENERS)
-// Funções auxiliares para registrar eventos de forma segura contra elementos nulos
+// CONFIGURAﾃ�グ DOS EVENTOS (EVENT LISTENERS)
+// Funﾃｧﾃｵes auxiliares para registrar eventos de forma segura contra elementos nulos
 function safeAddEventListener(id, event, callback) {
     const el = document.getElementById(id);
     if (el) {
@@ -3499,7 +3535,7 @@ function safeAddQueryEventListener(selector, event, callback) {
 }
 
 // ==========================================================================
-// MÓDULO DE ACESSOS E PERMISSÕES (ADMIN)
+// Mﾃ泥ULO DE ACESSOS E PERMISSﾃ髭S (ADMIN)
 // ==========================================================================
 window.carregarUsuarios = async function() {
     if (state.currentUser.papel !== 'admin') return;
@@ -3507,7 +3543,7 @@ window.carregarUsuarios = async function() {
     const tbody = document.querySelector("#table-users tbody");
     if (!tbody) return;
     
-    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Carregando usuários...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Carregando usuﾃ｡rios...</td></tr>';
     
     try {
         const { data, error } = await supabaseClient
@@ -3520,7 +3556,7 @@ window.carregarUsuarios = async function() {
         tbody.innerHTML = '';
         
         if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhum usuário encontrado.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhum usuﾃ｡rio encontrado.</td></tr>';
             return;
         }
         
@@ -3539,10 +3575,10 @@ window.carregarUsuarios = async function() {
                 </td>
                 <td>
                     <select class="form-select form-select-sm" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 4px; padding: 4px; width: 100%; appearance: auto;" onchange="alterarPapelUsuario('${user.id}', this.value)" ${user.id === state.currentUser.id ? 'disabled' : ''}>
-                        <option value="tecnico" ${user.papel === 'tecnico' ? 'selected' : ''} style="background: var(--bg-card);">Técnico de Campo</option>
+                        <option value="tecnico" ${user.papel === 'tecnico' ? 'selected' : ''} style="background: var(--bg-card);">Tﾃｩcnico de Campo</option>
                         <option value="financeiro" ${user.papel === 'financeiro' ? 'selected' : ''} style="background: var(--bg-card);">Financeiro</option>
                         <option value="admin" ${user.papel === 'admin' ? 'selected' : ''} style="background: var(--bg-card);">Administrador</option>
-                        <option value="cliente" ${user.papel === 'cliente' ? 'selected' : ''} style="background: var(--bg-card);">Cliente (Hospital / Clínica)</option>
+                        <option value="cliente" ${user.papel === 'cliente' ? 'selected' : ''} style="background: var(--bg-card);">Cliente (Hospital / Clﾃｭnica)</option>
                     </select>
                 </td>
                 <td>${statusBadge}</td>
@@ -3550,20 +3586,20 @@ window.carregarUsuarios = async function() {
                     ${user.id !== state.currentUser.id ? `
                         ${user.status !== 'ativo' ? `<button class="btn btn-sm btn-outline" style="color: #4ade80; border-color: #4ade80; padding: 4px 8px; background: transparent;" onclick="alterarStatusUsuario('${user.id}', 'ativo')" title="Aprovar/Ativar"><i class="fa-solid fa-check"></i></button>` : ''}
                         ${user.status !== 'bloqueado' ? `<button class="btn btn-sm btn-outline" style="color: #f87171; border-color: #f87171; padding: 4px 8px; margin-left: 5px; background: transparent;" onclick="alterarStatusUsuario('${user.id}', 'bloqueado')" title="Bloquear"><i class="fa-solid fa-ban"></i></button>` : ''}
-                    ` : '<span class="text-muted small">Você</span>'}
+                    ` : '<span class="text-muted small">Vocﾃｪ</span>'}
                 </td>
             `;
             tbody.appendChild(tr);
         });
         
     } catch (err) {
-        console.error("Erro ao carregar usuários:", err);
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Erro ao carregar lista de usuários.</td></tr>';
+        console.error("Erro ao carregar usuﾃ｡rios:", err);
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Erro ao carregar lista de usuﾃ｡rios.</td></tr>';
     }
 }
 
 window.alterarStatusUsuario = function(id, novoStatus) {
-    uiConfirm(`Tem certeza que deseja mudar o status deste usuário para ${novoStatus.toUpperCase()}?`, async () => {
+    uiConfirm(`Tem certeza que deseja mudar o status deste usuﾃ｡rio para ${novoStatus.toUpperCase()}?`, async () => {
         try {
             const { error } = await supabaseClient.from('perfis').update({ status: novoStatus }).eq('id', id);
             if (error) throw error;
@@ -3571,7 +3607,7 @@ window.alterarStatusUsuario = function(id, novoStatus) {
             carregarUsuarios();
         } catch (err) {
             console.error("Erro ao alterar status:", err);
-            uiAlert("Erro ao alterar o status do usuário.");
+            uiAlert("Erro ao alterar o status do usuﾃ｡rio.");
         }
     });
 };
@@ -3582,7 +3618,7 @@ window.alterarPapelUsuario = async function(id, novoPapel) {
         if (error) throw error;
     } catch (err) {
         console.error("Erro ao alterar papel:", err);
-        uiAlert("Erro ao alterar a função do usuário.");
+        uiAlert("Erro ao alterar a funﾃｧﾃ｣o do usuﾃ｡rio.");
         carregarUsuarios(); 
     }
 };
@@ -3634,7 +3670,7 @@ function setupEventListeners() {
         carregarUsuarios();
     });
     
-    // Botão Sair da Conta (Logout)
+    // Botﾃ｣o Sair da Conta (Logout)
     safeAddEventListener("btn-logout", "click", () => {
         uiConfirm("Deseja realmente sair do sistema?", () => {
             sessionStorage.removeItem("nevixa_current_user");
@@ -3652,7 +3688,7 @@ function setupEventListeners() {
         });
     });
     
-    // Alternador de Sub-Abas Operações Técnicas
+    // Alternador de Sub-Abas Operaﾃｧﾃｵes Tﾃｩcnicas
     const subTabBtns = document.querySelectorAll(".sub-tab-btn");
     subTabBtns.forEach(btn => {
         btn.addEventListener("click", () => {
@@ -3660,7 +3696,7 @@ function setupEventListeners() {
         });
     });
     
-    // 3. Modais - Botão Fechar Geral (Atributo data-close-modal)
+    // 3. Modais - Botﾃ｣o Fechar Geral (Atributo data-close-modal)
     document.querySelectorAll("[data-close-modal]").forEach(btn => {
         btn.addEventListener("click", () => {
             closeModal(btn.getAttribute("data-close-modal"));
@@ -3674,7 +3710,7 @@ function setupEventListeners() {
         });
     });
     
-    // 4. Botões de Abertura Rápidos de Lançamentos
+    // 4. Botﾃｵes de Abertura Rﾃ｡pidos de Lanﾃｧamentos
     safeAddEventListener("btn-quick-invoice", "click", () => {
         document.getElementById("nota-data").valueAsDate = new Date();
         popularEquipamentosDropdown();
@@ -3699,25 +3735,25 @@ function setupEventListeners() {
         openModal("modal-transacao");
     });
     
-    // Botão de Configurações Tributárias
+    // Botﾃ｣o de Configuraﾃｧﾃｵes Tributﾃ｡rias
     safeAddEventListener("btn-config-tributaria", "click", () => {
         openConfigTributariaModal();
     });
     
-    // Botão na gaveta de detalhes da nota para adicionar custo direto a ela
+    // Botﾃ｣o na gaveta de detalhes da nota para adicionar custo direto a ela
     safeAddEventListener("btn-add-despesa-direta", "click", () => {
         const activeInvoiceId = document.getElementById("modal-detalhes-nota").getAttribute("data-active-invoice-id");
         if (!activeInvoiceId) return;
         
         updateInvoicesDropdown();
         document.getElementById("trans-nota").value = activeInvoiceId;
-        document.getElementById("trans-tipo").value = "Saída";
+        document.getElementById("trans-tipo").value = "Saﾃｭda";
         document.getElementById("trans-data").valueAsDate = new Date();
         
         openModal("modal-transacao");
     });
     
-    // Botão na gaveta de detalhes da nota para adicionar deslocamento/frota
+    // Botﾃ｣o na gaveta de detalhes da nota para adicionar deslocamento/frota
     safeAddEventListener("btn-add-deslocamento", "click", () => {
         const activeInvoiceId = document.getElementById("modal-detalhes-nota").getAttribute("data-active-invoice-id");
         if (!activeInvoiceId) return;
@@ -3733,7 +3769,7 @@ function setupEventListeners() {
         openModal("modal-deslocamento");
     });
     
-    // 5. Filtros Dinâmicos de Busca (Notas Fiscais)
+    // 5. Filtros Dinﾃ｢micos de Busca (Notas Fiscais)
     safeAddEventListener("search-nota", "input", (e) => {
         state.filters.nota.search = e.target.value;
         renderNotasTable();
@@ -3744,7 +3780,7 @@ function setupEventListeners() {
         renderNotasTable();
     });
     
-    // 6. Filtros Dinâmicos de Busca (Fluxo de Caixa)
+    // 6. Filtros Dinﾃ｢micos de Busca (Fluxo de Caixa)
     safeAddEventListener("search-transacao", "input", (e) => {
         state.filters.transacao.search = e.target.value;
         renderFluxoTable();
@@ -3770,12 +3806,12 @@ function setupEventListeners() {
         renderFluxoTable();
     });
     
-    // 7. Backup de Dados (Janela e Ações)
+    // 7. Backup de Dados (Janela e Aﾃｧﾃｵes)
     safeAddEventListener("btn-backup", "click", () => {
         openModal("modal-backup");
     });
     
-    // Ação: Exportar DB JSON
+    // Aﾃｧﾃ｣o: Exportar DB JSON
     safeAddQueryEventListener("#action-export-db button", "click", () => {
         const dataExport = {
             invoices: state.invoices,
@@ -3803,7 +3839,7 @@ function setupEventListeners() {
         downloadAnchor.remove();
     });
     
-    // Ação: Importar DB JSON
+    // Aﾃｧﾃ｣o: Importar DB JSON
     const importInput = document.getElementById("input-import-file");
     if (importInput) {
         importInput.addEventListener("change", (e) => {
@@ -3816,7 +3852,7 @@ function setupEventListeners() {
                     const parsedData = JSON.parse(event.target.result);
                     
                     if (parsedData && Array.isArray(parsedData.invoices) && Array.isArray(parsedData.transactions)) {
-                        uiConfirm("Você tem certeza de que deseja restaurar este backup? Todos os dados atuais serão substituídos.", () => {
+                        uiConfirm("Vocﾃｪ tem certeza de que deseja restaurar este backup? Todos os dados atuais serﾃ｣o substituﾃｭdos.", () => {
                             state.invoices = parsedData.invoices;
                             state.transactions = parsedData.transactions;
                             state.equipments = parsedData.equipments || MOCK_EQUIPMENTS;
@@ -3837,10 +3873,10 @@ function setupEventListeners() {
                             uiAlert("Backup restaurado com sucesso!");
                         });
                     } else {
-                        uiAlert("Estrutura do arquivo de backup inválida. Certifique-se de usar um arquivo JSON gerado pelo sistema.");
+                        uiAlert("Estrutura do arquivo de backup invﾃ｡lida. Certifique-se de usar um arquivo JSON gerado pelo sistema.");
                     }
                 } catch (err) {
-                    uiAlert("Erro ao ler o arquivo JSON. O arquivo está corrompido ou em formato incorreto.");
+                    uiAlert("Erro ao ler o arquivo JSON. O arquivo estﾃ｡ corrompido ou em formato incorreto.");
                 }
             };
             fileReader.readAsText(file);
@@ -3880,7 +3916,7 @@ function setupEventListeners() {
         });
     }
 
-    // 10. Conciliação Bancária OFX (Melhoria 15)
+    // 10. Conciliaﾃｧﾃ｣o Bancﾃ｡ria OFX (Melhoria 15)
     safeAddEventListener("btn-open-ofx", "click", () => {
         openModal("modal-ofx");
     });
@@ -3889,7 +3925,7 @@ function setupEventListeners() {
         executarConciliacaoOFXSimulada();
     });
 
-    // 11. Checklist Técnico Dinâmico por Equipamento (Melhoria 2)
+    // 11. Checklist Tﾃｩcnico Dinﾃ｢mico por Equipamento (Melhoria 2)
     // Gerenciado dinamicamente ao abrir os detalhes de cada nota.
 
     // 12. Faturamento Misto / Split de Notas (Melhoria 18)
@@ -3901,21 +3937,21 @@ function setupEventListeners() {
         });
     }
 
-    // 13. Impressão de RAT Técnico (Melhoria 1)
+    // 13. Impressﾃ｣o de RAT Tﾃｩcnico (Melhoria 1)
     safeAddEventListener("btn-imprimir-rat", "click", () => {
         document.body.classList.add("print-mode-rat");
         window.print();
         document.body.classList.remove("print-mode-rat");
     });
 
-    // Impressão de Certificado RBC (Fase 4)
+    // Impressﾃ｣o de Certificado RBC (Fase 4)
     safeAddEventListener("btn-imprimir-certificado", "click", () => {
         document.body.classList.add("print-mode-certificado");
         window.print();
         document.body.classList.remove("print-mode-certificado");
     });
 
-    // 14. Eventos e Filtros da Fase 4 (Operações Técnicas de Campo)
+    // 14. Eventos e Filtros da Fase 4 (Operaﾃｧﾃｵes Tﾃｩcnicas de Campo)
     safeAddEventListener("search-equipamento", "input", () => {
         renderEquipamentos();
     });
@@ -3970,7 +4006,7 @@ function setupEventListeners() {
         openNovoChamado();
     });
 
-    // Submissão dos Formulários das Sub-Abas Técnicas
+    // Submissﾃ｣o dos Formulﾃ｡rios das Sub-Abas Tﾃｩcnicas
     safeAddEventListener("form-equipamento", "submit", (e) => {
         e.preventDefault();
         const id = document.getElementById("form-equipamento-id").value;
@@ -3990,7 +4026,7 @@ function setupEventListeners() {
                     ...state.equipments[index], 
                     tag, serial, nome, cliente, status, ultimaPreventiva, periodicidade 
                 };
-                addAuditLog("Equipamento Editado", `Modificação das configurações do ativo ${tag}`);
+                addAuditLog("Equipamento Editado", `Modificaﾃｧﾃ｣o das configuraﾃｧﾃｵes do ativo ${tag}`);
             }
         } else {
             // Criar
@@ -4007,7 +4043,7 @@ function setupEventListeners() {
         renderApp();
     });
 
-    // Formulário do Novo Calibrador
+    // Formulﾃ｡rio do Novo Calibrador
     safeAddEventListener("form-novo-calibrador", "submit", (e) => {
         e.preventDefault();
         const nome = document.getElementById("cal-form-nome").value;
@@ -4035,11 +4071,11 @@ function setupEventListeners() {
         };
         
         state.calibrators.push(novoCal);
-        addAuditLog("Calibrador Adicionado", `Nova ferramenta biométrica cadastrada: ${nome} - S/N: ${serial}`);
+        addAuditLog("Calibrador Adicionado", `Nova ferramenta biomﾃｩtrica cadastrada: ${nome} - S/N: ${serial}`);
         saveStateToLocalStorage();
         closeModal("modal-novo-calibrador");
         renderApp();
-        uiAlert(`Sucesso! O calibrador "${nome}" foi cadastrado e sua calibração está válida por 1 ano.`);
+        uiAlert(`Sucesso! O calibrador "${nome}" foi cadastrado e sua calibraﾃｧﾃ｣o estﾃ｡ vﾃ｡lida por 1 ano.`);
     });
 
     safeAddEventListener("form-cotacao", "submit", (e) => {
@@ -4065,7 +4101,7 @@ function setupEventListeners() {
         };
         
         state.quotations.push(novaCot);
-        addAuditLog("Cotação Requisitada", `Nova cotação de ${peca} solicitada para o fornecedor ${fornecedor}`);
+        addAuditLog("Cotaﾃｧﾃ｣o Requisitada", `Nova cotaﾃｧﾃ｣o de ${peca} solicitada para o fornecedor ${fornecedor}`);
         
         saveStateToLocalStorage();
         closeModal("modal-cotacao");
@@ -4083,13 +4119,13 @@ function setupEventListeners() {
         const eq = state.equipments.find(item => item.id === eqId);
         const equipamentoNome = eq ? eq.nome : "Equipamento Geral";
         
-        // Forçar o status do equipamento correspondente a "Parado" se for corretiva
+        // Forﾃｧar o status do equipamento correspondente a "Parado" se for corretiva
         if (eq && tipo === "Corretiva") {
             eq.status = "Parado (Aguardando Visita)";
             addAuditLog("Ativo Parado", `Ativo ${eq.tag} alterado para status Parado por abertura de corretiva ${assunto}`);
         }
         
-        // Gerar um número de OS sequencial
+        // Gerar um nﾃｺmero de OS sequencial
         const numOS = `OS-2026${String(state.tickets.length + 501).padStart(3, "0")}`;
         
         const isCliente = state.currentUser && state.currentUser.papel === "cliente";
@@ -4103,11 +4139,11 @@ function setupEventListeners() {
             dataAbertura: new Date().toISOString(),
             status: isCliente ? "Pendente" : "Em Atendimento",
             slaHoras: sla,
-            assunto: assunto // Guardar o assunto/descrição para o admin ver
+            assunto: assunto // Guardar o assunto/descriﾃｧﾃ｣o para o admin ver
         };
         
         state.tickets.push(novoChamado);
-        addAuditLog("Chamado Aberto", `Abertura da ordem de serviço ${numOS} - ${assunto}`);
+        addAuditLog("Chamado Aberto", `Abertura da ordem de serviﾃｧo ${numOS} - ${assunto}`);
         
         saveStateToLocalStorage();
         closeModal("modal-chamado");
@@ -4116,7 +4152,7 @@ function setupEventListeners() {
 }
 
 // ==========================================================================
-// FUNÇÕES AUXILIARES DA FASE 3 (TEMA, CONCILIAÇÃO OFX, CHECKLISTS, TRIBUTAÇÃO)
+// FUNﾃ�髭S AUXILIARES DA FASE 3 (TEMA, CONCILIAﾃ�グ OFX, CHECKLISTS, TRIBUTAﾃ�グ)
 // ==========================================================================
 function applyThemePreference() {
     const savedTheme = localStorage.getItem("nevixa_theme") || "dark";
@@ -4137,7 +4173,7 @@ function executarConciliacaoOFXSimulada() {
     const notasPendentes = state.invoices.filter(inv => inv.status === "Pendente");
     
     if (notasPendentes.length === 0) {
-        uiAlert("Não existem Notas Fiscais pendentes na base para conciliação no momento.");
+        uiAlert("Nﾃ｣o existem Notas Fiscais pendentes na base para conciliaﾃｧﾃ｣o no momento.");
         closeModal("modal-ofx");
         return;
     }
@@ -4147,28 +4183,28 @@ function executarConciliacaoOFXSimulada() {
         inv.status = "Recebido";
         conciliadas++;
         
-        // Registrar uma transação de entrada de recebimento associada
+        // Registrar uma transaﾃｧﾃ｣o de entrada de recebimento associada
         const entradaRecebimento = {
             id: generateUUID(),
             tipo: "Entrada",
             data: new Date().toISOString().slice(0, 10),
-            descricao: `Recebimento automatizado via Conciliação OFX - NF ${inv.numeroNota}`,
+            descricao: `Recebimento automatizado via Conciliaﾃｧﾃ｣o OFX - NF ${inv.numeroNota}`,
             valor: inv.valorTotal,
-            categoria: "Serviços",
+            categoria: "Serviﾃｧos",
             status: "Pago",
             notaFiscalId: inv.id
         };
         state.transactions.push(entradaRecebimento);
         
-        addAuditLog("Conciliação OFX", `Fatura da NF ${inv.numeroNota} de ${inv.cliente} baixada no valor de ${formatCurrency(inv.valorTotal)}`);
+        addAuditLog("Conciliaﾃｧﾃ｣o OFX", `Fatura da NF ${inv.numeroNota} de ${inv.cliente} baixada no valor de ${formatCurrency(inv.valorTotal)}`);
     });
     
-    // Inserir uma taxa bancária de conciliação avulsa no caixa
+    // Inserir uma taxa bancﾃ｡ria de conciliaﾃｧﾃ｣o avulsa no caixa
     const taxaBancaria = {
         id: generateUUID(),
-        tipo: "Saída",
+        tipo: "Saﾃｭda",
         data: new Date().toISOString().slice(0, 10),
-        descricao: "Tarifa bancária mensal - Custódia OFX Conciliação",
+        descricao: "Tarifa bancﾃ｡ria mensal - Custﾃｳdia OFX Conciliaﾃｧﾃ｣o",
         valor: 45.00,
         categoria: "Outros",
         status: "Pago",
@@ -4180,7 +4216,7 @@ function executarConciliacaoOFXSimulada() {
     closeModal("modal-ofx");
     renderApp();
     
-    uiAlert(`Sucesso! Conciliação OFX realizada: \n- ${conciliadas} Notas Fiscais baixadas como Pagas.\n- Entrada de faturamento integrada.\n- Tarifa bancária de conciliação debitada.`);
+    uiAlert(`Sucesso! Conciliaﾃｧﾃ｣o OFX realizada: \n- ${conciliadas} Notas Fiscais baixadas como Pagas.\n- Entrada de faturamento integrada.\n- Tarifa bancﾃ｡ria de conciliaﾃｧﾃ｣o debitada.`);
 }
 
 function renderChecklistTecnico(inv) {
@@ -4199,33 +4235,33 @@ function renderChecklistTecnico(inv) {
     list.innerHTML = "";
     
     let checklistItens = [];
-    if (eq.nome.includes("Ressonância")) {
+    if (eq.nome.includes("Ressonﾃ｢ncia")) {
         checklistItens = [
             "Verificar blindagem e portas de RF",
-            "Checar nível e evaporação de Hélio Líquido",
-            "Medir bombas de vácuo e chiller de refrigeração",
-            "Calibração de homogeneidade de campo magnético"
+            "Checar nﾃｭvel e evaporaﾃｧﾃ｣o de Hﾃｩlio Lﾃｭquido",
+            "Medir bombas de vﾃ｡cuo e chiller de refrigeraﾃｧﾃ｣o",
+            "Calibraﾃｧﾃ｣o de homogeneidade de campo magnﾃｩtico"
         ];
-    } else if (eq.nome.includes("Tomógrafo")) {
+    } else if (eq.nome.includes("Tomﾃｳgrafo")) {
         checklistItens = [
-            "Checar desgaste de escovas e anéis do gantry",
-            "Verificar sistema de refrigeração de óleo do tubo",
+            "Checar desgaste de escovas e anﾃｩis do gantry",
+            "Verificar sistema de refrigeraﾃｧﾃ｣o de ﾃｳleo do tubo",
             "Limpeza de detectores e alinhamento do feixe laser",
-            "Calibração de ruído e uniformidade de imagem"
+            "Calibraﾃｧﾃ｣o de ruﾃｭdo e uniformidade de imagem"
         ];
     } else if (eq.nome.includes("Raio-X")) {
         checklistItens = [
             "Checar funcionamento do colimador luminoso",
-            "Calibração de parâmetros de kV, mA e tempo",
-            "Verificar cabos de alta tensão e isolamento",
-            "Verificar barreira mecânica e freios da estativa"
+            "Calibraﾃｧﾃ｣o de parﾃ｢metros de kV, mA e tempo",
+            "Verificar cabos de alta tensﾃ｣o e isolamento",
+            "Verificar barreira mecﾃ｢nica e freios da estativa"
         ];
     } else {
         checklistItens = [
-            "Inspeção visual e limpeza externa das carcaças",
-            "Medição de correntes de fuga e aterramento",
-            "Teste de funcionamento das interfaces de usuário",
-            "Verificação do estado físico de cabos e transdutores"
+            "Inspeﾃｧﾃ｣o visual e limpeza externa das carcaﾃｧas",
+            "Mediﾃｧﾃ｣o de correntes de fuga e aterramento",
+            "Teste de funcionamento das interfaces de usuﾃ｡rio",
+            "Verificaﾃｧﾃ｣o do estado fﾃｭsico de cabos e transdutores"
         ];
     }
     
@@ -4251,7 +4287,7 @@ function renderChecklistTecnico(inv) {
                 inv.checklistSalvo = inv.checklistSalvo.filter(i => i !== item);
             }
             saveStateToLocalStorage();
-            addAuditLog("Checklist Atualizado", `Alterado checklist técnico da OS ${inv.numeroNota} - Item: "${item}"`);
+            addAuditLog("Checklist Atualizado", `Alterado checklist tﾃｩcnico da OS ${inv.numeroNota} - Item: "${item}"`);
         });
         
         list.appendChild(label);
@@ -4259,7 +4295,7 @@ function renderChecklistTecnico(inv) {
 }
 
 // ==========================================================================
-// FUNÇÕES AUXILIARES DA FASE 4 (OPERAÇÕES TÉCNICAS DE CAMPO)
+// FUNﾃ�髭S AUXILIARES DA FASE 4 (OPERAﾃ�髭S Tﾃ韻NICAS DE CAMPO)
 // ==========================================================================
 window.openNovoCalibrador = function() {
     document.getElementById("form-novo-calibrador").reset();
@@ -4309,9 +4345,9 @@ window.openNovoChamado = function() {
         hospInput.readOnly = false;
     }
     
-    // Vincula o preenchimento automático do hospital ao selecionar o equipamento
+    // Vincula o preenchimento automﾃ｡tico do hospital ao selecionar o equipamento
     select.addEventListener("change", (e) => {
-        if (isCliente) return; // Se for cliente, não muda o campo
+        if (isCliente) return; // Se for cliente, nﾃ｣o muda o campo
         const eqSelected = state.equipments.find(item => item.id === e.target.value);
         if (eqSelected) {
             hospInput.value = eqSelected.cliente;
@@ -4322,8 +4358,63 @@ window.openNovoChamado = function() {
 };
 
 // ==========================================================================
-// FUNÇÕES AUXILIARES DA FASE 4B (FLUXO DE OS E ASSINATURAS RAT TÉCNICOS)
+// FUNﾃ�髭S AUXILIARES DA FASE 4B (FLUXO DE OS E ASSINATURAS RAT Tﾃ韻NICOS)
 // ==========================================================================
+
+// ==========================================================================
+// PREVENTIVA AUTOMﾃゝICA (Melhoria 12)
+// ==========================================================================
+function checkPreventivasAutomaticas() {
+    let preventivasCriadas = 0;
+    
+    state.equipments.forEach(eq => {
+        if (!eq.ultimaPreventiva || !eq.periodicidade) return;
+        
+        const ultimaData = new Date(eq.ultimaPreventiva);
+        const nextDate = new Date(ultimaData);
+        nextDate.setMonth(nextDate.getMonth() + parseInt(eq.periodicidade, 10));
+        
+        const hoje = new Date();
+        
+        if (hoje >= nextDate) {
+            // Verificar se jﾃ｡ existe um ticket aberto de preventiva para este equipamento
+            const jaExiste = state.tickets.some(tk => 
+                tk.equipamento === eq.nome && 
+                tk.tipo === "Preventiva" && 
+                (tk.status === "Pendente" || tk.status === "Em Atendimento")
+            );
+            
+            if (!jaExiste) {
+                // Criar novo ticket
+                const nextId = "tk-" + (state.tickets.length + 1) + "-" + Date.now();
+                const newOs = {
+                    id: nextId,
+                    numero: "OS-" + (new Date().getFullYear()) + Math.floor(1000 + Math.random() * 9000),
+                    hospital: eq.cliente,
+                    equipamento: eq.nome,
+                    tipo: "Preventiva",
+                    dataAbertura: new Date().toISOString().slice(0,19),
+                    dataInicioAtendimento: null,
+                    dataFimAtendimento: null,
+                    descricaoServico: `Manutenﾃｧﾃ｣o Preventiva Automﾃ｡tica (Periodicidade: ${eq.periodicidade} meses)`,
+                    responsavelNome: "",
+                    responsavelCargo: "",
+                    responsavelAssinatura: "",
+                    fotos: [],
+                    status: "Pendente",
+                    slaHoras: 72
+                };
+                state.tickets.push(newOs);
+                preventivasCriadas++;
+            }
+        }
+    });
+    
+    if (preventivasCriadas > 0) {
+        saveState();
+        console.log(`[Preventivas] ${preventivasCriadas} novas OS(s) de preventiva geradas automaticamente.`);
+    }
+}
 
 // Canvas de assinatura da OS RAT
 let ratDrawing = false;
@@ -4389,7 +4480,7 @@ function setupCanvasEvents(canvasId) {
         drawing = false;
     });
     
-    // Botão Limpar
+    // Botﾃ｣o Limpar
     const clearBtnId = canvasId === "rat-signature-canvas" ? "btn-clear-rat-signature" : "btn-clear-rat-tecnico-signature";
     const clearBtn = document.getElementById(clearBtnId);
     if (clearBtn) {
@@ -4408,7 +4499,87 @@ function clearSignatureCanvas(canvasId) {
     }
 }
 
-// Captura a seleção de fotos reais pelo input de arquivo no modal de execução
+// Lﾃ敵ICA DE ASSINATURA PADRﾃグ DO PERFIL
+window.initPerfilSignature = function() {
+    setupCanvasEvents("sig-canvas-perfil");
+    clearSignatureCanvas("sig-canvas-perfil");
+    
+    // Se jﾃ｡ tiver uma assinatura salva, carregar no canvas
+    const savedSig = localStorage.getItem("nevixa_assinatura_" + state.currentUser.id);
+    if (savedSig) {
+        const canvas = document.getElementById("sig-canvas-perfil");
+        const ctx = canvas.getContext("2d");
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0);
+        };
+        img.src = savedSig;
+    }
+};
+
+document.addEventListener("click", (e) => {
+    if (e.target && e.target.id === "btn-clear-sig-perfil") {
+        clearSignatureCanvas("sig-canvas-perfil");
+    }
+    
+    if (e.target && (e.target.id === "btn-load-rat-tecnico-signature" || e.target.closest("#btn-load-rat-tecnico-signature"))) {
+        const savedSig = localStorage.getItem("nevixa_assinatura_" + state.currentUser.id);
+        if (savedSig) {
+            const canvas = document.getElementById("rat-tecnico-signature-canvas");
+            if (canvas) {
+                const ctx = canvas.getContext("2d");
+                const img = new Image();
+                img.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = savedSig;
+            }
+        } else {
+            uiAlert("Nenhuma assinatura padrão encontrada no seu perfil. Por favor, configure sua assinatura em 'Meu Perfil'.");
+        }
+    }
+    
+    if (e.target && e.target.id === "btn-salvar-perfil") {
+        const canvas = document.getElementById("sig-canvas-perfil");
+        
+        // Check if canvas is empty (simplified check)
+        const isCanvasBlank = (canvas) => {
+            const blank = document.createElement('canvas');
+            blank.width = canvas.width;
+            blank.height = canvas.height;
+            return canvas.toDataURL() === blank.toDataURL();
+        }
+
+        if (!isCanvasBlank(canvas)) {
+            const dataURL = canvas.toDataURL();
+            localStorage.setItem("nevixa_assinatura_" + state.currentUser.id, dataURL);
+            uiAlert("Assinatura padrﾃ｣o salva com sucesso!");
+        } else {
+            localStorage.removeItem("nevixa_assinatura_" + state.currentUser.id);
+            uiAlert("Assinatura limpa do perfil.");
+        }
+        window.closeModal("modal-perfil");
+    }
+    if (e.target && (e.target.id === "btn-load-sig-tec" || e.target.closest("#btn-load-sig-tec"))) {
+        const savedSig = localStorage.getItem("nevixa_assinatura_" + state.currentUser.id);
+        if (savedSig) {
+            clearSignatureCanvas("sig-canvas-tec");
+            const canvas = document.getElementById("sig-canvas-tec");
+            const ctx = canvas.getContext("2d");
+            const img = new Image();
+            img.onload = () => {
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = savedSig;
+            uiAlert("Assinatura padrﾃ｣o carregada!");
+        } else {
+            uiAlert("Vocﾃｪ nﾃ｣o possui uma assinatura salva. Cadastre no seu Perfil.");
+        }
+    }
+});
+
+// Captura a seleﾃｧﾃ｣o de fotos reais pelo input de arquivo no modal de execuﾃｧﾃ｣o
 document.addEventListener("change", (e) => {
     if (e.target && e.target.id === "rat-exec-file") {
         const files = e.target.files;
@@ -4435,7 +4606,7 @@ document.addEventListener("change", (e) => {
             reader.onload = function(event) {
                 const base64Data = event.target.result;
                 
-                // Determina se é Foto de Antes ou Depois baseado na quantidade
+                // Determina se ﾃｩ Foto de Antes ou Depois baseado na quantidade
                 const titulo = currentPhotos.length % 2 === 0 ? "Antes (Defeito)" : "Depois (Corrigido)";
                 
                 const newPhoto = {
@@ -4462,7 +4633,7 @@ document.addEventListener("change", (e) => {
     }
 });
 
-// Envio/Submit do Form de Execução de OS
+// Envio/Submit do Form de Execuﾃｧﾃ｣o de OS
 document.addEventListener("submit", (e) => {
     if (e.target && e.target.id === "form-executar-chamado") {
         e.preventDefault();
@@ -4478,7 +4649,7 @@ document.addEventListener("submit", (e) => {
         const canvas = document.getElementById("rat-signature-canvas");
         const assinaturaData = canvas ? canvas.toDataURL() : "";
         
-        // Obter assinatura do canvas (Técnico)
+        // Obter assinatura do canvas (Tﾃｩcnico)
         const tecnicoCanvas = document.getElementById("rat-tecnico-signature-canvas");
         const assinaturaTecnicoData = tecnicoCanvas ? tecnicoCanvas.toDataURL() : "";
         
@@ -4496,19 +4667,19 @@ document.addEventListener("submit", (e) => {
         tk.tecnicoAssinatura = assinaturaTecnicoData;
         tk.fotos = fotosJson;
         
-        // Integrar: Encontrar o equipamento associado (por nome) e restaurar seu status técnico para Operacional
+        // Integrar: Encontrar o equipamento associado (por nome) e restaurar seu status tﾃｩcnico para Operacional
         const eq = state.equipments.find(item => eqMatch(item.nome, tk.equipamento) || eqMatch(item.tag, tk.equipamento));
         if (eq) {
             eq.status = "Operacional";
             eq.ultimaPreventiva = new Date().toISOString().slice(0, 10);
-            addAuditLog("Equipamento Restaurado", `Ativo ${eq.tag} voltou para Operacional após conclusão e assinatura de RAT da OS ${tk.numero}`);
+            addAuditLog("Equipamento Restaurado", `Ativo ${eq.tag} voltou para Operacional apﾃｳs conclusﾃ｣o e assinatura de RAT da OS ${tk.numero}`);
         }
         
-        addAuditLog("Chamado Concluído", `OS ${tk.numero} finalizada e RAT assinado por ${respNome} (${respCargo})`);
+        addAuditLog("Chamado Concluﾃｭdo", `OS ${tk.numero} finalizada e RAT assinado por ${respNome} (${respCargo})`);
         saveStateToLocalStorage();
         closeModal("modal-executar-chamado");
         renderApp();
-        uiAlert(`OS ${tk.numero} concluída com sucesso! Laudo RAT emitido e assinado digitalmente.`);
+        uiAlert(`OS ${tk.numero} concluﾃｭda com sucesso! Laudo RAT emitido e assinado digitalmente.`);
     }
 });
 
@@ -4522,16 +4693,16 @@ window.visualizarLaudoRAT = function(id) {
     document.getElementById("rat-view-equipamento").innerText = tk.equipamento;
     document.getElementById("rat-view-tipo").innerText = tk.tipo;
     document.getElementById("rat-view-sla").innerText = `${tk.slaHoras} horas`;
-    document.getElementById("rat-view-tecnico").innerText = tk.responsavelNome || "Não informado";
+    document.getElementById("rat-view-tecnico").innerText = tk.responsavelNome || "Nﾃ｣o informado";
     
     document.getElementById("rat-view-horario-inicio").innerText = formatDateTime(tk.dataInicioAtendimento || tk.dataAbertura);
     document.getElementById("rat-view-horario-fim").innerText = formatDateTime(tk.dataFimAtendimento || new Date().toISOString());
     document.getElementById("rat-view-horario-duracao").innerText = calcularDuracaoAtendimento(tk.dataInicioAtendimento || tk.dataAbertura, tk.dataFimAtendimento || new Date().toISOString());
     
-    document.getElementById("rat-view-servico").innerText = tk.descricaoServico || "Manutenção padrão realizada sem observações extras.";
-    document.getElementById("rat-view-resp-nome").innerText = tk.clienteNome || tk.responsavelNome || "Não informado";
-    document.getElementById("rat-view-resp-cargo").innerText = tk.clienteCargo || tk.responsavelCargo || "Não informado";
-    document.getElementById("rat-view-tecnico-assinatura-nome").innerText = tk.responsavelNome || "Não informado";
+    document.getElementById("rat-view-servico").innerText = tk.descricaoServico || "Manutenﾃｧﾃ｣o padrﾃ｣o realizada sem observaﾃｧﾃｵes extras.";
+    document.getElementById("rat-view-resp-nome").innerText = tk.clienteNome || tk.responsavelNome || "Nﾃ｣o informado";
+    document.getElementById("rat-view-resp-cargo").innerText = tk.clienteCargo || tk.responsavelCargo || "Nﾃ｣o informado";
+    document.getElementById("rat-view-tecnico-assinatura-nome").innerText = tk.responsavelNome || "Nﾃ｣o informado";
     
     // Assinatura do Cliente
     const sigImg = document.getElementById("rat-view-signature-img");
@@ -4542,7 +4713,7 @@ window.visualizarLaudoRAT = function(id) {
         sigImg.style.display = "none";
     }
     
-    // Assinatura do Técnico
+    // Assinatura do Tﾃｩcnico
     const sigTecnicoImg = document.getElementById("rat-view-tecnico-signature-img");
     if (tk.tecnicoAssinatura) {
         sigTecnicoImg.src = tk.tecnicoAssinatura;
@@ -4588,9 +4759,34 @@ document.addEventListener("click", (e) => {
             document.body.classList.remove("print-mode-rat-novo");
         }, 150);
     }
+    if (e.target && e.target.closest("#btn-whatsapp-rat-novo")) {
+        e.preventDefault();
+        
+        // Coletar dados do modal
+        const osNumber = document.getElementById("rat-view-numero")?.innerText || "";
+        const hospital = document.getElementById("rat-view-hospital")?.innerText || "";
+        const equipamento = document.getElementById("rat-view-equipamento")?.innerText || "";
+        const tipo = document.getElementById("rat-view-tipo")?.innerText || "";
+        const tecnico = document.getElementById("rat-view-tecnico")?.innerText || "";
+        const servicos = document.getElementById("rat-view-servicos")?.innerText || "";
+        const dataConclusao = document.getElementById("rat-view-conclusao")?.innerText || "";
+
+        const mensagem = `*NEVIXA ENGENHARIA - RAT CONCLUÍDA*\n\n`
+            + `*OS N°:* ${osNumber}\n`
+            + `*Cliente:* ${hospital}\n`
+            + `*Equipamento:* ${equipamento}\n`
+            + `*Tipo:* ${tipo}\n`
+            + `*Data Conclusﾃ｣o:* ${dataConclusao}\n`
+            + `*Tﾃｩcnico:* ${tecnico}\n\n`
+            + `*Serviﾃｧos Executados:*\n${servicos}\n\n`
+            + `O relatﾃｳrio completo em PDF foi gerado pelo nosso sistema.\nQualquer dﾃｺvida, estamos ﾃ� disposiﾃｧﾃ｣o.`;
+
+        const waLink = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+        window.open(waLink, '_blank');
+    }
 });
 
-// Funções utilitárias
+// Funﾃｧﾃｵes utilitﾃ｡rias
 function formatDateTime(isoStr) {
     if (!isoStr) return "N/A";
     const date = new Date(isoStr);
@@ -4619,4 +4815,42 @@ function calcularDuracaoAtendimento(inicioStr, fimStr) {
     }
     return `${horas}h ${minutos}m`;
 }
+
+
+// ==========================================================================
+// AUDITORIA DE SEGURANﾇA (Melhoria 16)
+// ==========================================================================
+window.addAuditLog = function(action, moduleName) {
+    if (!state.auditLogs) state.auditLogs = [];
+    const logEntry = {
+        dataHora: new Date().toISOString(),
+        usuarioId: state.currentUser ? state.currentUser.id : 'Sistema',
+        usuarioNome: state.currentUser ? state.currentUser.nome : 'Sistema',
+        acao: action,
+        modulo: moduleName
+    };
+    state.auditLogs.unshift(logEntry);
+    if (state.auditLogs.length > 500) state.auditLogs.pop(); // Manter 伃timos 500
+    saveState();
+};
+
+window.renderAuditLogs = function() {
+    const tbody = document.getElementById('table-audit-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (!state.auditLogs || state.auditLogs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Nenhum log de auditoria encontrado.</td></tr>';
+        return;
+    }
+    state.auditLogs.forEach(log => {
+        const tr = document.createElement('tr');
+        const date = new Date(log.dataHora).toLocaleString('pt-BR');
+        tr.innerHTML = `n            <td></td>
+            <td></td>
+            <td></td>
+            <td><span class="badge bg-secondary"></span></td>
+        ;
+        tbody.appendChild(tr);
+    });
+};
 

@@ -2133,12 +2133,14 @@ body.light-mode .desgaste-tubo-box {
         top: 0 !important;
         width: 100% !important;
         height: auto !important;
-        background: white !important;
-        color: black !important;
+        background: #0f172a !important; /* Mesma cor da tela */
+        color: white !important;
         z-index: 99999 !important;
         opacity: 1 !important;
         overflow: visible !important;
         padding: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 
     body.print-mode-rat-novo #modal-detalhes-rat .modal-content {
@@ -2153,30 +2155,8 @@ body.light-mode .desgaste-tubo-box {
     }
 
     body.print-mode-rat-novo #modal-detalhes-rat * {
-        color: black !important;
-        background: transparent !important;
-        border-color: #64748b !important;
-    }
-
-    body.print-mode-rat-novo #modal-detalhes-rat .badge {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
-    }
-
-    body.print-mode-rat-novo #modal-detalhes-rat .badge-success {
-        background-color: #10b981 !important;
-        color: white !important;
-    }
-
-    body.print-mode-rat-novo #modal-detalhes-rat .badge-neutral {
-        background-color: #e2e8f0 !important;
-        color: black !important;
-        border: 1px solid #cbd5e1 !important;
-    }
-    
-    body.print-mode-rat-novo .certificado-cabecalho img,
-    body.print-mode-rat-novo .certificado-container > img {
-        filter: brightness(0) !important;
     }
 
     body.print-mode-rat-novo #rat-print-area {
