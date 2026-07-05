@@ -3939,14 +3939,14 @@ function setupEventListeners() {
     // 13. Impressão de RAT Técnico (Melhoria 1)
     safeAddEventListener("btn-imprimir-rat", "click", () => {
         document.body.classList.add("print-mode-rat");
-        window.print();
+        window.scrollTo(0, 0); window.print();
         document.body.classList.remove("print-mode-rat");
     });
 
     // Impressão de Certificado RBC (Fase 4)
     safeAddEventListener("btn-imprimir-certificado", "click", () => {
         document.body.classList.add("print-mode-certificado");
-        window.print();
+        window.scrollTo(0, 0); window.print();
         document.body.classList.remove("print-mode-certificado");
     });
 
@@ -4759,7 +4759,7 @@ document.addEventListener("click", (e) => {
         document.body.classList.add("print-mode-rat-novo");
         
         setTimeout(() => {
-            window.print();
+            window.scrollTo(0, 0); window.print();
             document.body.classList.remove("print-mode-rat-novo");
         }, 150);
     }

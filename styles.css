@@ -2015,20 +2015,6 @@ body.light-mode .desgaste-tubo-box {
         background: transparent !important;
     }
     
-    body.print-mode-rat .col-hide-tecnico,
-    body.print-mode-rat .detalhes-valores-gauge,
-    body.print-mode-rat .detalhes-custos-secao,
-    body.print-mode-rat #form-timesheet,
-    body.print-mode-rat .modal-header,
-    body.print-mode-rat .modal-footer,
-    body.print-mode-rat .divider {
-        display: none !important;
-    }
-    
-    body.print-mode-rat #modal-detalhes-nota .modal-body {
-        padding: 40px !important;
-    }
-    
     body.print-mode-rat .print-only-header {
         display: flex !important;
         align-items: center;
@@ -2039,23 +2025,12 @@ body.light-mode .desgaste-tubo-box {
     }
     
     body.print-mode-rat .detalhes-nota-resumo-container {
-        border: none !important;
-        padding: 0 !important;
-        background: transparent !important;
-        grid-template-columns: 1fr !important;
-        display: grid !important;
-        gap: 20px !important;
-    }
-    
-    body.print-mode-rat .checklist-tecnico-box {
         border: 1px solid #cbd5e1 !important;
         padding: 15px !important;
-        border-radius: 8px !important;
-    }
-    
-    body.print-mode-rat .detalhes-meta p {
-        margin-bottom: 8px !important;
-        font-size: 0.9rem !important;
+        background: #f8fafc !important;
+        grid-template-columns: 1fr 1fr !important;
+        display: grid !important;
+        gap: 15px !important;
     }
     
     body.print-mode-rat .table-custom {
@@ -2076,9 +2051,7 @@ body.light-mode .desgaste-tubo-box {
     
     body.print-mode-rat #signature-pad-container {
         border: 1px solid #cbd5e1 !important;
-        border-radius: 8px !important;
-        padding: 20px !important;
-        margin-top: 40px !important;
+        margin-top: 30px !important;
         page-break-inside: avoid !important;
     }
 
@@ -2133,14 +2106,12 @@ body.light-mode .desgaste-tubo-box {
         top: 0 !important;
         width: 100% !important;
         height: auto !important;
-        background: #ffffff !important;
-        color: #000000 !important;
+        background: white !important;
+        color: black !important;
         z-index: 99999 !important;
         opacity: 1 !important;
         overflow: visible !important;
         padding: 0 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
     }
 
     body.print-mode-rat-novo #modal-detalhes-rat .modal-content {
@@ -2155,52 +2126,21 @@ body.light-mode .desgaste-tubo-box {
     }
 
     body.print-mode-rat-novo #modal-detalhes-rat * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-
-    /* Override inline styles for text colors in print mode */
-    body.print-mode-rat-novo #rat-print-area h2,
-    body.print-mode-rat-novo #rat-print-area h3,
-    body.print-mode-rat-novo #rat-print-area h4,
-    body.print-mode-rat-novo #rat-print-area p,
-    body.print-mode-rat-novo #rat-print-area span,
-    body.print-mode-rat-novo #rat-print-area div {
-        color: #000000 !important;
-    }
-
-    /* Preserve badge background and text colors */
-    body.print-mode-rat-novo #rat-print-area .badge {
-        color: #ffffff !important;
-        background-color: #10b981 !important; /* Force green badge in print */
-        border: none !important;
-    }
-
-    /* Clean up borders and backgrounds for sections */
-    body.print-mode-rat-novo #rat-print-area > div > div {
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-    }
-
-    /* Hide buttons in print mode */
-    body.print-mode-rat-novo #modal-detalhes-rat .modal-header,
-    body.print-mode-rat-novo #modal-detalhes-rat .modal-footer,
-    body.print-mode-rat-novo .btn,
-    body.print-mode-rat-novo .modal-close {
-        display: none !important;
+        color: black !important;
+        background: transparent !important;
+        border-color: #64748b !important;
     }
 
     body.print-mode-rat-novo #rat-print-area {
-        padding: 40px !important;
-        overflow: visible !important;
-        max-height: none !important;
-        background: #ffffff !important;
+        padding: 20px !important;
     }
     
-    body.print-mode-rat-novo .certificado-cabecalho {
-        display: flex !important;
-        page-break-inside: avoid;
-        border-bottom: 2px solid #e2e8f0 !important;
+    body.print-mode-rat-novo #rat-print-area .badge {
+        color: #ffffff !important;
+        background-color: #10b981 !important;
+        border: none !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 }
 
