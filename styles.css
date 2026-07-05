@@ -2133,8 +2133,8 @@ body.light-mode .desgaste-tubo-box {
         top: 0 !important;
         width: 100% !important;
         height: auto !important;
-        background: #0f172a !important; /* Mesma cor da tela */
-        color: white !important;
+        background: #ffffff !important;
+        color: #000000 !important;
         z-index: 99999 !important;
         opacity: 1 !important;
         overflow: visible !important;
@@ -2159,15 +2159,48 @@ body.light-mode .desgaste-tubo-box {
         print-color-adjust: exact !important;
     }
 
+    /* Override inline styles for text colors in print mode */
+    body.print-mode-rat-novo #rat-print-area h2,
+    body.print-mode-rat-novo #rat-print-area h3,
+    body.print-mode-rat-novo #rat-print-area h4,
+    body.print-mode-rat-novo #rat-print-area p,
+    body.print-mode-rat-novo #rat-print-area span,
+    body.print-mode-rat-novo #rat-print-area div {
+        color: #000000 !important;
+    }
+
+    /* Preserve badge background and text colors */
+    body.print-mode-rat-novo #rat-print-area .badge {
+        color: #ffffff !important;
+        background-color: #10b981 !important; /* Force green badge in print */
+        border: none !important;
+    }
+
+    /* Clean up borders and backgrounds for sections */
+    body.print-mode-rat-novo #rat-print-area > div > div {
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+
+    /* Hide buttons in print mode */
+    body.print-mode-rat-novo #modal-detalhes-rat .modal-header,
+    body.print-mode-rat-novo #modal-detalhes-rat .modal-footer,
+    body.print-mode-rat-novo .btn,
+    body.print-mode-rat-novo .modal-close {
+        display: none !important;
+    }
+
     body.print-mode-rat-novo #rat-print-area {
-        padding: 20px !important;
+        padding: 40px !important;
         overflow: visible !important;
         max-height: none !important;
+        background: #ffffff !important;
     }
     
     body.print-mode-rat-novo .certificado-cabecalho {
         display: flex !important;
         page-break-inside: avoid;
+        border-bottom: 2px solid #e2e8f0 !important;
     }
 }
 
