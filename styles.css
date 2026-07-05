@@ -2139,12 +2139,29 @@ body.light-mode .desgaste-tubo-box {
     }
 
     body.print-mode-rat-novo #rat-print-area {
-        padding: 20px !important;
+        padding: 10px !important;
+    }
+
+    /* Reduzir espaçamentos e fontes para garantir que caiba em 1 página */
+    body.print-mode-rat-novo #rat-print-area .certificado-container {
+        padding: 5px !important;
+    }
+    
+    body.print-mode-rat-novo #rat-print-area .certificado-cabecalho {
+        margin-bottom: 8px !important;
+        padding-bottom: 8px !important;
+    }
+    
+    body.print-mode-rat-novo #rat-print-area h2.text-center {
+        margin-bottom: 12px !important;
+        font-size: 1.1rem !important;
     }
 
     body.print-mode-rat-novo #rat-print-area .certificado-container > div {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
+        margin-bottom: 10px !important;
+        padding: 10px !important;
     }
     
     body.print-mode-rat-novo #rat-print-area .badge {
