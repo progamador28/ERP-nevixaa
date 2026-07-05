@@ -2133,6 +2133,11 @@ body.light-mode .desgaste-tubo-box {
         border-color: #64748b !important;
     }
 
+    body.print-mode-rat-novo #modal-detalhes-rat .modal-header,
+    body.print-mode-rat-novo #modal-detalhes-rat .modal-footer {
+        display: none !important;
+    }
+
     body.print-mode-rat-novo #rat-print-area {
         padding: 20px !important;
     }
