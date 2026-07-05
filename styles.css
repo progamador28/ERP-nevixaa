@@ -2141,6 +2141,11 @@ body.light-mode .desgaste-tubo-box {
     body.print-mode-rat-novo #rat-print-area {
         padding: 20px !important;
     }
+
+    body.print-mode-rat-novo #rat-print-area .certificado-container > div {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
     
     body.print-mode-rat-novo #rat-print-area .badge {
         color: #ffffff !important;
