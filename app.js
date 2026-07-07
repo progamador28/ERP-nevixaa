@@ -4583,6 +4583,14 @@ document.addEventListener("click", (e) => {
     }
 });
 
+// Limpeza global das classes de impressão para suportar o iOS Safari
+// O iOS Safari não bloqueia a thread durante o window.print(), então não podemos remover as classes imediatamente.
+window.addEventListener("afterprint", () => {
+    document.body.classList.remove("print-mode-rat");
+    document.body.classList.remove("print-mode-certificado");
+    document.body.classList.remove("print-mode-rat-novo");
+});
+
 // Captura a seleção de fotos reais pelo input de arquivo no modal de execução
 document.addEventListener("change", (e) => {
     if (e.target && e.target.id === "rat-exec-file") {
@@ -4759,8 +4767,8 @@ document.addEventListener("click", (e) => {
         document.body.classList.add("print-mode-rat-novo");
         
         setTimeout(() => {
-            window.scrollTo(0, 0); window.print();
-            document.body.classList.remove("print-mode-rat-novo");
+            window.scrollTo(0, 0); 
+            window.print();
         }, 150);
     }
     if (e.target && e.target.closest("#btn-whatsapp-rat-novo")) {
