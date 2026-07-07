@@ -1992,17 +1992,15 @@ body.light-mode .desgaste-tubo-box {
     /* 1. SE ESTIVERMOS NO MODO DE IMPRESSÃO DO RAT */
     body.print-mode-rat #modal-detalhes-nota {
         display: block !important;
-        position: absolute !important;
-        left: 0 !important;
-        top: 0 !important;
+        position: static !important;
         width: 100% !important;
         height: auto !important;
         background: white !important;
         color: black !important;
         z-index: 99999 !important;
         opacity: 1 !important;
-        overflow: visible !important;
         padding: 0 !important;
+        overflow: visible !important;
     }
     
     body.print-mode-rat #modal-detalhes-nota .modal-content {
@@ -2107,17 +2105,15 @@ body.light-mode .desgaste-tubo-box {
     /* 3. SE ESTIVERMOS NO MODO DE IMPRESSÃO DO RAT NOVO (TÉCNICO) */
     body.print-mode-rat-novo #modal-detalhes-rat {
         display: block !important;
-        position: absolute !important;
-        left: 0 !important;
-        top: 0 !important;
+        position: static !important;
         width: 100% !important;
         height: auto !important;
         background: white !important;
         color: black !important;
         z-index: 99999 !important;
         opacity: 1 !important;
-        overflow: visible !important;
         padding: 0 !important;
+        overflow: visible !important;
     }
 
     body.print-mode-rat-novo #modal-detalhes-rat .modal-content {
