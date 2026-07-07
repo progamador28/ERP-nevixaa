@@ -4780,18 +4780,21 @@ document.addEventListener("click", (e) => {
         const equipamento = document.getElementById("rat-view-equipamento")?.innerText || "";
         const tipo = document.getElementById("rat-view-tipo")?.innerText || "";
         const tecnico = document.getElementById("rat-view-tecnico")?.innerText || "";
-        const servicos = document.getElementById("rat-view-servicos")?.innerText || "";
-        const dataConclusao = document.getElementById("rat-view-conclusao")?.innerText || "";
+        const servicos = document.getElementById("rat-view-servico")?.innerText || "";
+        const dataConclusao = document.getElementById("rat-view-horario-fim")?.innerText || "";
 
-        const mensagem = `*NEVIXA ENGENHARIA - RAT CONCLUÃDA*\n\n`
-            + `*OS NÂ°:* ${osNumber}\n`
+        const mensagem = `✅ *NEVIXA ENGENHARIA | RAT CONCLUÍDO*\n\n`
+            + `Olá! Informamos que o atendimento técnico foi finalizado com sucesso. Abaixo estão os dados do relatório:\n\n`
+            + `*📋 DADOS DO ATENDIMENTO*\n`
+            + `*OS Nº:* ${osNumber}\n`
             + `*Cliente:* ${hospital}\n`
             + `*Equipamento:* ${equipamento}\n`
-            + `*Tipo:* ${tipo}\n`
-            + `*Data Conclusão:* ${dataConclusao}\n`
-            + `*Técnico:* ${tecnico}\n\n`
-            + `*Serviços Executados:*\n${servicos}\n\n`
-            + `O relatório completo em PDF foi gerado pelo nosso sistema.\nQualquer dúvida, estamos à disposição.`;
+            + `*Tipo de Serviço:* ${tipo}\n`
+            + `*Técnico Responsável:* ${tecnico}\n`
+            + `*Data de Conclusão:* ${dataConclusao}\n\n`
+            + `*🛠 SERVIÇOS EXECUTADOS:*\n${servicos}\n\n`
+            + `O relatório (RAT) completo em PDF foi gerado e assinado em nosso sistema.\n`
+            + `Qualquer dúvida, estamos à disposição!\n\n*Equipe Nevixa Engenharia*`;
 
         const waLink = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
         window.open(waLink, '_blank');
