@@ -4795,37 +4795,38 @@ document.addEventListener("click", (e) => {
             + `O relatório (RAT) completo em PDF foi gerado e assinado em nosso sistema.\n`
             + `Qualquer dúvida, estamos à disposição!\n\n*Equipe Nevixa Engenharia*`;
 
-        let emailDestino = prompt("Digite o e-mail do cliente para enviar o RAT:");
-        if (!emailDestino) return;
+        window.uiPrompt("Digite o e-mail do cliente para enviar o RAT:", "", (emailDestino) => {
+            if (!emailDestino || emailDestino.trim() === "") return;
 
-        const btn = e.target.closest("#btn-email-rat-novo");
-        const originalText = btn.innerHTML;
-        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Enviando...`;
-        btn.disabled = true;
+            const btn = document.getElementById("btn-email-rat-novo");
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Enviando...`;
+            btn.disabled = true;
 
-        if (typeof emailjs !== 'undefined') {
-            emailjs.send("service_91lrayf", "template_ae6xzsh", {
-                email_destino: emailDestino,
-                os_numero: osNumber,
-                mensagem_completa: mensagem
-            }).then(
-                (response) => {
-                    alert("E-mail enviado com sucesso!");
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                },
-                (error) => {
-                    console.error("Erro ao enviar e-mail", error);
-                    alert("Erro ao enviar e-mail. Tente novamente.");
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                }
-            );
-        } else {
-            alert("Erro: O serviço de e-mail não foi carregado corretamente.");
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
+            if (typeof emailjs !== 'undefined') {
+                emailjs.send("service_91lrayf", "template_ae6xzsh", {
+                    email_destino: emailDestino.trim(),
+                    os_numero: osNumber,
+                    mensagem_completa: mensagem
+                }).then(
+                    (response) => {
+                        uiAlert("E-mail enviado com sucesso!", "success");
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    },
+                    (error) => {
+                        console.error("Erro ao enviar e-mail", error);
+                        uiAlert("Erro ao enviar e-mail. Tente novamente.", "error");
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                );
+            } else {
+                uiAlert("Erro: O serviço de e-mail não foi carregado corretamente.", "error");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
     }
     if (e.target && e.target.closest("#btn-whatsapp-rat-novo")) {
         e.preventDefault();
