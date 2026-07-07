@@ -1672,7 +1672,13 @@ body.role-cliente #table-notas-body tr td:last-child button:not(:first-child) {
 
 @media (max-width: 576px) {
     .metrics-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+    }
+    
+    .help-widget {
+        bottom: 85px !important;
+        right: 15px !important;
+        transform: scale(0.9) !important;
     }
     
     .main-header {
