@@ -2154,6 +2154,7 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-outline" data-close-modal="modal-detalhes-rat">Fechar Laudo</button>
+                <button class="btn btn-primary" id="btn-email-rat-novo" style="background-color: #3b82f6; color: white; border-color: #3b82f6;"><i class="fa-solid fa-envelope"></i> E-mail</button>
                 <button class="btn btn-success" id="btn-whatsapp-rat-novo" style="background-color: #25D366; color: white; border-color: #25D366;"><i class="fa-brands fa-whatsapp"></i> Compartilhar</button>
                 <button class="btn btn-primary" id="btn-imprimir-rat-novo"><i class="fa-solid fa-print"></i> Imprimir RAT</button>
             </div>
@@ -2164,6 +2165,15 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Chart.js para os Gráficos de Alta Performance -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- EmailJS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function(){
+          emailjs.init({
+            publicKey: "-QcuzSrTYdtsoj3Hb",
+          });
+       })();
+    </script>
     <!-- Script principal de lógica do aplicativo -->
     <script src="app.js"></script>
 </body>
