@@ -4955,7 +4955,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function attachOrcRowEvents(row) {
         const inputQtd = row.querySelector(".orc-qtd");
         const inputUnit = row.querySelector(".orc-unit");
-        const btnRemove = row.querySelector(".btn-remove-item");
+        const btnRemove = row.querySelector(".btn-remove-orc-item");
 
         if (inputQtd) inputQtd.addEventListener("input", calcOrcTotals);
         if (inputUnit) inputUnit.addEventListener("input", calcOrcTotals);
