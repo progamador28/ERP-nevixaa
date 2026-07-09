@@ -5039,7 +5039,7 @@ document.addEventListener("DOMContentLoaded", () => {
             tbodyPdf.innerHTML = "";
             let sumQtd = 0;
             let sumTotal = 0;
-            let lastTipo = "";
+            let tiposUnicos = new Set();
             
             let itemCounter = 1;
             tbodyOrcItems.querySelectorAll("tr").forEach(row => {
@@ -5051,7 +5051,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 sumQtd += qtd;
                 sumTotal += total;
-                if (tipo) lastTipo = tipo;
+                if (tipo) tiposUnicos.add(tipo);
                 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
@@ -5069,7 +5069,12 @@ document.addEventListener("DOMContentLoaded", () => {
             // Totais
             document.getElementById("pdf-total-qtd").innerText = String(sumQtd).padStart(2, '0');
             document.getElementById("pdf-total-valor").innerText = sumTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            document.getElementById("pdf-total-tipo").innerText = lastTipo ? lastTipo.toUpperCase() : "DIVERSOS";
+            
+            let footerTipo = "DIVERSOS";
+            if (tiposUnicos.size > 0) {
+                footerTipo = Array.from(tiposUnicos).join(" / ").toUpperCase();
+            }
+            document.getElementById("pdf-total-tipo").innerText = footerTipo;
             
             // 4. Cadastrar no sistema (Opcional)
             const chkCadastrar = document.getElementById("orc-cadastrar-cliente");
