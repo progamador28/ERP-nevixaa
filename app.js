@@ -5117,7 +5117,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             
             const opt = {
-              margin:       0,
+              margin:       [0, 0, 0.1, 0],
               filename:     `Orcamento_${cliente.replace(/\s+/g, '_')}_${propStr.replace('/','-')}.pdf`,
               image:        { type: 'jpeg', quality: 0.98 },
               pagebreak:    { mode: ['css', 'legacy'] },
