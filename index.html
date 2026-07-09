@@ -937,7 +937,7 @@
                 
                 <!-- TEMPLATE PDF OCULTO -->
                 <div id="pdf-template" style="display: none;">
-                    <div class="pdf-page">
+                    <div class="pdf-page" style="position: relative; padding-bottom: 150px; min-height: 297mm; box-sizing: border-box;">
                         <div class="pdf-header">
                             <div class="pdf-logo-area">
                                 <img src="logo.png" alt="Nevixa" class="pdf-logo" style="width: 200px; height: auto;">
@@ -1008,21 +1008,16 @@
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="2" class="text-right" style="font-weight: bold;">TOTAL DE SERVIÇOS</td>
-                                    <td id="pdf-total-qtd" style="font-weight: bold;">00</td>
-                                    <td style="font-weight: bold; font-size: 10px;">MANU.<br>PREV/CORRETIVA</td>
-                                    <td colspan="2" id="pdf-total-valor" style="font-weight: bold; font-size: 14px; text-align: center;">R$ 0,00</td>
+                                    <td colspan="2" style="font-weight: bold; text-align: center; vertical-align: middle;">TOTAL DE SERVIÇOS</td>
+                                    <td id="pdf-total-qtd" style="font-weight: bold; text-align: center; vertical-align: middle;">00</td>
+                                    <td id="pdf-total-tipo" style="font-weight: bold; font-size: 10px; text-align: center; vertical-align: middle;">DIVERSOS</td>
+                                    <td colspan="2" id="pdf-total-valor" style="font-weight: bold; font-size: 14px; text-align: center; vertical-align: middle;">R$ 0,00</td>
                                 </tr>
                             </tfoot>
                         </table>
 
                         <div class="pdf-bank-info" style="page-break-inside: avoid;">
                             <div class="pdf-section-title" style="margin-top: 30px;">3. DADOS BANCÁRIOS E CONDIÇÕES DE PAGAMENTO:</div>
-                            <p style="text-align: center; margin-bottom: 10px; border: 1px solid #000; font-size: 11px;">
-                                NEVIXA ENGENHARIA COMÉRCIO & SERVIÇOS – CNPJ 63.591.634/0001-86<br>
-                                Acquaville Tambaqui, N 365, Santana, CEP: 68.925-231, Macapá / Amapá / Brasil<br>
-                                Telefone: (96) 9 8434-9464 – E-mail: nevixaengenharia@gmail.com
-                            </p>
                             <p><strong>&#9632; DADOS BANCÁRIOS - CONTA EMPRESARIAL</strong></p>
                             <p>&#9658; Banco Nu Pagamentos – Agência 0001 – Conta Corrente: 697805645-9</p>
                             <p>&#9658; Correntista: Nevixa Engenharia Comércio & Servicos</p>
@@ -1046,6 +1041,14 @@
                             <p style="margin-bottom: 0;">Atenciosamente</p>
                             <p style="font-weight: bold; margin-bottom: 0;" id="pdf-signature-name">Joabe Lima Mendes</p>
                             <p style="font-weight: bold;">Diretor Comercial</p>
+                        </div>
+
+                        <div id="pdf-company-footer" style="position: absolute; bottom: 30px; left: 30px; width: calc(100% - 60px);">
+                            <p style="text-align: center; margin-bottom: 0; border: 1px solid #000; font-size: 11px; padding: 5px;">
+                                NEVIXA ENGENHARIA COMÉRCIO & SERVIÇOS – CNPJ 63.591.634/0001-86<br>
+                                Acquaville Tambaqui, N 365, Santana, CEP: 68.925-231, Macapá / Amapá / Brasil<br>
+                                Telefone: (96) 9 8434-9464 – E-mail: nevixaengenharia@gmail.com
+                            </p>
                         </div>
                     </div>
                 </div>

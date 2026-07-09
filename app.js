@@ -5069,6 +5069,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Totais
             document.getElementById("pdf-total-qtd").innerText = String(sumQtd).padStart(2, '0');
             document.getElementById("pdf-total-valor").innerText = sumTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById("pdf-total-tipo").innerText = lastTipo ? lastTipo.toUpperCase() : "DIVERSOS";
             
             // 4. Cadastrar no sistema (Opcional)
             const chkCadastrar = document.getElementById("orc-cadastrar-cliente");
