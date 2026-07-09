@@ -1,12 +1,12 @@
 /**
- * NEVIXA FINANCE & ERP - SISTEMA DE GESTÃO FINANCEIRA E OPERAÇÕES
- * Motor de controle da aplicação SPA Avançada
+ * NEVIXA FINANCE & ERP - SISTEMA DE GESTÃ FINANCEIRA E OPERAÇÕS
+ * Motor de controle da aplicaçõo SPA Avançada
  */
 // ==========================================================================
 // CONFIGURAÇÃ DO SUPABASE & AUTENTICAÇÃ REAL - NEVIXA ENGENHARIA
 // ==========================================================================
 const SUPABASE_URL = "https://lwfjnmudtlybnnfgtgag.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZmpubXVkdGx5Ym5uZmd0Z2FnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NTAzNTIsImV4cCI6MjA5ODUyNjM1Mn0.plYp6N1-gQDk3O8mY6IbGcyVyCby0oCg9rGtodD6WK4"; // <-- Cole aqui a sua chave anon pública
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZmpubXVkdGx5Ym5uZmd0Z2FnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NTAzNTIsImV4cCI6MjA5ODUyNjM1Mn0.plYp6N1-gQDk3O8mY6IbGcyVyCby0oCg9rGtodD6WK4"; // <-- Cole aqui a sua chave anon píblica
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -20,21 +20,21 @@ async function realizarLoginReal(email, senha) {
     exibirCarregamentoLogin(true);
 
     try {
-        // 1. Autentica o usuário na camada de Auth do Supabase
+        // 1. Autentica o usuírio na camada de Auth do Supabase
         const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
             email: email,
             password: senha
         });
 
         if (authError) {
-            uiAlert("Erro de Autenticação: E-mail ou senha incorretos.");
+            uiAlert("Erro de Autenticaçõo: E-mail ou senha incorretos.");
             exibirCarregamentoLogin(false);
             return;
         }
 
         const userId = authData.user.id;
 
-        // 2. Busca os dados de permissão e status na tabela pública "perfis"
+        // 2. Busca os dados de permissío e status na tabela píblica "perfis"
         const { data: perfil, error: perfilError } = await supabaseClient
             .from('perfis')
             .select('*')
@@ -48,21 +48,21 @@ async function realizarLoginReal(email, senha) {
             return;
         }
 
-        // 3. Regra de Negócio: Aprovação automática de contas pendentes para testes
+        // 3. Regra de Negócio: Aprovaío automçãtica de contas pendentes para testes
         if (perfil.status === 'pendente') {
-            // Auto-ativa o perfil para não bloquear o usuário durante a fase de testes
+            // Auto-ativa o perfil para nção bloquear o usuçãrio durante a fase de testes
             perfil.status = 'ativo';
             await supabaseClient.from('perfis').update({ status: 'ativo' }).eq('id', perfil.id);
         }
 
         if (perfil.status === 'bloqueado') {
-            uiAlert("Acesso Negado: Esta conta de usuário encontra-se desativada/bloqueada no sistema.");
+            uiAlert("Acesso Negado: Esta conta de usuírio encontra-se desativada/bloqueada no sistema.");
             await supabaseClient.auth.signOut();
             exibirCarregamentoLogin(false);
             return;
         }
 
-        // 4. Sucesso! Usuário aprovado. Salva a sessão localmente
+        // 4. Sucesso! Usuírio aprovado. Salva a sessío localmente
         const usuarioSessao = {
             id: perfil.id,
             email: perfil.email,
@@ -91,11 +91,11 @@ async function realizarLoginReal(email, senha) {
 }
 
 // ==========================================================================
-// NOVA FUNÇÃ DE CADASTRO (Criar nova conta de Técnico ou Financeiro)
+// NOVA FUNÇÃ DE CADASTRO (Criar nova conta de Tácnico ou Financeiro)
 // ==========================================================================
 async function realizarCadastroReal(nome, email, senha, papelEscolhido) {
     try {
-        // 1. Cria o usuário no Supabase Auth passando metadados (nome)
+        // 1. Cria o usuírio no Supabase Auth passando metadados (nome)
         const { data, error } = await supabaseClient.auth.signUp({
             email: email,
             password: senha,
@@ -112,7 +112,7 @@ async function realizarCadastroReal(nome, email, senha, papelEscolhido) {
             return;
         }
 
-        // 2. Garantir a criação do perfil no banco como 'pendente'
+        // 2. Garantir a criaçõo do perfil no banco como 'pendente'
         if (data?.user) {
             const { error: insertError } = await supabaseClient
                 .from('perfis')
@@ -128,9 +128,9 @@ async function realizarCadastroReal(nome, email, senha, papelEscolhido) {
                 console.warn("Aviso: Falha ao inserir perfil no banco.", insertError);
             }
 
-            uiAlert("Cadastro realizado com sucesso! Aguarde até que um Administrador da NEVIXA ENGENHARIA aprove o seu acesso para poder entrar no sistema.");
+            uiAlert("Cadastro realizado com sucesso! Aguarde atá que um Administrador da NEVIXA ENGENHARIA aprove o seu acesso para poder entrar no sistema.");
             
-            // Fazer o signOut (deslogar) imediatamente, pois ele está pendente e não deve entrar
+            // Fazer o signOut (deslogar) imediatamente, pois ele estí pendente e nío deve entrar
             await supabaseClient.auth.signOut();
             
             // Força o retorno para a tela de login limpa
@@ -140,11 +140,11 @@ async function realizarCadastroReal(nome, email, senha, papelEscolhido) {
     } catch (err) {
         console.error("Erro no processo de cadastro:", err);
         exibirCarregamentoLogin(false);
-        uiAlert("Não foi possível processar o cadastro solicitado.");
+        uiAlert("Nío foi possçvel processar o cadastro solicitado.");
     }
 }
 
-// Função auxiliar para dar feedback visual no botão enquanto consulta a nuvem
+// Funçõo auxiliar para dar feedback visual no botío enquanto consulta a nuvem
 function exibirCarregamentoLogin(carregando) {
     const btnLogin = document.querySelector("#form-login button[type='submit']");
     const btnRegister = document.querySelector("#form-register button[type='submit']");
@@ -163,16 +163,16 @@ function exibirCarregamentoLogin(carregando) {
 // DADOS MOCK INICIAIS (Se o localStorage estiver vazio)
 // ==========================================================================
 const MOCK_EQUIPMENTS = [
-    { id: "eq-1", tag: "EQ-RM-001", nome: "Ressonância Magnética Philips Achieva 1.5T", cliente: "Clínica Radiosul", serial: "RM987654", status: "Operacional", ultimaPreventiva: "2026-05-10" },
-    { id: "eq-2", tag: "EQ-CT-001", nome: "Tomógrafo Computadorizado GE Optima 660", cliente: "Hospital Albert Einstein", serial: "CT123456", status: "Atenção (Manutenção Necessária)", ultimaPreventiva: "2026-07-02" },
+    { id: "eq-1", tag: "EQ-RM-001", nome: "Ressonï¾ƒï½¢ncia Magnática Philips Achieva 1.5T", cliente: "Clçnica Radiosul", serial: "RM987654", status: "Operacional", ultimaPreventiva: "2026-05-10" },
+    { id: "eq-2", tag: "EQ-CT-001", nome: "Tomógrafo Computadorizado GE Optima 660", cliente: "Hospital Albert Einstein", serial: "CT123456", status: "Atençõo (Manutençõo Necessíria)", ultimaPreventiva: "2026-07-02" },
     { id: "eq-3", tag: "EQ-RX-001", nome: "Raio-X Digital Siemens Multix", cliente: "Santa Casa de Misericórdia", serial: "RX882211", status: "Parado (Aguardando Peça)", ultimaPreventiva: "2026-04-15" },
-    { id: "eq-4", tag: "EQ-US-001", nome: "Ultrassom Doppler Colorido Mindray DC-70", cliente: "Clínica UltraScan", serial: "US556633", status: "Operacional", ultimaPreventiva: "2026-07-12" }
+    { id: "eq-4", tag: "EQ-US-001", nome: "Ultrassom Doppler Colorido Mindray DC-70", cliente: "Clçnica UltraScan", serial: "US556633", status: "Operacional", ultimaPreventiva: "2026-07-12" }
 ];
 
 const MOCK_CALIBRATORS = [
     { id: "cal-1", nome: "Medidor de kV/Dose Barracuda (Piranha)", serial: "BC-9981", ultimaCalibracao: "2025-08-15", proximaCalibracao: "2026-08-15" },
-    { id: "cal-2", nome: "Simulador de Fantoma de Água para Tomografia", serial: "PH-1200", ultimaCalibracao: "2026-01-10", proximaCalibracao: "2027-01-10" },
-    { id: "cal-3", nome: "Câmara de Ionização de Radiação 10cc", serial: "CI-0044", ultimaCalibracao: "2025-06-20", proximaCalibracao: "2026-06-20" } // Calibração Vencida!
+    { id: "cal-2", nome: "Simulador de Fantoma de ï¾ƒâ€œua para Tomografia", serial: "PH-1200", ultimaCalibracao: "2026-01-10", proximaCalibracao: "2027-01-10" },
+    { id: "cal-3", nome: "Cï¾ƒï½¢mara de Ionizaçõo de Radiaçõo 10cc", serial: "CI-0044", ultimaCalibracao: "2025-06-20", proximaCalibracao: "2026-06-20" } // Calibraçõo Vencida!
 ];
 
 const MOCK_TICKETS = [
@@ -185,9 +185,9 @@ const MOCK_TICKETS = [
         dataAbertura: "2026-07-01T15:30:00", 
         dataInicioAtendimento: "2026-07-01T16:00:00",
         dataFimAtendimento: "2026-07-01T18:45:00",
-        descricaoServico: "Substituição de escovas de carvão desgastadas no motor do gantry, limpeza dos filtros de ar de refrigeração e testes de calibração final com calibrador biométrico fluke. Equipamento testado e liberado para uso clínico.",
+        descricaoServico: "Substituiçõo de escovas de carvío desgastadas no motor do gantry, limpeza dos filtros de ar de refrigeraçõo e testes de calibraçõo final com calibrador biomátrico fluke. Equipamento testado e liberado para uso clçnico.",
         responsavelNome: "Dra. Mariana Ramos",
-        responsavelCargo: "Diretora de Engenharia Clínica",
+        responsavelCargo: "Diretora de Engenharia Clçnica",
         responsavelAssinatura: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='60'><path d='M10,40 C50,10 90,20 130,5 C170,-10 180,45 100,35 C50,30 20,40 160,30' fill='none' stroke='%232563eb' stroke-width='3'/></svg>",
         fotos: [
             { titulo: "Antes (Defeito no Motor)", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='120'><rect width='100%' height='100%' fill='%232a1010'/><line x1='20' y1='20' x2='140' y2='100' stroke='%23ef4444' stroke-width='4'/><line x1='140' y1='20' x2='20' y2='100' stroke='%23ef4444' stroke-width='4'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%23f87171' font-size='12' font-family='sans-serif'>BOBINA QUEIMADA</text></svg>" },
@@ -216,8 +216,8 @@ const MOCK_TICKETS = [
     { 
         id: "tk-3", 
         numero: "OS-2026503", 
-        hospital: "Clínica Radiosul", 
-        equipamento: "Ressonância Philips", 
+        hospital: "Clçnica Radiosul", 
+        equipamento: "Ressonï¾ƒï½¢ncia Philips", 
         tipo: "Preventiva", 
         dataAbertura: "2026-07-02T10:00:00", 
         dataInicioAtendimento: "2026-07-02T11:00:00",
@@ -233,9 +233,9 @@ const MOCK_TICKETS = [
 ];
 
 const MOCK_QUOTATIONS = [
-    { id: "q-1", peca: "Tubo de Raios-X de Reposição (CT GE)", equipamento: "Tomógrafo GE Optima", solicitante: "Rodrigo Lima (Técnico)", fornecedor: "GE Healthcare Brasil", valor: 28000.00, status: "Aprovado" },
-    { id: "q-2", peca: "Placa de Controle de Colimação Sobressalente", equipamento: "Raio-X Siemens", solicitante: "Rodrigo Lima (Técnico)", fornecedor: "Siemens Healthineers", valor: 7500.00, status: "Aprovado" },
-    { id: "q-3", peca: "Bobina de Cabeça de 8 Canais para RM", equipamento: "Ressonância Philips", solicitante: "Rodrigo Lima (Técnico)", fornecedor: "Philips Medical", valor: 14500.00, status: "Pendente" }
+    { id: "q-1", peca: "Tubo de Raios-X de Reposiçõo (CT GE)", equipamento: "Tomógrafo GE Optima", solicitante: "Rodrigo Lima (Tácnico)", fornecedor: "GE Healthcare Brasil", valor: 28000.00, status: "Aprovado" },
+    { id: "q-2", peca: "Placa de Controle de Colimaçõo Sobressalente", equipamento: "Raio-X Siemens", solicitante: "Rodrigo Lima (Tácnico)", fornecedor: "Siemens Healthineers", valor: 7500.00, status: "Aprovado" },
+    { id: "q-3", peca: "Bobina de Cabeça de 8 Canais para RM", equipamento: "Ressonï¾ƒï½¢ncia Philips", solicitante: "Rodrigo Lima (Tácnico)", fornecedor: "Philips Medical", valor: 14500.00, status: "Pendente" }
 ];
 
 const MOCK_TIMESHEETS = [
@@ -245,32 +245,32 @@ const MOCK_TIMESHEETS = [
 ];
 
 const MOCK_INVOICES = [
-    { id: "inv-1", numeroNota: "NF-2026001", equipamentoId: "eq-2", cliente: "Hospital Albert Einstein", descricao: "Manutenção corretiva com troca de tubos no equipamento de Tomografia Computadora GE Optima", valorTotal: 45000.00, dataEmissao: "2026-07-02", status: "Recebido", calcularImpostos: true },
-    { id: "inv-2", numeroNota: "NF-2026002", equipamentoId: "eq-1", cliente: "Clínica Radiosul", descricao: "Calibração anual e manutenção preventiva de Ressonância Magnética Philips Achieva 1.5T", valorTotal: 18500.00, dataEmissao: "2026-07-05", status: "Pendente", calcularImpostos: true },
-    { id: "inv-3", numeroNota: "NF-2026003", equipamentoId: "eq-3", cliente: "Santa Casa de Misericórdia", descricao: "Conserto emergencial no sistema de colimação do Raio-X Digital Siemens Multix", valorTotal: 8900.00, dataEmissao: "2026-07-08", status: "Recebido", calcularImpostos: true },
-    { id: "inv-4", numeroNota: "NF-2026004", equipamentoId: "eq-4", cliente: "Clínica UltraScan", descricao: "Manutenção preventiva em 4 aparelhos de Ultrassonografia Doppler Colorido", valorTotal: 12000.00, dataEmissao: "2026-07-12", status: "Recebido", calcularImpostos: false }
+    { id: "inv-1", numeroNota: "NF-2026001", equipamentoId: "eq-2", cliente: "Hospital Albert Einstein", descricao: "Manutençõo corretiva com troca de tubos no equipamento de Tomografia Computadora GE Optima", valorTotal: 45000.00, dataEmissao: "2026-07-02", status: "Recebido", calcularImpostos: true },
+    { id: "inv-2", numeroNota: "NF-2026002", equipamentoId: "eq-1", cliente: "Clçnica Radiosul", descricao: "Calibraçõo anual e manutençõo preventiva de Ressonï¾ƒï½¢ncia Magnática Philips Achieva 1.5T", valorTotal: 18500.00, dataEmissao: "2026-07-05", status: "Pendente", calcularImpostos: true },
+    { id: "inv-3", numeroNota: "NF-2026003", equipamentoId: "eq-3", cliente: "Santa Casa de Misericórdia", descricao: "Conserto emergencial no sistema de colimaçõo do Raio-X Digital Siemens Multix", valorTotal: 8900.00, dataEmissao: "2026-07-08", status: "Recebido", calcularImpostos: true },
+    { id: "inv-4", numeroNota: "NF-2026004", equipamentoId: "eq-4", cliente: "Clçnica UltraScan", descricao: "Manutençõo preventiva em 4 aparelhos de Ultrassonografia Doppler Colorido", valorTotal: 12000.00, dataEmissao: "2026-07-12", status: "Recebido", calcularImpostos: false }
 ];
 
 const MOCK_TRANSACTIONS = [
-    // Impostos Automáticos (DAS Simples Nacional - 8.0%)
-    { id: "tax-1", data: "2026-07-02", descricao: "Imposto DAS - Simples Nacional (8.0%) sobre NF NF-2026001", tipo: "Saída", valor: 3600.00, categoria: "Impostos", status: "Pendente", notaFiscalId: "inv-1", isImpostoAuto: true },
-    { id: "tax-2", data: "2026-07-05", descricao: "Imposto DAS - Simples Nacional (8.0%) sobre NF NF-2026002", tipo: "Saída", valor: 1480.00, categoria: "Impostos", status: "Pendente", notaFiscalId: "inv-2", isImpostoAuto: true },
-    { id: "tax-3", data: "2026-07-08", descricao: "Imposto DAS - Simples Nacional (8.0%) sobre NF NF-2026003", tipo: "Saída", valor: 712.00, categoria: "Impostos", status: "Pendente", notaFiscalId: "inv-3", isImpostoAuto: true },
+    // Impostos Automíticos (DAS Simples Nacional - 8.0%)
+    { id: "tax-1", data: "2026-07-02", descricao: "Imposto DAS - Simples Nacional (8.0%) sobre NF NF-2026001", tipo: "Saçda", valor: 3600.00, categoria: "Impostos", status: "Pendente", notaFiscalId: "inv-1", isImpostoAuto: true },
+    { id: "tax-2", data: "2026-07-05", descricao: "Imposto DAS - Simples Nacional (8.0%) sobre NF NF-2026002", tipo: "Saçda", valor: 1480.00, categoria: "Impostos", status: "Pendente", notaFiscalId: "inv-2", isImpostoAuto: true },
+    { id: "tax-3", data: "2026-07-08", descricao: "Imposto DAS - Simples Nacional (8.0%) sobre NF NF-2026003", tipo: "Saçda", valor: 712.00, categoria: "Impostos", status: "Pendente", notaFiscalId: "inv-3", isImpostoAuto: true },
 
     // Despesas Diretas com Peças e Km
-    { id: "t-1", data: "2026-07-03", descricao: "Importação do tubo de raios-x de reposição (peça direta)", tipo: "Saída", valor: 28000.00, categoria: "Peças", status: "Pago", notaFiscalId: "inv-1", garantiaMeses: 12 },
-    { id: "t-3", data: "2026-07-04", descricao: "Deslocamento técnico - 150Km rodados (Reembolso)", tipo: "Saída", valor: 450.00, categoria: "Deslocamento", status: "Pago", notaFiscalId: "inv-1", kmRodados: 150 },
+    { id: "t-1", data: "2026-07-03", descricao: "Importaçõo do tubo de raios-x de reposiçõo (peça direta)", tipo: "Saçda", valor: 28000.00, categoria: "Peças", status: "Pago", notaFiscalId: "inv-1", garantiaMeses: 12 },
+    { id: "t-3", data: "2026-07-04", descricao: "Deslocamento tácnico - 150Km rodados (Reembolso)", tipo: "Saçda", valor: 450.00, categoria: "Deslocamento", status: "Pago", notaFiscalId: "inv-1", kmRodados: 150 },
     
     // Despesas Preventiva Philips RM
-    { id: "t-4", data: "2026-07-06", descricao: "Locação de kit de ferramentas e calibração de hélio líquido", tipo: "Saída", valor: 2500.00, categoria: "Serviços", status: "Pago", notaFiscalId: "inv-2" },
-    { id: "t-5", data: "2026-07-06", descricao: "Despesas com hospedagem dos engenheiros de campo (3 dias)", tipo: "Saída", valor: 820.00, categoria: "Deslocamento", status: "Pago", notaFiscalId: "inv-2" },
+    { id: "t-4", data: "2026-07-06", descricao: "Locaçõo de kit de ferramentas e calibraçõo de hálio lçquido", tipo: "Saçda", valor: 2500.00, categoria: "Serviços", status: "Pago", notaFiscalId: "inv-2" },
+    { id: "t-5", data: "2026-07-06", descricao: "Despesas com hospedagem dos engenheiros de campo (3 dias)", tipo: "Saçda", valor: 820.00, categoria: "Deslocamento", status: "Pago", notaFiscalId: "inv-2" },
     
     // Despesa Santa Casa
-    { id: "t-6", data: "2026-07-09", descricao: "Compra de placa de controle de colimação sobressalente", tipo: "Saída", valor: 7500.00, categoria: "Peças", status: "Pago", notaFiscalId: "inv-3", garantiaMeses: 6 },
+    { id: "t-6", data: "2026-07-09", descricao: "Compra de placa de controle de colimaçõo sobressalente", tipo: "Saçda", valor: 7500.00, categoria: "Peças", status: "Pago", notaFiscalId: "inv-3", garantiaMeses: 6 },
     
     // Custos fixos
-    { id: "t-8", data: "2026-07-05", descricao: "Honorários contabilidade mensal Nevixa", tipo: "Saída", valor: 1200.00, categoria: "Outros", status: "Pago", notaFiscalId: "" },
-    { id: "t-9", data: "2026-07-10", descricao: "Retirada Pró-labore Sócios", tipo: "Saída", valor: 8000.00, categoria: "Salários", status: "Pago", notaFiscalId: "" },
+    { id: "t-8", data: "2026-07-05", descricao: "Honorírios contabilidade mensal Nevixa", tipo: "Saçda", valor: 1200.00, categoria: "Outros", status: "Pago", notaFiscalId: "" },
+    { id: "t-9", data: "2026-07-10", descricao: "Retirada Pró-labore Sócios", tipo: "Saçda", valor: 8000.00, categoria: "Salírios", status: "Pago", notaFiscalId: "" },
     { id: "t-10", data: "2026-07-11", descricao: "Entrada de reembolso de seguro de viagem anterior", tipo: "Entrada", valor: 1500.00, categoria: "Outros", status: "Pago", notaFiscalId: "" }
 ];
 
@@ -293,7 +293,7 @@ const state = {
     timesheets: [],
     auditLogs: [],
     taxConfig: {},
-    rateioConfig: 10, // 10% rateio padrão (Melhoria 14)
+    rateioConfig: 10, // 10% rateio padrío (Melhoria 14)
     currentUser: null,
     activeTab: "dashboard",
     activeSubTab: "equipamentos",
@@ -326,7 +326,7 @@ window.prefillLogin = function(email, senha) {
 document.addEventListener("DOMContentLoaded", async () => {
     await initDatabase(); // Inicializa o banco de dados (localStorage ou Mock)
     
-    // Auto-gerar preventivas se necessário
+    // Auto-gerar preventivas se necessírio
     if (typeof checkPreventivasAutomaticas === 'function') {
         checkPreventivasAutomaticas();
     }
@@ -338,7 +338,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     setCurrentDateHeader();
     applyThemePreference();
 
-    // Sincronização multi-abas em tempo real (Sincronismo Operacional)
+    // Sincronizaçõo multi-abas em tempo real (Sincronismo Operacional)
     window.addEventListener("storage", async (e) => {
         if (e.key && e.key.startsWith("nevixa_")) {
             await initDatabase();
@@ -346,7 +346,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
     
-    // Iniciar Polling de sincronização entre guias anônimas/normais (Fase 4C)
+    // Iniciar Polling de sincronizaçõo entre guias anï¾ƒï½´nimas/normais (Fase 4C)
     // startStateSyncPolling();
 });
 
@@ -375,12 +375,12 @@ async function initDatabase() {
             const inputRateio = document.getElementById("input-bi-rateio-perc");
             if (inputRateio) inputRateio.value = state.rateioConfig;
             
-            saveStateToLocalStorageOnly(); // Mantém cache local atualizado
+            saveStateToLocalStorageOnly(); // Mantám cache local atualizado
             console.log("Banco de dados sincronizado com a Nuvem (Supabase) com sucesso!");
             return;
         }
     } catch (err) {
-        console.warn("Aviso: Nuvem não inicializada ou vazia, usando LocalStorage...", err);
+        console.warn("Aviso: Nuvem nío inicializada ou vazia, usando LocalStorage...", err);
     }
 
     const storedInvoices = localStorage.getItem("nevixa_invoices");
@@ -394,10 +394,10 @@ async function initDatabase() {
     const storedTaxConfig = localStorage.getItem("nevixa_tax_config");
     const storedRateio = localStorage.getItem("nevixa_rateio_perc");
     
-    // Configurações tributárias/rateios
+    // Configuraçï¾ƒï½µes tributírias/rateios
     state.taxConfig = storedTaxConfig ? JSON.parse(storedTaxConfig) : DEFAULT_TAX_CONFIG;
     if (state.taxConfig && state.taxConfig.simplesAliquota === 8.0) {
-        state.taxConfig.simplesAliquota = 5.0; // Atualiza defaults para base local também
+        state.taxConfig.simplesAliquota = 5.0; // Atualiza defaults para base local tambám
     }
     state.rateioConfig = storedRateio ? parseFloat(storedRateio) : 10;
     
@@ -424,7 +424,7 @@ async function initDatabase() {
         state.tickets = MOCK_TICKETS;
         state.timesheets = MOCK_TIMESHEETS;
         state.auditLogs = [
-            { timestamp: new Date().toISOString(), usuario: "Sistema", operacao: "Banco Inicializado", descricao: "Banco de dados preenchido com dados fictícios de demonstração." }
+            { timestamp: new Date().toISOString(), usuario: "Sistema", operacao: "Banco Inicializado", descricao: "Banco de dados preenchido com dados fictçcios de demonstraçõo." }
         ];
     }
     saveStateToLocalStorage();
@@ -454,7 +454,7 @@ async function saveStateToLocalStorage() {
             
         if (error) console.error('Erro ao salvar estado no Supabase:', error);
     } catch (err) {
-        console.error('Falha de conexão ao salvar na nuvem:', err);
+        console.error('Falha de conexío ao salvar na nuvem:', err);
     }
 }
 
@@ -495,7 +495,7 @@ function setCurrentDateHeader() {
 }
 
 // ==========================================================================
-// AUTENTICAÇÃ E SESSÃO DE USUÁRIO
+// AUTENTICAÇÃ E SESSÃ DE USUï¾ƒçãƒ½IO
 // ==========================================================================
 function checkAuth() {
     const storedUser = sessionStorage.getItem("nevixa_current_user");
@@ -650,7 +650,7 @@ function initMobileNavigation() {
         </a>
         <a href="#" class="mobile-nav-link" data-tab="operacoes" id="mob-menu-operacoes">
             <i class="fa-solid fa-helmet-safety"></i>
-            <span>Op. Técnicas</span>
+            <span>Op. Tácnicas</span>
         </a>
         <a href="#" class="mobile-nav-link" data-tab="relatorios" id="mob-menu-relatorios">
             <i class="fa-solid fa-chart-line"></i>
@@ -721,27 +721,27 @@ function switchTab(tabName) {
     const sectionSubtitle = document.getElementById("current-section-subtitle");
     
     if (tabName === "dashboard") {
-        if (state.currentUser && (state.currentUser.role === "Cliente" || state.currentUser.role === "Cliente (Hospital / Clínica)")) {
-            sectionTitle.innerText = "Área do Cliente";
+        if (state.currentUser && (state.currentUser.role === "Cliente" || state.currentUser.role === "Cliente (Hospital / Clçnica)")) {
+            sectionTitle.innerText = "ï¾ƒçã€‰ea do Cliente";
             sectionSubtitle.innerText = "Acompanhe o status dos seus equipamentos e notas fiscais";
         } else {
             sectionTitle.innerText = "Dashboard Geral";
-            sectionSubtitle.innerText = "Visão consolidada da saúde financeira da empresa";
+            sectionSubtitle.innerText = "Visío consolidada da saíde financeira da empresa";
         }
     } else if (tabName === "notas") {
         sectionTitle.innerText = "Central de Notas Fiscais";
-        sectionSubtitle.innerText = "Gestão de faturamentos de serviço e centros de custos";
+        sectionSubtitle.innerText = "Gestío de faturamentos de serviço e centros de custos";
     } else if (tabName === "fluxo") {
         sectionTitle.innerText = "Fluxo de Caixa Geral";
-        sectionSubtitle.innerText = "Histórico geral de todas as entradas e saídas da empresa";
+        sectionSubtitle.innerText = "Histórico geral de todas as entradas e saçdas da empresa";
     } else if (tabName === "operacoes") {
-        sectionTitle.innerText = "Operações Técnicas de Campo";
-        sectionSubtitle.innerText = "Prontuários de equipamentos, calibradores, cotações e controle de chamados SLA";
+        sectionTitle.innerText = "Operaçï¾ƒï½µes Tácnicas de Campo";
+        sectionSubtitle.innerText = "Prontuírios de equipamentos, calibradores, cotaçï¾ƒï½µes e controle de chamados SLA";
     } else if (tabName === "relatorios") {
-        sectionTitle.innerText = "BI & Relatórios Contábeis";
-        sectionSubtitle.innerText = "Demonstrativos de Resultados (DRE), Ponto de Equilíbrio, Margem Real e Prospecção";
+        sectionTitle.innerText = "BI & Relatórios Contíbeis";
+        sectionSubtitle.innerText = "Demonstrativos de Resultados (DRE), Ponto de Equilçbrio, Margem Real e Prospecçõo";
     } else if (tabName === "acessos") {
-        sectionTitle.innerText = "Gestão de Acessos";
+        sectionTitle.innerText = "Gestío de Acessos";
         sectionSubtitle.innerText = "Aprove ou bloqueie a entrada de colaboradores no sistema";
         carregarUsuarios(); // Sempre que entrar na aba, recarrega a lista
     }
@@ -812,7 +812,7 @@ function renderDashboardCliente() {
     
     const elStatus = document.getElementById("dash-cliente-status-prev");
     if (temAtrasado) {
-        elStatus.innerText = "Atenção (Vencidos)";
+        elStatus.innerText = "Atençõo (Vencidos)";
         elStatus.style.color = "var(--color-danger)";
     } else {
         elStatus.innerText = "Regular";
@@ -840,7 +840,7 @@ function renderDashboard() {
         let countAtrasadas = 0;
         const now = new Date();
         state.tickets.forEach(tk => {
-            if (tk.status !== "Concluído" && tk.status !== "Cancelado") {
+            if (tk.status !== "Concluçdo" && tk.status !== "Cancelado") {
                 countAbertas++;
                 if (tk.slaVencimento && new Date(tk.slaVencimento) < now) {
                     countAtrasadas++;
@@ -879,13 +879,13 @@ function renderDashboard() {
 
     const totalEntradas = faturamentoNotasRecebido + receitasAvulsasPagas;
     
-    // Saídas = Transações de Saída confirmadas
+    // Saçdas = Transaçï¾ƒï½µes de Saçda confirmadas
     const totalSaidas = currentMonthTransactions
-        .filter(t => t.tipo === "Saída" && t.status === "Pago")
+        .filter(t => t.tipo === "Saçda" && t.status === "Pago")
         .reduce((sum, t) => sum + t.valor, 0);
 
     const totalSaidasPendentes = currentMonthTransactions
-        .filter(t => t.tipo === "Saída" && t.status === "Pendente")
+        .filter(t => t.tipo === "Saçda" && t.status === "Pendente")
         .reduce((sum, t) => sum + t.valor, 0);
         
     const lucroLiquido = totalEntradas - totalSaidas;
@@ -906,7 +906,7 @@ function renderDashboard() {
     } else {
         lucroElement.className = "metric-value val-despesa";
         lucroTrendElement.className = "trend trend-down";
-        lucroTrendElement.innerHTML = `<i class="fa-solid fa-arrow-trend-down"></i> Resultado deficitário`;
+        lucroTrendElement.innerHTML = `<i class="fa-solid fa-arrow-trend-down"></i> Resultado deficitírio`;
     }
     
     document.getElementById("dash-margem").innerText = `${margemGeral.toFixed(1)}%`;
@@ -934,12 +934,12 @@ function renderDashboardAlerts() {
     state.invoices.forEach(inv => {
         if (inv.status === "Cancelado") return;
         
-        // Custos das Transações
+        // Custos das Transaçï¾ƒï½µes
         const custosTrans = state.transactions
-            .filter(t => t.notaFiscalId === inv.id && t.tipo === "Saída")
+            .filter(t => t.notaFiscalId === inv.id && t.tipo === "Saçda")
             .reduce((sum, t) => sum + t.valor, 0);
             
-        // Custos de Timesheet Mão de Obra
+        // Custos de Timesheet Mío de Obra
         const custosTS = state.timesheets
             .filter(ts => ts.notaFiscalId === inv.id)
             .reduce((sum, ts) => sum + ts.custoTotal, 0);
@@ -957,7 +957,7 @@ function renderDashboardAlerts() {
         alertBody.innerHTML = `
             <tr>
                 <td colspan="7" class="text-center text-muted py-4">
-                    <i class="fa-solid fa-circle-check text-success mr-1"></i> Excelentes margens de lucro! Nenhuma nota fiscal está com baixa rentabilidade.
+                    <i class="fa-solid fa-circle-check text-success mr-1"></i> Excelentes margens de lucro! Nenhuma nota fiscal estí com baixa rentabilidade.
                 </td>
             </tr>
         `;
@@ -1003,7 +1003,7 @@ function renderDashboardCharts() {
         const nomesMesesCurtos = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         mesesLabels.push(`${nomesMesesCurtos[mesIndex]}/${String(ano).substr(2)}`);
         
-        // Entradas no Mês
+        // Entradas no Mï¾ƒï½ªs
         const totalEntradasMes = state.invoices
             .filter(inv => {
                 if (inv.status !== "Recebido") return false;
@@ -1019,10 +1019,10 @@ function renderDashboardCharts() {
             })
             .reduce((sum, t) => sum + t.valor, 0);
 
-        // Saídas no Mês
+        // Saçdas no Mï¾ƒï½ªs
         const totalSaidasMes = state.transactions
             .filter(t => {
-                if (t.tipo !== "Saída" || t.status !== "Pago") return false;
+                if (t.tipo !== "Saçda" || t.status !== "Pago") return false;
                 const p = t.data.split("-");
                 return parseInt(p[0]) === ano && (parseInt(p[1]) - 1) === mesIndex;
             })
@@ -1047,7 +1047,7 @@ function renderDashboardCharts() {
                 labels: mesesLabels,
                 datasets: [
                     { label: 'Entradas (Faturamento)', data: entradasData, backgroundColor: '#10b981', borderRadius: 4 },
-                    { label: 'Saídas (Custos)', data: saidasData, backgroundColor: '#ef4444', borderRadius: 4 }
+                    { label: 'Saçdas (Custos)', data: saidasData, backgroundColor: '#ef4444', borderRadius: 4 }
                 ]
             },
             options: {
@@ -1063,20 +1063,20 @@ function renderDashboardCharts() {
             }
         });
     } catch (e) {
-        console.error("Falha ao inicializar o gráfico de fluxo. CDN offline ou bloqueada.", e);
-        ctxFluxo.canvas.parentNode.innerHTML = `<div class="text-center text-muted py-4" style="font-size:0.8rem;"><i class="fa-solid fa-triangle-exclamation text-warning"></i> Gráfico indisponível (CDN offline ou bloqueada).</div>`;
+        console.error("Falha ao inicializar o grífico de fluxo. CDN offline ou bloqueada.", e);
+        ctxFluxo.canvas.parentNode.innerHTML = `<div class="text-center text-muted py-4" style="font-size:0.8rem;"><i class="fa-solid fa-triangle-exclamation text-warning"></i> Grífico indisponçvel (CDN offline ou bloqueada).</div>`;
     }
 
-    // Despesas Donut (Mês Atual)
+    // Despesas Donut (Mï¾ƒï½ªs Atual)
     const dataAtual = new Date();
     const anoAtual = dataAtual.getFullYear();
     const mesAtual = dataAtual.getMonth();
     
-    const categoriasValores = { "Peças": 0, "Deslocamento": 0, "Impostos": 0, "Serviços": 0, "Salários": 0, "Outros": 0 };
+    const categoriasValores = { "Peças": 0, "Deslocamento": 0, "Impostos": 0, "Serviços": 0, "Salírios": 0, "Outros": 0 };
     
     state.transactions
         .filter(t => {
-            if (t.tipo !== "Saída" || t.status !== "Pago") return false;
+            if (t.tipo !== "Saçda" || t.status !== "Pago") return false;
             const p = t.data.split("-");
             return parseInt(p[0]) === anoAtual && (parseInt(p[1]) - 1) === mesAtual;
         })
@@ -1088,7 +1088,7 @@ function renderDashboardCharts() {
             }
         });
         
-    const descCategoriaTraduzida = { "Peças": "Peças de Reposição", "Deslocamento": "Deslocamento / Viagens", "Impostos": "Impostos & Tributos", "Serviços": "Serviços Terceirizados", "Salários": "Salários & Pró-labore", "Outros": "Outros Custos" };
+    const descCategoriaTraduzida = { "Peças": "Peças de Reposiçõo", "Deslocamento": "Deslocamento / Viagens", "Impostos": "Impostos & Tributos", "Serviços": "Serviços Terceirizados", "Salírios": "Salírios & Pró-labore", "Outros": "Outros Custos" };
     const despesasCategorias = Object.keys(categoriasValores);
     const despesasValores = Object.values(categoriasValores);
     const totalDespesas = despesasValores.reduce((sum, v) => sum + v, 0);
@@ -1098,7 +1098,7 @@ function renderDashboardCharts() {
         if (totalDespesas === 0) {
             state.charts.despesas = new Chart(ctxDespesas, {
                 type: 'doughnut',
-                data: { labels: ['Sem despesas no mês'], datasets: [{ data: [1], backgroundColor: ['rgba(255,255,255,0.05)'] }] },
+                data: { labels: ['Sem despesas no mï¾ƒï½ªs'], datasets: [{ data: [1], backgroundColor: ['rgba(255,255,255,0.05)'] }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         } else {
@@ -1123,8 +1123,8 @@ function renderDashboardCharts() {
             });
         }
     } catch (e) {
-        console.error("Falha ao inicializar o gráfico de despesas. CDN offline ou bloqueada.", e);
-        ctxDespesas.canvas.parentNode.innerHTML = `<div class="text-center text-muted py-4" style="font-size:0.8rem;"><i class="fa-solid fa-triangle-exclamation text-warning"></i> Gráfico indisponível (CDN offline ou bloqueada).</div>`;
+        console.error("Falha ao inicializar o grífico de despesas. CDN offline ou bloqueada.", e);
+        ctxDespesas.canvas.parentNode.innerHTML = `<div class="text-center text-muted py-4" style="font-size:0.8rem;"><i class="fa-solid fa-triangle-exclamation text-warning"></i> Grífico indisponçvel (CDN offline ou bloqueada).</div>`;
     }
 }
 
@@ -1156,7 +1156,7 @@ function renderNotasTable() {
         if (state.taxConfig && state.taxConfig.regime) {
             badgeRegime.textContent = `${state.taxConfig.regime} (${state.taxConfig.simplesAliquota}%)`;
         } else {
-            badgeRegime.textContent = "Não Configurado";
+            badgeRegime.textContent = "Nío Configurado";
         }
     }
     
@@ -1168,7 +1168,7 @@ function renderNotasTable() {
     filteredInvoices.sort((a, b) => new Date(b.dataEmissao) - new Date(a.dataEmissao));
     
     filteredInvoices.forEach(inv => {
-        const despesasNota = state.transactions.filter(t => t.notaFiscalId === inv.id && t.tipo === "Saída");
+        const despesasNota = state.transactions.filter(t => t.notaFiscalId === inv.id && t.tipo === "Saçda");
         const totalCustosTrans = despesasNota.reduce((sum, t) => sum + t.valor, 0);
         
         const totalCustosTS = state.timesheets
@@ -1287,7 +1287,7 @@ function renderFluxoTable() {
         
         const tipoBadge = t.tipo === "Entrada" 
             ? `<span class="badge badge-success"><i class="fa-solid fa-circle-arrow-up"></i> Entrada</span>`
-            : `<span class="badge badge-danger"><i class="fa-solid fa-circle-arrow-down"></i> Saída</span>`;
+            : `<span class="badge badge-danger"><i class="fa-solid fa-circle-arrow-down"></i> Saçda</span>`;
             
         const statusBadge = t.status === "Pago" ? `<span class="badge badge-success">Confirmado</span>` : `<span class="badge badge-warning">Pendente</span>`;
             
@@ -1318,7 +1318,7 @@ function renderFluxoTable() {
 }
 
 /* --------------------------------------------------------------------------
-   D. ABA OPERAÇÕES TÉCNICAS (NOVA)
+   D. ABA OPERAÇÕS Tï¾ƒéŸ»NICAS (NOVA)
    -------------------------------------------------------------------------- */
 function renderEquipamentos() {
     const tbody = document.getElementById("table-equipamentos-body");
@@ -1357,7 +1357,7 @@ function renderEquipamentos() {
         
         notasEquip.forEach(inv => {
             const custosTrans = state.transactions
-                .filter(t => t.notaFiscalId === inv.id && t.tipo === "Saída")
+                .filter(t => t.notaFiscalId === inv.id && t.tipo === "Saçda")
                 .reduce((sum, t) => sum + t.valor, 0);
             const custosTS = state.timesheets
                 .filter(ts => ts.notaFiscalId === inv.id)
@@ -1365,7 +1365,7 @@ function renderEquipamentos() {
             totalCustos += (custosTrans + custosTS);
         });
         
-        // Calcular preventiva atrasada (Ciclo configurado em eq.periodicidade ou 6 meses padrão)
+        // Calcular preventiva atrasada (Ciclo configurado em eq.periodicidade ou 6 meses padrío)
         const mesesCiclo = eq.periodicidade || 6;
         const dataPreventiva = new Date(eq.ultimaPreventiva);
         const dataLimite = new Date(dataPreventiva);
@@ -1379,17 +1379,17 @@ function renderEquipamentos() {
             dataPreventivaHTML = `
                 <div class="d-flex flex-column gap-1">
                     <span>${formatDate(eq.ultimaPreventiva)}</span>
-                    <span class="badge badge-danger" style="font-size:0.55rem; padding: 2px 4px;">⚠️ Vencida (${diffDias}d)</span>
+                    <span class="badge badge-danger" style="font-size:0.55rem; padding: 2px 4px;">ç¬žï¿½ï¿½ï¿½ Vencida (${diffDias}d)</span>
                 </div>
             `;
             if (eq.status === "Operacional") {
-                eq.status = "Atenção (Preventiva Atrasada)";
+                eq.status = "Atençõo (Preventiva Atrasada)";
             }
         }
         
         // Status class
         let statusClass = "badge-success";
-        if (eq.status.includes("Atenção")) statusClass = "badge-warning";
+        if (eq.status.includes("Atençõo")) statusClass = "badge-warning";
         else if (eq.status.includes("Parado")) statusClass = "badge-danger";
         
         const row = document.createElement("tr");
@@ -1405,7 +1405,7 @@ function renderEquipamentos() {
             <td class="font-numeric val-despesa">${formatCurrency(totalCustos)}</td>
             <td>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-outline btn-sm" onclick="abrirProntuarioEquipamento('${eq.id}')" title="Ver Prontuário Completo">
+                    <button class="btn btn-outline btn-sm" onclick="abrirProntuarioEquipamento('${eq.id}')" title="Ver Prontuírio Completo">
                         <i class="fa-solid fa-file-medical"></i> Laudos
                     </button>
                     ${isCliente ? '' : `
@@ -1456,10 +1456,10 @@ window.abrirProntuarioEquipamento = function(eqId) {
     badge.innerText = eq.status;
     badge.className = "badge";
     if (eq.status.includes("Operacional")) badge.classList.add("badge-success");
-    else if (eq.status.includes("Atenção")) badge.classList.add("badge-warning");
+    else if (eq.status.includes("Atençõo")) badge.classList.add("badge-warning");
     else badge.classList.add("badge-danger");
     
-    // Encontrar todas as intervenções/Notas
+    // Encontrar todas as intervençï¾ƒï½µes/Notas
     const tbody = document.getElementById("table-prontuario-historico-body");
     tbody.innerHTML = "";
     
@@ -1473,7 +1473,7 @@ window.abrirProntuarioEquipamento = function(eqId) {
         notasEquip.forEach(inv => {
             // Custos de Peças e Viagem
             const despesasPecasViagem = state.transactions
-                .filter(t => t.notaFiscalId === inv.id && t.tipo === "Saída" && (t.categoria === "Peças" || t.categoria === "Deslocamento"))
+                .filter(t => t.notaFiscalId === inv.id && t.tipo === "Saçda" && (t.categoria === "Peças" || t.categoria === "Deslocamento"))
                 .reduce((sum, t) => sum + t.valor, 0);
             
             // Custos de Timesheet
@@ -1488,7 +1488,7 @@ window.abrirProntuarioEquipamento = function(eqId) {
             row.innerHTML = `
                 <td><strong>${inv.numeroNota}</strong></td>
                 <td class="text-muted" style="font-size:0.75rem">${formatDate(inv.dataEmissao)}</td>
-                <td style="font-size:0.775rem">${inv.descricao || "Manutenção preventiva padrão."}</td>
+                <td style="font-size:0.775rem">${inv.descricao || "Manutençõo preventiva padrío."}</td>
                 <td class="font-numeric val-receita">${formatCurrency(inv.valorTotal)}</td>
                 <td class="font-numeric val-despesa">${formatCurrency(despesasPecasViagem)}</td>
                 <td class="font-numeric val-despesa">${formatCurrency(despesasMaoObra)}</td>
@@ -1508,7 +1508,7 @@ window.abrirProntuarioEquipamento = function(eqId) {
     if (eq.nome.includes("Tomógrafo") || eq.nome.includes("Raio-X")) {
         desgasteBox.style.display = "block";
         
-        // Simulação baseada no número de OS/intervenções acumuladas (ex: 22% por OS, limite 100%)
+        // Simulaçõo baseada no nímero de OS/intervençï¾ƒï½µes acumuladas (ex: 22% por OS, limite 100%)
         const totalOS = notasEquip.length;
         const desgastePerc = Math.min(100, Math.max(15, totalOS * 22));
         
@@ -1516,15 +1516,15 @@ window.abrirProntuarioEquipamento = function(eqId) {
         
         if (desgastePerc < 50) {
             desgasteBar.style.backgroundColor = "var(--color-success)";
-            desgasteLabel.innerText = `${desgastePerc}% - Excelente (Vida útil estável)`;
+            desgasteLabel.innerText = `${desgastePerc}% - Excelente (Vida ítil estível)`;
             desgasteLabel.className = "desgaste-status-label text-success";
         } else if (desgastePerc < 80) {
             desgasteBar.style.backgroundColor = "var(--color-warning)";
-            desgasteLabel.innerText = `${desgastePerc}% - Atenção (Planejar manutenção corretiva preventiva)`;
+            desgasteLabel.innerText = `${desgastePerc}% - Atençõo (Planejar manutençõo corretiva preventiva)`;
             desgasteLabel.className = "desgaste-status-label text-warning";
         } else {
             desgasteBar.style.backgroundColor = "var(--color-danger)";
-            desgasteLabel.innerText = `${desgastePerc}% - Crítico! Recomenda-se substituição do tubo imediatamente.`;
+            desgasteLabel.innerText = `${desgastePerc}% - Crçtico! Recomenda-se substituiçõo do tubo imediatamente.`;
             desgasteLabel.className = "desgaste-status-label text-danger";
         }
     } else {
@@ -1582,7 +1582,7 @@ window.editEquipamento = async function(id) {
     }
     
     document.getElementById("eq-form-cliente").value = eq.cliente;
-    document.getElementById("eq-form-status").value = eq.status.includes("Atenção") ? "Atenção" : eq.status.includes("Parado") ? "Parado" : "Operacional";
+    document.getElementById("eq-form-status").value = eq.status.includes("Atençõo") ? "Atençõo" : eq.status.includes("Parado") ? "Parado" : "Operacional";
     document.getElementById("eq-form-preventiva").value = eq.ultimaPreventiva;
     document.getElementById("eq-form-periodicidade").value = eq.periodicidade || 6;
     
@@ -1595,7 +1595,7 @@ window.deleteEquipamento = function(id) {
     
     uiConfirm(`Deseja realmente remover o equipamento ${eq.tag} (${eq.nome}) do parque instalado?`, () => {
         state.equipments = state.equipments.filter(e => e.id !== id);
-        addAuditLog("Equipamento Excluído", `Remoção do equipamento ${eq.tag} do hospital ${eq.cliente}`);
+        addAuditLog("Equipamento Excluçdo", `Remoçõo do equipamento ${eq.tag} do hospital ${eq.cliente}`);
         saveStateToLocalStorage();
         renderApp();
     });
@@ -1613,14 +1613,14 @@ function renderCalibradores() {
         const diffTempo = dataProxima - hoje;
         const diffDias = Math.ceil(diffTempo / (1000 * 60 * 60 * 24));
         
-        let statusText = "Laudo Válido";
+        let statusText = "Laudo Vílido";
         let statusClass = "badge-success";
         
         if (diffDias <= 0) {
-            statusText = "⛔ BLOQUEADO PARA USO";
+            statusText = "ï¿½é–¥ BLOQUEADO PARA USO";
             statusClass = "badge-danger-glow";
         } else if (diffDias < 30) {
-            statusText = "Calibração Próxima";
+            statusText = "Calibraçõo Próxima";
             statusClass = "badge-warning-glow";
         }
         
@@ -1665,7 +1665,7 @@ window.visualizarCertificadoRBC = function(id) {
     document.getElementById("cert-engenheiro").innerText = cal.engenheiro || "Eng. Felipe de Souza Monte";
     document.getElementById("cert-crea").innerText = cal.crea || "507189332-A";
     
-    // Gerar um número de laudo aleatório mas persistente baseado no serial
+    // Gerar um nímero de laudo aleatório mas persistente baseado no serial
     const hashNum = cal.serial.replace(/[^0-9]/g, "") || "488192";
     document.getElementById("cert-numero").innerText = `L-${hashNum}/2026`;
     
@@ -1676,9 +1676,9 @@ window.deleteCalibrador = function(id) {
     const cal = state.calibrators.find(c => c.id === id);
     if (!cal) return;
     
-    uiConfirm(`Excluir o calibrador biométrico ${cal.nome} (${cal.serial}) da base de ferramentas?`, () => {
+    uiConfirm(`Excluir o calibrador biomátrico ${cal.nome} (${cal.serial}) da base de ferramentas?`, () => {
         state.calibrators = state.calibrators.filter(c => c.id !== id);
-        addAuditLog("Calibrador Excluído", `Remoção do calibrador ${cal.nome}`);
+        addAuditLog("Calibrador Excluçdo", `Remoçõo do calibrador ${cal.nome}`);
         saveStateToLocalStorage();
         renderApp();
     });
@@ -1692,7 +1692,7 @@ function renderCotacoes() {
     
     state.quotations.forEach(q => {
         if (isCliente) {
-            // Verifica se o equipamento da cotação pertence ao hospital do cliente
+            // Verifica se o equipamento da cotaçõo pertence ao hospital do cliente
             let eqAssociado = null;
             if (q.equipamentoId) {
                 eqAssociado = state.equipments.find(e => e.id === q.equipamentoId);
@@ -1701,7 +1701,7 @@ function renderCotacoes() {
             }
             
             if (!eqAssociado || eqAssociado.cliente !== state.currentUser.nome) {
-                return; // Esconde a cotação se não for do hospital do cliente
+                return; // Esconde a cotaçõo se nío for do hospital do cliente
             }
         }
         
@@ -1710,7 +1710,7 @@ function renderCotacoes() {
         
         if (q.status === "Pendente") {
             statusClass = "badge-warning";
-            // Admin ou Financeiro podem aprovar cotação
+            // Admin ou Financeiro podem aprovar cotaçõo
             if (state.currentUser.papel !== "tecnico") {
                 actionBtn = `
                     <button class="btn btn-secondary btn-sm" onclick="aprovarCotacao('${q.id}')">
@@ -1733,7 +1733,7 @@ function renderCotacoes() {
             <td>
                 <div class="d-flex gap-2">
                     ${actionBtn}
-                    <button class="btn btn-outline btn-sm text-danger" onclick="deleteCotacao('${q.id}')" title="Excluir Cotação">
+                    <button class="btn btn-outline btn-sm text-danger" onclick="deleteCotacao('${q.id}')" title="Excluir Cotaçõo">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
@@ -1750,23 +1750,23 @@ window.aprovarCotacao = function(id) {
     uiConfirm(`Aprovar a compra da peça "${q.peca}" no valor de ${formatCurrency(q.valor)}?`, () => {
         q.status = "Aprovado";
         
-        // Gera automaticamente um lançamento de despesa no Fluxo de Caixa (Saída)
+        // Gera automaticamente um lançamento de despesa no Fluxo de Caixa (Saçda)
         const novaDespesa = {
             id: generateUUID(),
             data: new Date().toISOString().slice(0,10),
-            descricao: `Aprovação Compra Peça: ${q.peca}`,
-            tipo: "Saída",
+            descricao: `Aprovaçõo Compra Peça: ${q.peca}`,
+            tipo: "Saçda",
             valor: q.valor,
             categoria: "Peças",
             status: "Pendente", // Fica pendente de pagamento
-            notaFiscalId: "" // avulsa até vincularem
+            notaFiscalId: "" // avulsa atá vincularem
         };
         state.transactions.push(novaDespesa);
         
-        addAuditLog("Aprovação de Peça", `Compra aprovada: ${q.peca} - Valor: ${formatCurrency(q.valor)}`);
+        addAuditLog("Aprovaçõo de Peça", `Compra aprovada: ${q.peca} - Valor: ${formatCurrency(q.valor)}`);
         saveStateToLocalStorage();
         renderApp();
-        uiAlert(`Sucesso! A cotação foi aprovada e um débito de ${formatCurrency(q.valor)} sob a categoria Peças foi criado no Fluxo de Caixa.`);
+        uiAlert(`Sucesso! A cotaçõo foi aprovada e um dábito de ${formatCurrency(q.valor)} sob a categoria Peças foi criado no Fluxo de Caixa.`);
     });
 };
 
@@ -1774,9 +1774,9 @@ window.deleteCotacao = function(id) {
     const q = state.quotations.find(cot => cot.id === id);
     if (!q) return;
     
-    uiConfirm(`Excluir a requisição de cotação da peça "${q.peca}"?`, () => {
+    uiConfirm(`Excluir a requisiçõo de cotaçõo da peça "${q.peca}"?`, () => {
         state.quotations = state.quotations.filter(cot => cot.id !== id);
-        addAuditLog("Cotação Excluída", `Remoção da cotação de ${q.peca}`);
+        addAuditLog("Cotaçõo Excluçda", `Remoçõo da cotaçõo de ${q.peca}`);
         saveStateToLocalStorage();
         renderApp();
     });
@@ -1810,7 +1810,7 @@ function renderChamados() {
         let actionBtn = "";
         
         if (tk.status === "Encerrado") {
-            tempoRestanteHTML = `<span class="badge badge-success-glow"><i class="fa-solid fa-check-double"></i> OS Concluída</span>`;
+            tempoRestanteHTML = `<span class="badge badge-success-glow"><i class="fa-solid fa-check-double"></i> OS Concluçda</span>`;
             actionBtn = `
                 <button class="btn btn-secondary btn-sm" onclick="visualizarLaudoRAT('${tk.id}')" title="Visualizar RAT Completo">
                     <i class="fa-solid fa-file-invoice"></i> Laudo RAT
@@ -1825,7 +1825,7 @@ function renderChamados() {
             if (diffTime <= 0) {
                 tempoRestanteHTML = `
                     <div class="d-flex flex-column gap-1">
-                        <span class="text-danger font-weight-bold" style="font-size:0.75rem">⚠️ SLA Estourado</span>
+                        <span class="text-danger font-weight-bold" style="font-size:0.75rem">ç¬žï¿½ï¿½ï¿½ SLA Estourado</span>
                         <div class="progress-bar-container" style="margin-top:0; width: 100px; height: 6px;">
                             <div class="progress-bar-fill" style="width: 100%; background:var(--color-danger)"></div>
                         </div>
@@ -1861,13 +1861,13 @@ function renderChamados() {
             } else {
                 if (tk.status === "Pendente") {
                     actionBtn = `
-                        <button class="btn btn-primary btn-sm" onclick="iniciarAtendimentoChamado('${tk.id}')" title="Direcionar e Iniciar Atendimento Técnico">
+                        <button class="btn btn-primary btn-sm" onclick="iniciarAtendimentoChamado('${tk.id}')" title="Direcionar e Iniciar Atendimento Tácnico">
                             <i class="fa-solid fa-play"></i> Direcionar OS
                         </button>
                     `;
                 } else if (tk.status !== "Encerrado") {
                     actionBtn = `
-                        <button class="btn btn-primary btn-sm" onclick="abrirExecucaoChamado('${tk.id}')" style="background:#581c87; border-color:#581c87;" title="Executar Manutenção e Assinar RAT">
+                        <button class="btn btn-primary btn-sm" onclick="abrirExecucaoChamado('${tk.id}')" style="background:#581c87; border-color:#581c87;" title="Executar Manutençõo e Assinar RAT">
                             <i class="fa-solid fa-clipboard-check"></i> Executar OS
                         </button>
                     `;
@@ -1911,27 +1911,27 @@ window.iniciarAtendimentoChamado = async function(id) {
         if (error) throw error;
         
         if (!tecnicos || tecnicos.length === 0) {
-            uiAlert("Nenhum técnico ativo encontrado na Gestão de Acessos.", "warning");
+            uiAlert("Nenhum tácnico ativo encontrado na Gestío de Acessos.", "warning");
             return;
         }
         
         const options = tecnicos.map(t => t.nome);
         
-        uiSelectPrompt(`Direcionar Chamado/OS ${tk.numero}\nSelecione o técnico responsável:`, options, (tecnico) => {
+        uiSelectPrompt(`Direcionar Chamado/OS ${tk.numero}\nSelecione o tácnico responsível:`, options, (tecnico) => {
             if (!tecnico) return; // Cancelou
             
             tk.status = "Em Atendimento";
             tk.responsavelNome = tecnico;
             tk.dataInicioAtendimento = new Date().toISOString();
             
-            addAuditLog("OS Direcionada/Iniciada", `OS ${tk.numero} direcionada para o técnico ${tk.responsavelNome}`);
+            addAuditLog("OS Direcionada/Iniciada", `OS ${tk.numero} direcionada para o tácnico ${tk.responsavelNome}`);
             saveStateToLocalStorage();
             renderApp();
             uiAlert(`Atendimento da OS ${tk.numero} direcionado para ${tk.responsavelNome} com sucesso!`);
         });
     } catch(err) {
-        console.error("Erro ao buscar técnicos:", err);
-        uiAlert("Ocorreu um erro ao buscar os técnicos disponíveis.", "error");
+        console.error("Erro ao buscar tácnicos:", err);
+        uiAlert("Ocorreu um erro ao buscar os tácnicos disponçveis.", "error");
     }
 };
 
@@ -1945,21 +1945,21 @@ window.abrirExecucaoChamado = function(id) {
     document.getElementById("rat-info-hospital").innerText = tk.hospital;
     document.getElementById("rat-info-inicio").innerText = formatDateTime(tk.dataInicioAtendimento || tk.dataAbertura);
     
-    // Limpar formulário de execução
+    // Limpar formulírio de execuçõo
     document.getElementById("rat-exec-servico").value = "";
     document.getElementById("rat-exec-resp-nome").value = "";
     document.getElementById("rat-exec-resp-cargo").value = "";
     
     // Limpar previews de fotos
     const preview = document.getElementById("rat-photos-preview");
-    preview.innerHTML = `<span class="text-muted" style="font-size:0.75rem;">Nenhuma foto selecionada. Use o simulador para testes rápidos!</span>`;
+    preview.innerHTML = `<span class="text-muted" style="font-size:0.75rem;">Nenhuma foto selecionada. Use o simulador para testes rípidos!</span>`;
     preview.dataset.photosJson = "[]";
     
     // Inicializar o canvas de desenho de assinatura
     setTimeout(() => {
         clearSignatureCanvas("rat-signature-canvas");
         clearSignatureCanvas("rat-tecnico-signature-canvas");
-        // Configuramos os listeners (se já configurado antes, eles sobrepõem, mas idealmente seria só na primeira vez)
+        // Configuramos os listeners (se jí configurado antes, eles sobrepï¾ƒï½µem, mas idealmente seria só na primeira vez)
         setupRatSignatureCanvas();
     }, 200);
     
@@ -1976,22 +1976,22 @@ window.deleteChamado = function(id) {
     const tk = state.tickets.find(t => t.id === id);
     if (!tk) return;
     
-    uiConfirm(`Remover chamado técnico ${tk.numero} da base?`, () => {
+    uiConfirm(`Remover chamado tácnico ${tk.numero} da base?`, () => {
         state.tickets = state.tickets.filter(t => t.id !== id);
-        addAuditLog("Chamado Excluído", `Remoção do chamado ${tk.numero}`);
+        addAuditLog("Chamado Excluçdo", `Remoçõo do chamado ${tk.numero}`);
         saveStateToLocalStorage();
         renderApp();
     });
 };
 
 /* --------------------------------------------------------------------------
-   E. ABA BI & RELATÓRIOS CONTÁBEIS (NOVA)
+   E. ABA BI & RELATï¾ƒè¿­IOS CONTï¾ƒçã€‚EIS (NOVA)
    -------------------------------------------------------------------------- */
 function renderRelatorios() {
-    // 1. Calcular Ponto de Equilíbrio
-    // Custos fixos = Salários (sem nota) + Contabilidade/Outros (sem nota)
+    // 1. Calcular Ponto de Equilçbrio
+    // Custos fixos = Salírios (sem nota) + Contabilidade/Outros (sem nota)
     const custosFixosGerais = state.transactions
-        .filter(t => t.tipo === "Saída" && t.status === "Pago" && !t.notaFiscalId && (t.categoria === "Salários" || t.categoria === "Outros"))
+        .filter(t => t.tipo === "Saçda" && t.status === "Pago" && !t.notaFiscalId && (t.categoria === "Salírios" || t.categoria === "Outros"))
         .reduce((sum, t) => sum + t.valor, 0);
 
     // Rateio geral (Melhoria 14)
@@ -2004,9 +2004,9 @@ function renderRelatorios() {
     const custoFixoRateado = faturamentoBruto * taxaRateio;
     const totalCustosFixos = custosFixosGerais + custoFixoRateado;
     
-    // Margem de contribuição média (lucro antes dos custos fixos / faturamento)
-    // Para simplificar, usamos a margem operacional média da empresa
-    const margemMedia = 0.40; // 40% de margem operacional padrão
+    // Margem de contribuiçõo mádia (lucro antes dos custos fixos / faturamento)
+    // Para simplificar, usamos a margem operacional mádia da empresa
+    const margemMedia = 0.40; // 40% de margem operacional padrío
     const pontoEquilibrio = totalCustosFixos / margemMedia;
     
     document.getElementById("bi-break-even-value").innerText = formatCurrency(pontoEquilibrio);
@@ -2016,7 +2016,7 @@ function renderRelatorios() {
     document.getElementById("bi-break-even-bar").style.width = `${Math.min(100, percProgressoMeta)}%`;
     document.getElementById("bi-break-even-label").innerText = `Faturado: ${formatCurrency(faturamentoBruto)} (${percProgressoMeta.toFixed(0)}% da Meta)`;
 
-    // 2. Projeção de Caixa (30 dias)
+    // 2. Projeçõo de Caixa (30 dias)
     const saldoAtual = state.transactions
         .filter(t => t.status === "Pago")
         .reduce((sum, t) => sum + (t.tipo === "Entrada" ? t.valor : -t.valor), 0) + 
@@ -2029,9 +2029,9 @@ function renderRelatorios() {
         .filter(inv => inv.status === "Pendente")
         .reduce((sum, inv) => sum + inv.valorTotal, 0);
 
-    // Contas a pagar (Transações pendentes)
+    // Contas a pagar (Transaçï¾ƒï½µes pendentes)
     const aPagar = state.transactions
-        .filter(t => t.status === "Pendente" && t.tipo === "Saída")
+        .filter(t => t.status === "Pendente" && t.tipo === "Saçda")
         .reduce((sum, t) => sum + t.valor, 0);
 
     const saldoProjetado = saldoAtual + aReceber - aPagar;
@@ -2040,7 +2040,7 @@ function renderRelatorios() {
     const projStatus = document.getElementById("bi-projection-status");
     if (saldoProjetado >= 0) {
         projStatus.className = "trend trend-up";
-        projStatus.innerHTML = `<i class="fa-solid fa-circle-check"></i> Caixa saudável`;
+        projStatus.innerHTML = `<i class="fa-solid fa-circle-check"></i> Caixa saudível`;
     } else {
         projStatus.className = "trend trend-down";
         projStatus.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Risco de caixa`;
@@ -2052,7 +2052,7 @@ function renderRelatorios() {
     // 4. Renderizar Curva ABC (Melhoria 3)
     renderCurvaABC();
 
-    // 5. Renderizar Gráfico de Projeção (Melhoria 4)
+    // 5. Renderizar Grífico de Projeçõo (Melhoria 4)
     renderProjectionChart(saldoAtual, aReceber, aPagar);
 }
 
@@ -2062,14 +2062,14 @@ function renderDRETable(faturamentoBruto, custoFixoRateado, custosFixosGerais) {
     
     // Impostos Totais Retidos nas Notas Recebidas
     const totalImpostos = state.transactions
-        .filter(t => t.tipo === "Saída" && t.categoria === "Impostos" && t.notaFiscalId)
+        .filter(t => t.tipo === "Saçda" && t.categoria === "Impostos" && t.notaFiscalId)
         .reduce((sum, t) => sum + t.valor, 0);
 
     const receitaLiquida = faturamentoBruto - totalImpostos - custoFixoRateado;
 
-    // Custos diretos (Peças, Deslocamentos de campo, Serviços diretos e Mão de Obra Timesheet das Notas recebidas)
+    // Custos diretos (Peças, Deslocamentos de campo, Serviços diretos e Mío de Obra Timesheet das Notas recebidas)
     const custosDiretosTrans = state.transactions
-        .filter(t => t.tipo === "Saída" && t.notaFiscalId && t.categoria !== "Impostos")
+        .filter(t => t.tipo === "Saçda" && t.notaFiscalId && t.categoria !== "Impostos")
         .reduce((sum, t) => sum + t.valor, 0);
 
     const custosDiretosTS = state.timesheets.reduce((sum, ts) => sum + ts.custoTotal, 0);
@@ -2079,19 +2079,19 @@ function renderDRETable(faturamentoBruto, custoFixoRateado, custosFixosGerais) {
     const resultadoExercicio = margemBruta - custosFixosGerais;
     
     const rows = [
-        { desc: "(=) RECEITA BRUTA DE SERVIÇOS", valor: faturamentoBruto, classe: "dre-total" },
-        { desc: "(-) Impostos s/ Faturamento (Retenções)", valor: totalImpostos, classe: "dre-sub val-despesa" },
+        { desc: "(=) RECEITA BRUTA DE SERVIï¾ƒâ‘¯S", valor: faturamentoBruto, classe: "dre-total" },
+        { desc: "(-) Impostos s/ Faturamento (Retençï¾ƒï½µes)", valor: totalImpostos, classe: "dre-sub val-despesa" },
         { desc: "(-) Rateio de Custos Fixo Corporativo", valor: custoFixoRateado, classe: "dre-sub val-despesa" },
-        { desc: "(=) RECEITA LÍQUIDA DE SERVIÇOS", valor: receitaLiquida, classe: "dre-total" },
+        { desc: "(=) RECEITA Lï¾ƒæ…ŒUIDA DE SERVIï¾ƒâ‘¯S", valor: receitaLiquida, classe: "dre-total" },
         { desc: "(-) Custos dos Serviços Prestados (CSP)", valor: custoServicoPrestado, classe: "dre-sub val-despesa" },
-        { desc: "    ⚖️ Peças de Reposição & Materiais", valor: state.transactions.filter(t => t.notaFiscalId && t.categoria === "Peças").reduce((sum, t) => sum + t.valor, 0), classNested: true },
-        { desc: "    ⚖️ Deslocamento & Estadias", valor: state.transactions.filter(t => t.notaFiscalId && t.categoria === "Deslocamento").reduce((sum, t) => sum + t.valor, 0), classNested: true },
-        { desc: "    ⚖️ Mão de Obra Direta (Timesheet)", valor: custosDiretosTS, classNested: true },
-        { desc: "(=) MARGEM BRUTA DE SERVIÇOS", valor: margemBruta, classe: "dre-total" },
+        { desc: "    çª¶ï½¢ Peças de Reposiçõo & Materiais", valor: state.transactions.filter(t => t.notaFiscalId && t.categoria === "Peças").reduce((sum, t) => sum + t.valor, 0), classNested: true },
+        { desc: "    çª¶ï½¢ Deslocamento & Estadias", valor: state.transactions.filter(t => t.notaFiscalId && t.categoria === "Deslocamento").reduce((sum, t) => sum + t.valor, 0), classNested: true },
+        { desc: "    çª¶ï½¢ Mío de Obra Direta (Timesheet)", valor: custosDiretosTS, classNested: true },
+        { desc: "(=) MARGEM BRUTA DE SERVIï¾ƒâ‘¯S", valor: margemBruta, classe: "dre-total" },
         { desc: "(-) Despesas Administrativas / Fixas", valor: custosFixosGerais, classe: "dre-sub val-despesa" },
-        { desc: "    ⚖️ Honorários de Contabilidade", valor: state.transactions.filter(t => !t.notaFiscalId && t.descricao && t.descricao.toLowerCase().includes("contabilidade")).reduce((sum, t) => sum + t.valor, 0), classNested: true },
-        { desc: "    ⚖️ Retiradas de Sócios (Salários)", valor: state.transactions.filter(t => !t.notaFiscalId && t.categoria === "Salários").reduce((sum, t) => sum + t.valor, 0), classNested: true },
-        { desc: "(=) RESULTADO LÍQUIDO DO EXERCÍCIO (LUCRO)", valor: resultadoExercicio, classe: "dre-net-profit" }
+        { desc: "    çª¶ï½¢ Honorírios de Contabilidade", valor: state.transactions.filter(t => !t.notaFiscalId && t.descricao && t.descricao.toLowerCase().includes("contabilidade")).reduce((sum, t) => sum + t.valor, 0), classNested: true },
+        { desc: "    çª¶ï½¢ Retiradas de Sócios (Salírios)", valor: state.transactions.filter(t => !t.notaFiscalId && t.categoria === "Salírios").reduce((sum, t) => sum + t.valor, 0), classNested: true },
+        { desc: "(=) RESULTADO Lï¾ƒæ…ŒUIDO DO EXERCï¾ƒåž¢IO (LUCRO)", valor: resultadoExercicio, classe: "dre-net-profit" }
     ];
     
     rows.forEach(r => {
@@ -2136,7 +2136,7 @@ function renderCurvaABC() {
         
         // Somar custos vinculados
         const custosTrans = state.transactions
-            .filter(t => t.notaFiscalId === inv.id && t.tipo === "Saída")
+            .filter(t => t.notaFiscalId === inv.id && t.tipo === "Saçda")
             .reduce((sum, t) => sum + t.valor, 0);
         const custosTS = state.timesheets
             .filter(ts => ts.notaFiscalId === inv.id)
@@ -2236,13 +2236,13 @@ function renderProjectionChart(saldoAtual, aReceber, aPagar) {
             }
         });
     } catch (e) {
-        console.error("Falha ao inicializar o gráfico de projeção. CDN offline ou bloqueada.", e);
-        ctx.canvas.parentNode.innerHTML = `<div class="text-center text-muted py-4" style="font-size:0.8rem;"><i class="fa-solid fa-triangle-exclamation text-warning"></i> Gráfico indisponível (CDN offline ou bloqueada).</div>`;
+        console.error("Falha ao inicializar o grífico de projeçõo. CDN offline ou bloqueada.", e);
+        ctx.canvas.parentNode.innerHTML = `<div class="text-center text-muted py-4" style="font-size:0.8rem;"><i class="fa-solid fa-triangle-exclamation text-warning"></i> Grífico indisponçvel (CDN offline ou bloqueada).</div>`;
     }
 }
 
 // ==========================================================================
-// GAVETA DE DETALHES DA NOTA (TIMESHEET, COBRANÇAS, ASSINATURA)
+// GAVETA DE DETALHES DA NOTA (TIMESHEET, COBRANï¾ƒâ‘¡S, ASSINATURA)
 // ==========================================================================
 function updateInvoiceDetailsModal(invoiceId) {
     const inv = state.invoices.find(n => n.id === invoiceId);
@@ -2251,7 +2251,7 @@ function updateInvoiceDetailsModal(invoiceId) {
     // Dados de Cabeçalho da Nota
     document.getElementById("detalhe-nota-numero").innerText = `Centro de Custos: ${inv.numeroNota}`;
     document.getElementById("detalhe-nota-cliente").innerText = inv.cliente;
-    document.getElementById("detalhe-nota-descricao").innerText = inv.descricao || "Nenhuma descrição fornecida.";
+    document.getElementById("detalhe-nota-descricao").innerText = inv.descricao || "Nenhuma descriçõo fornecida.";
     document.getElementById("detalhe-nota-data").innerText = formatDate(inv.dataEmissao);
     
     // Setar badge de status
@@ -2264,9 +2264,9 @@ function updateInvoiceDetailsModal(invoiceId) {
     
     // 1. Filtrar despesas vinculadas a esta nota
     const custosVinculados = state.transactions.filter(t => t.notaFiscalId === invoiceId);
-    const totalCustosTrans = custosVinculados.filter(t => t.tipo === "Saída").reduce((sum, t) => sum + t.valor, 0);
+    const totalCustosTrans = custosVinculados.filter(t => t.tipo === "Saçda").reduce((sum, t) => sum + t.valor, 0);
     
-    // Custos do Timesheet (Mão de Obra)
+    // Custos do Timesheet (Mío de Obra)
     const custosTS = state.timesheets.filter(ts => ts.notaFiscalId === invoiceId);
     const totalCustosTS = custosTS.reduce((sum, ts) => sum + ts.custoTotal, 0);
         
@@ -2310,7 +2310,7 @@ function updateInvoiceDetailsModal(invoiceId) {
             }
             
             let acoesHTML = c.isImpostoAuto 
-                ? `<span class="badge badge-purple" style="font-size:0.65rem">Imposto Automático</span>`
+                ? `<span class="badge badge-purple" style="font-size:0.65rem">Imposto Automítico</span>`
                 : `<button class="btn btn-outline btn-sm text-danger" onclick="unlinkTransaction('${c.id}', '${invoiceId}')"><i class="fa-solid fa-link-slash"></i></button>`;
                 
             let iconCat = "";
@@ -2335,7 +2335,7 @@ function updateInvoiceDetailsModal(invoiceId) {
     tsBody.innerHTML = "";
     
     if (custosTS.length === 0) {
-        tsBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-2" style="font-size:0.75rem">Nenhuma hora técnica lançada para esta nota.</td></tr>`;
+        tsBody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-2" style="font-size:0.75rem">Nenhuma hora tácnica lançada para esta nota.</td></tr>`;
     } else {
         custosTS.forEach(ts => {
             const row = document.createElement("tr");
@@ -2357,7 +2357,7 @@ function updateInvoiceDetailsModal(invoiceId) {
     // 4. Carregar assinaturas RAT se existirem (Melhoria 8)
     carregarAssinaturaRAT(invoiceId);
 
-    // Sincronizar: Ocultar controles de laudo RAT e checklist técnico se a OS do equipamento não estiver encerrada
+    // Sincronizar: Ocultar controles de laudo RAT e checklist tácnico se a OS do equipamento nío estiver encerrada
     const eq = state.equipments.find(e => e.id === inv.equipamentoId);
     const chamadoAberto = state.tickets.find(t => 
         (t.equipamento === (eq ? eq.nome : "") || t.hospital === inv.cliente) && 
@@ -2378,13 +2378,13 @@ function updateInvoiceDetailsModal(invoiceId) {
         if (signatureRATBox) signatureRATBox.style.display = "block";
     }
 
-    // 5. Régua de Cobrança Preventiva (Melhoria 13)
+    // 5. Rágua de Cobrança Preventiva (Melhoria 13)
     renderReguaCobranca(inv);
     
-    // 6. Checklist Técnico Dinâmico por Equipamento (Melhoria 2)
+    // 6. Checklist Tácnico Dinï¾ƒï½¢mico por Equipamento (Melhoria 2)
     renderChecklistTecnico(inv);
     
-    // 7. Botão do PDF Anexo
+    // 7. Botío do PDF Anexo
     const btnPdf = document.getElementById("btn-ver-pdf-nota");
     if (btnPdf) {
         if (inv.arquivoUrl) {
@@ -2396,13 +2396,13 @@ function updateInvoiceDetailsModal(invoiceId) {
     }
 }
 
-// Régua de cobrança preventiva simulada (Melhoria 13)
+// Rágua de cobrança preventiva simulada (Melhoria 13)
 function renderReguaCobranca(inv) {
     const list = document.getElementById("billing-reminders-list");
     list.innerHTML = "";
     
     if (inv.status === "Recebido") {
-        list.innerHTML = `<li><i class="fa-solid fa-circle-check text-success"></i> <strong>Nota Paga</strong>: Régua finalizada.</li>`;
+        list.innerHTML = `<li><i class="fa-solid fa-circle-check text-success"></i> <strong>Nota Paga</strong>: Rágua finalizada.</li>`;
         return;
     }
     
@@ -2444,10 +2444,10 @@ function renderReguaCobranca(inv) {
         alertBox.style.borderRadius = "var(--radius-sm)";
         alertBox.innerHTML = `
             <i class="fa-solid fa-triangle-exclamation"></i> <strong>Fatura Atrasada (${diffDays} dias):</strong><br>
-            ⚖️ Valor Original: ${formatCurrency(inv.valorTotal)}<br>
-            ⚖️ Multa de Atraso (2.0%): ${formatCurrency(multa)}<br>
-            ⚖️ Juros Simples (1.0% a.m.): ${formatCurrency(juros)}<br>
-            ⚖️ <strong>Total Atual com Mora: ${formatCurrency(totalComAcrecimos)}</strong>
+            çª¶ï½¢ Valor Original: ${formatCurrency(inv.valorTotal)}<br>
+            çª¶ï½¢ Multa de Atraso (2.0%): ${formatCurrency(multa)}<br>
+            çª¶ï½¢ Juros Simples (1.0% a.m.): ${formatCurrency(juros)}<br>
+            çª¶ï½¢ <strong>Total Atual com Mora: ${formatCurrency(totalComAcrecimos)}</strong>
         `;
         list.parentNode.appendChild(alertBox);
         
@@ -2457,7 +2457,7 @@ function renderReguaCobranca(inv) {
             oldAlert.remove();
         }
     } else {
-        // Se não está atrasado, remove alertas residuais antigos
+        // Se nío estí atrasado, remove alertas residuais antigos
         const oldAlert = list.parentNode.querySelector(".alert-danger");
         if (oldAlert) oldAlert.remove();
     }
@@ -2501,9 +2501,9 @@ if (formTimesheet) {
 }
 
 window.deleteTimesheet = function(tsId, invoiceId) {
-    uiConfirm("Deseja realmente excluir este lançamento de horas técnicas?", () => {
+    uiConfirm("Deseja realmente excluir este lançamento de horas tácnicas?", () => {
         state.timesheets = state.timesheets.filter(ts => ts.id !== tsId);
-        addAuditLog("Timesheet Excluído", `Horas técnicas id ${tsId} removidas da nota ${invoiceId}`);
+        addAuditLog("Timesheet Excluçdo", `Horas tácnicas id ${tsId} removidas da nota ${invoiceId}`);
         saveStateToLocalStorage();
         updateInvoiceDetailsModal(invoiceId);
         renderApp();
@@ -2511,11 +2511,11 @@ window.deleteTimesheet = function(tsId, invoiceId) {
 };
 
 window.unlinkTransaction = function(transId, invoiceId) {
-    uiConfirm("Tem certeza que deseja desvincular esta despesa da OS?\n(A despesa continuará existindo no seu Fluxo de Caixa Geral, mas deixará de reduzir o lucro desta Nota Fiscal).", () => {
+    uiConfirm("Tem certeza que deseja desvincular esta despesa da OS?\n(A despesa continuarí existindo no seu Fluxo de Caixa Geral, mas deixarí de reduzir o lucro desta Nota Fiscal).", () => {
         const trans = state.transactions.find(t => t.id === transId);
         if (trans) {
             trans.notaFiscalId = "";
-            addAuditLog("Despesa Desvinculada", `Transação ${transId} desvinculada da nota ${invoiceId}`);
+            addAuditLog("Despesa Desvinculada", `Transaçõo ${transId} desvinculada da nota ${invoiceId}`);
             saveStateToLocalStorage();
             updateInvoiceDetailsModal(invoiceId);
             renderApp();
@@ -2524,7 +2524,7 @@ window.unlinkTransaction = function(transId, invoiceId) {
 };
 
 // ==========================================================================
-// ASSINATURA DIGITAL RAT CANVAS LÓGICA (Melhoria 8)
+// ASSINATURA DIGITAL RAT CANVAS Lï¾ƒæ•µICA (Melhoria 8)
 // ==========================================================================
 function setupSignatureCanvas() {
     sigCanvas = document.getElementById("signature-pad");
@@ -2599,7 +2599,7 @@ function salvarAssinatura() {
     const inv = state.invoices.find(n => n.id === invoiceId);
     if (inv) {
         inv.assinaturaRAT = dataURL;
-        addAuditLog("Assinatura RAT Salva", `Relatório de Atendimento Técnico assinado digitalmente na nota ${inv.numeroNota}`);
+        addAuditLog("Assinatura RAT Salva", `Relatório de Atendimento Tácnico assinado digitalmente na nota ${inv.numeroNota}`);
         saveStateToLocalStorage();
         uiAlert("Assinatura digital do RAT salva com sucesso para faturamento!");
     }
@@ -2618,7 +2618,7 @@ function carregarAssinaturaRAT(invoiceId) {
 }
 
 // ==========================================================================
-// SIMULADOR DE COBRANÇAS PIX/BOLETO (Melhoria 12)
+// SIMULADOR DE COBRANï¾ƒâ‘¡S PIX/BOLETO (Melhoria 12)
 // ==========================================================================
 const btnGerarCobranca = document.getElementById("btn-gerar-cobranca");
 if (btnGerarCobranca) {
@@ -2641,7 +2641,7 @@ if (btnGerarCobranca) {
         
         document.getElementById("cobranca-valor-total").innerText = formatCurrency(valorCobrado);
         
-        // Simula um código Pix copia e cola e linha digitável do boleto baseados no ID/valor
+        // Simula um código Pix copia e cola e linha digitível do boleto baseados no ID/valor
         const hash = Math.random().toString(36).substring(2,15).toUpperCase();
         document.getElementById("cobranca-pix-string").value = `00020101021226870014BR.GOV.BCB.PIX2563nevixapix${hash}5204000053039865405${valorCobrado.toFixed(2)}5802BR5916NEVIXAENGENHARIA6009SAOPAULO62070503***6304`;
         document.getElementById("cobranca-boleto-string").value = `34191.79001 01043.513184 91020.150008 7 982000000${valorCobrado.toFixed(0)}00`;
@@ -2659,13 +2659,13 @@ const btnCobrancaWhatsApp = document.getElementById("btn-cobranca-whatsapp");
 if (btnCobrancaWhatsApp) {
     btnCobrancaWhatsApp.addEventListener("click", () => {
         const pixVal = document.getElementById("cobranca-pix-string").value;
-        const msg = encodeURIComponent(`Olá, segue a cobrança da Nevixa Engenharia para pagamento do serviço prestado.\n\nCódigo Pix Copia e Cola:\n${pixVal}`);
+        const msg = encodeURIComponent(`Olí, segue a cobrança da Nevixa Engenharia para pagamento do serviço prestado.\n\nCódigo Pix Copia e Cola:\n${pixVal}`);
         window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
     });
 }
 
 // ==========================================================================
-// SIMULADOR CONEXÃO OFFLINE (Melhoria 17)
+// SIMULADOR CONEXÃ OFFLINE (Melhoria 17)
 // ==========================================================================
 const btnToggleOffline = document.getElementById("btn-toggle-offline");
 if (btnToggleOffline) {
@@ -2680,19 +2680,19 @@ if (btnToggleOffline) {
             icon.className = "fa-solid fa-wifi-slash text-danger";
             txt.innerText = "Offline";
             btn.classList.add("btn-danger-outline"); // visual warning
-            uiAlert("Sistema em modo OFFLINE. Todas as alterações serão mantidas localmente de forma resiliente.");
+            uiAlert("Sistema em modo OFFLINE. Todas as alteraçï¾ƒï½µes serío mantidas localmente de forma resiliente.");
         } else {
             icon.className = "fa-solid fa-wifi text-success";
             txt.innerText = "Online";
             btn.classList.remove("btn-danger-outline");
-            uiAlert("Conexão restabelecida! Sincronização dos dados locais concluída com sucesso.");
-            addAuditLog("Sincronização de Rede", "Sessão offline sincronizada com os servidores centrais da Nevixa.");
+            uiAlert("Conexío restabelecida! Sincronizaçõo dos dados locais concluçda com sucesso.");
+            addAuditLog("Sincronizaçõo de Rede", "Sessío offline sincronizada com os servidores centrais da Nevixa.");
         }
     });
 }
 
 // ==========================================================================
-// CONFIGURAÇÕES TRIBUTÁRIAS & RATEIOS (Melhoria 14 / Opção 10)
+// CONFIGURAÇÕS TRIBUTï¾ƒçãƒ½IAS & RATEIOS (Melhoria 14 / Opçõo 10)
 // ==========================================================================
 const inputBiRateioPerc = document.getElementById("input-bi-rateio-perc");
 if (inputBiRateioPerc) {
@@ -2701,13 +2701,13 @@ if (inputBiRateioPerc) {
         if (!isNaN(val) && val >= 0 && val <= 100) {
             state.rateioConfig = val;
             localStorage.setItem("nevixa_rateio_perc", val.toString());
-            addAuditLog("Alteração de Rateio", `A taxa de rateio de custos fixos corporativos foi atualizada para ${val}%`);
+            addAuditLog("Alteraçõo de Rateio", `A taxa de rateio de custos fixos corporativos foi atualizada para ${val}%`);
             renderApp();
         }
     });
 }
 
-// Geração de logs no modal de logs de auditoria
+// Geraçõo de logs no modal de logs de auditoria
 const btnViewLogs = document.getElementById("btn-view-logs");
 if (btnViewLogs) {
     btnViewLogs.addEventListener("click", () => {
@@ -2734,19 +2734,19 @@ if (btnViewLogs) {
     });
 }
 
-// Exportação Contábil Simulado (Melhoria 20)
+// Exportaçõo Contíbil Simulado (Melhoria 20)
 const btnExportContabil = document.getElementById("btn-export-contabil");
 if (btnExportContabil) {
     btnExportContabil.addEventListener("click", () => {
-        // Gerar um CSV do DRE e Notas do mês
+        // Gerar um CSV do DRE e Notas do mï¾ƒï½ªs
         const faturamentoBruto = state.invoices
             .filter(inv => inv.status === "Recebido")
             .reduce((sum, inv) => sum + inv.valorTotal, 0);
         const totalImpostos = state.transactions
-            .filter(t => t.tipo === "Saída" && t.categoria === "Impostos" && t.notaFiscalId)
+            .filter(t => t.tipo === "Saçda" && t.categoria === "Impostos" && t.notaFiscalId)
             .reduce((sum, t) => sum + t.valor, 0);
     
-        // Formatar decimais com vírgula para compatibilidade com o Excel brasileiro
+        // Formatar decimais com vçrgula para compatibilidade com o Excel brasileiro
         const formatDecimalCSV = (val) => val.toFixed(2).replace(".", ",");
     
         let csvContent = "sep=;\r\n";
@@ -2768,13 +2768,13 @@ if (btnExportContabil) {
         downloadAnchor.click();
         downloadAnchor.remove();
         
-        addAuditLog("Exportação Contábil", "Arquivos de integração contábil e SPD gerados e baixados pelo Administrador.");
-        uiAlert("Exportação Contábil CSV gerada com sucesso e formatada para o Microsoft Excel!");
+        addAuditLog("Exportaçõo Contíbil", "Arquivos de integraçõo contíbil e SPD gerados e baixados pelo Administrador.");
+        uiAlert("Exportaçõo Contíbil CSV gerada com sucesso e formatada para o Microsoft Excel!");
     });
 }
 
 // ==========================================================================
-// FORMULÁRIOS & CADASTROS (CRUDS)
+// FORMULï¾ƒçãƒ½IOS & CADASTROS (CRUDS)
 // ==========================================================================
 
 window.openInvoiceDetails = function(id) {
@@ -2784,7 +2784,7 @@ window.openInvoiceDetails = function(id) {
 };
 
 /* --------------------------------------------------------------------------
-   GESTÃO DE NOTAS FISCAIS & IMPOSTOS AUTOMÁTICOS
+   GESTÃ DE NOTAS FISCAIS & IMPOSTOS AUTOMï¾ƒçã‚ICOS
    -------------------------------------------------------------------------- */
 const formNota = document.getElementById("form-nota");
 if (formNota) {
@@ -2832,7 +2832,7 @@ if (formNota) {
         if (!id) {
             const notaDuplicada = state.invoices.find(n => n.numeroNota.toLowerCase() === numeroNota.toLowerCase());
             if (notaDuplicada) {
-                uiAlert(`O número de Nota/OS "${numeroNota}" já foi cadastrado para o cliente ${notaDuplicada.cliente}.`);
+                uiAlert(`O nímero de Nota/OS "${numeroNota}" jí foi cadastrado para o cliente ${notaDuplicada.cliente}.`);
                 return;
             }
         }
@@ -2866,7 +2866,7 @@ if (formNota) {
             btnSalvar.disabled = false;
 
             if (uploadError) {
-                uiAlert("Erro ao fazer upload do arquivo (verifique se o bucket 'arquivos-nevixa' é público/permitido): " + uploadError.message);
+                uiAlert("Erro ao fazer upload do arquivo (verifique se o bucket 'arquivos-nevixa' á píblico/permitido): " + uploadError.message);
                 return;
             }
 
@@ -2886,14 +2886,14 @@ if (formNota) {
                     isMisto, valorPecas, valorServicos, arquivoUrl
                 };
             }
-            addAuditLog("Nota Fiscal Editada", `Atualização dos dados da nota ${numeroNota} - Valor: ${formatCurrency(valorTotal)}`);
+            addAuditLog("Nota Fiscal Editada", `Atualizaçõo dos dados da nota ${numeroNota} - Valor: ${formatCurrency(valorTotal)}`);
         } else {
             const novaNota = { 
                 id: notaId, numeroNota, dataEmissao, equipamentoId, cliente, descricao, valorTotal, status, calcularImpostos,
                 isMisto, valorPecas, valorServicos, arquivoUrl
             };
             state.invoices.push(novaNota);
-            addAuditLog("Nota Fiscal Cadastrada", `Emissão de nota ${numeroNota} para ${cliente} - Valor: ${formatCurrency(valorTotal)}`);
+            addAuditLog("Nota Fiscal Cadastrada", `Emissío de nota ${numeroNota} para ${cliente} - Valor: ${formatCurrency(valorTotal)}`);
         }
         
         sincronizarImpostosNota(notaId, numeroNota, dataEmissao, valorTotal, calcularImpostos);
@@ -2904,7 +2904,7 @@ if (formNota) {
     });
 }
 
-// Vincula o preenchimento automático do cliente ao trocar de equipamento
+// Vincula o preenchimento automítico do cliente ao trocar de equipamento
 const inputEquipamentoNome = document.getElementById("nota-equipamento-nome");
 if (inputEquipamentoNome) {
     inputEquipamentoNome.addEventListener("change", (e) => {
@@ -2942,7 +2942,7 @@ function sincronizarImpostosNota(notaId, numeroNota, dataNota, valorNota, calcul
                     id: generateUUID(),
                     data: dataNota,
                     descricao: `Imposto DAS - Simples Nacional (${config.simplesAliquota.toFixed(1)}%) sobre Serviços da NF ${numeroNota}`,
-                    tipo: "Saída",
+                    tipo: "Saçda",
                     valor: valorDAS,
                     categoria: "Impostos",
                     status: "Pendente",
@@ -2953,12 +2953,12 @@ function sincronizarImpostosNota(notaId, numeroNota, dataNota, valorNota, calcul
             }
             
             if (valorBasePecas > 0) {
-                const valorICMS = valorBasePecas * 0.04; // 4% ICMS Simplificado Comércio
+                const valorICMS = valorBasePecas * 0.04; // 4% ICMS Simplificado Comárcio
                 const impostoICMS = {
                     id: generateUUID(),
                     data: dataNota,
                     descricao: `ICMS Simplificado (4.0%) sobre Venda de Peças da NF ${numeroNota}`,
-                    tipo: "Saída",
+                    tipo: "Saçda",
                     valor: valorICMS,
                     categoria: "Impostos",
                     status: "Pendente",
@@ -2985,8 +2985,8 @@ function sincronizarImpostosNota(notaId, numeroNota, dataNota, valorNota, calcul
                     const lancamentoImp = {
                         id: generateUUID(),
                         data: dataNota,
-                        descricao: `Retenção ${imp.nome} (${imp.aliquota.toFixed(2)}%) sobre Serviços da NF ${numeroNota}`,
-                        tipo: "Saída",
+                        descricao: `Retençõo ${imp.nome} (${imp.aliquota.toFixed(2)}%) sobre Serviços da NF ${numeroNota}`,
+                        tipo: "Saçda",
                         valor: valorImp,
                         categoria: "Impostos",
                         status: "Pendente",
@@ -3000,7 +3000,7 @@ function sincronizarImpostosNota(notaId, numeroNota, dataNota, valorNota, calcul
             // Impostos Estaduais/Federais incidentes sobre as Peças (Ex: ICMS 18% e IPI 5% simulados no presumido)
             if (valorBasePecas > 0) {
                 const impostosPecasLP = [
-                    { nome: "ICMS Comércio", aliquota: 18.00 },
+                    { nome: "ICMS Comárcio", aliquota: 18.00 },
                     { nome: "IPI Industrial", aliquota: 5.00 }
                 ];
                 
@@ -3010,7 +3010,7 @@ function sincronizarImpostosNota(notaId, numeroNota, dataNota, valorNota, calcul
                         id: generateUUID(),
                         data: dataNota,
                         descricao: `Imposto ${imp.nome} (${imp.aliquota.toFixed(2)}%) sobre Peças da NF ${numeroNota}`,
-                        tipo: "Saída",
+                        tipo: "Saçda",
                         valor: valorImp,
                         categoria: "Impostos",
                         status: "Pendente",
@@ -3049,7 +3049,7 @@ function editInvoice(id) {
     document.getElementById("nota-status").value = inv.status;
     document.getElementById("nota-calcular-impostos").checked = inv.calcularImpostos !== false;
     
-    // Injetar valores do split no formulário
+    // Injetar valores do split no formulírio
     document.getElementById("nota-faturamento-misto").checked = inv.isMisto === true;
     document.getElementById("row-split-faturamento").style.display = inv.isMisto ? "flex" : "none";
     document.getElementById("nota-valor-pecas").value = inv.valorPecas ? formatInputCurrency(inv.valorPecas) : "";
@@ -3075,9 +3075,9 @@ function updateInvoicesDropdown() {
     const dropdown = document.getElementById("trans-nota");
     if (!dropdown) return;
     
-    dropdown.innerHTML = '<option value="">Despesa Geral (Sem vínculo com Nota/OS)</option>';
+    dropdown.innerHTML = '<option value="">Despesa Geral (Sem vçnculo com Nota/OS)</option>';
     
-    // Pegar todas as notas não canceladas
+    // Pegar todas as notas nío canceladas
     const notasValidas = state.invoices.filter(n => n.status !== "Cancelado");
     
     notasValidas.forEach(n => {
@@ -3095,11 +3095,11 @@ function deleteInvoice(id) {
     const despesasDiretas = state.transactions.filter(t => t.notaFiscalId === id && !t.isImpostoAuto).length;
     let confirmMsg = `Deseja realmente excluir a Nota Fiscal ${inv.numeroNota}?`;
     if (despesasDiretas > 0) {
-        confirmMsg = `ATENÇÃ: A Nota Fiscal ${inv.numeroNota} possui ${despesasDiretas} despesas diretas vinculadas. Se você excluí-la, essas despesas deixarão de estar associadas a esta nota, tornando-se despesas operacionais avulsas. Deseja prosseguir?`;
+        confirmMsg = `ATENÇÃ: A Nota Fiscal ${inv.numeroNota} possui ${despesasDiretas} despesas diretas vinculadas. Se vocï¾ƒï½ª excluç-la, essas despesas deixarío de estar associadas a esta nota, tornando-se despesas operacionais avulsas. Deseja prosseguir?`;
     }
     
     uiConfirm(confirmMsg, () => {
-        addAuditLog("Nota Fiscal Excluída", `Exclusão da nota ${inv.numeroNota} de valor ${formatCurrency(inv.valorTotal)}`);
+        addAuditLog("Nota Fiscal Excluçda", `Exclusío da nota ${inv.numeroNota} de valor ${formatCurrency(inv.valorTotal)}`);
         
         state.invoices = state.invoices.filter(n => n.id !== id);
         state.transactions = state.transactions.filter(t => !(t.notaFiscalId === id && t.isImpostoAuto === true));
@@ -3116,7 +3116,7 @@ function deleteInvoice(id) {
 }
 
 /* --------------------------------------------------------------------------
-   GESTÃO DE TRANSAÇÕES
+   GESTÃ DE TRANSAÇÕS
    -------------------------------------------------------------------------- */
 const formTransacao = document.getElementById("form-transacao");
 if (formTransacao) {
@@ -3132,7 +3132,7 @@ if (formTransacao) {
         const status = document.getElementById("trans-status").value;
         const notaFiscalId = document.getElementById("trans-nota").value;
         
-        // Cálculo de Km (Melhoria 7)
+        // Cílculo de Km (Melhoria 7)
         let km = parseFloat(document.getElementById("trans-km").value);
         let valorFinal = valorInput;
         let descFinal = descricao;
@@ -3147,7 +3147,7 @@ if (formTransacao) {
         let garantia = parseInt(document.getElementById("trans-garantia").value);
         
         if (id) {
-            // Editar Transação Existente
+            // Editar Transaçõo Existente
             const index = state.transactions.findIndex(t => t.id === id);
             if (index !== -1) {
                 const tAntiga = state.transactions[index];
@@ -3163,10 +3163,10 @@ if (formTransacao) {
                     kmRodados: km || undefined,
                     garantiaMeses: garantia || undefined
                 };
-                addAuditLog("Transação Editada", `Modificação da transação "${tAntiga.descricao}" -> "${descFinal}" no valor ${formatCurrency(valorFinal)}`);
+                addAuditLog("Transaçõo Editada", `Modificaçõo da transaçõo "${tAntiga.descricao}" -> "${descFinal}" no valor ${formatCurrency(valorFinal)}`);
             }
         } else {
-            // Criar Nova Transação
+            // Criar Nova Transaçõo
             const novaTrans = {
                 id: generateUUID(),
                 tipo,
@@ -3180,12 +3180,12 @@ if (formTransacao) {
                 garantiaMeses: garantia || undefined
             };
             state.transactions.push(novaTrans);
-            addAuditLog("Transação Lançada", `Registro de ${tipo}: "${descFinal}" no valor de ${formatCurrency(valorFinal)}`);
+            addAuditLog("Transaçõo Lançada", `Registro de ${tipo}: "${descFinal}" no valor de ${formatCurrency(valorFinal)}`);
         }
         
-        // Se for offline, avisa o usuário do salvamento local (Melhoria 17)
+        // Se for offline, avisa o usuírio do salvamento local (Melhoria 17)
         if (state.isOffline) {
-            uiAlert("Registro gravado no dispositivo (Offline). Será sincronizado quando a conexão retornar.");
+            uiAlert("Registro gravado no dispositivo (Offline). Serí sincronizado quando a conexío retornar.");
         }
         
         saveStateToLocalStorage();
@@ -3232,7 +3232,7 @@ function editTransaction(id) {
     const t = state.transactions.find(trans => trans.id === id);
     if (!t) return;
     
-    document.getElementById("modal-transacao-title").innerText = "Editar Movimentação Financeira";
+    document.getElementById("modal-transacao-title").innerText = "Editar Movimentaçõo Financeira";
     document.getElementById("form-transacao-id").value = t.id;
     document.getElementById("trans-tipo").value = t.tipo;
     document.getElementById("trans-data").value = t.data;
@@ -3268,8 +3268,8 @@ function deleteTransaction(id) {
     const t = state.transactions.find(trans => trans.id === id);
     if (!t) return;
     
-    uiConfirm(`Deseja realmente excluir a transação "${t.descricao}" no valor de ${formatCurrency(t.valor)}?`, () => {
-        addAuditLog("Transação Excluída", `Exclusão de transação: "${t.descricao}" de valor ${formatCurrency(t.valor)}`);
+    uiConfirm(`Deseja realmente excluir a transaçõo "${t.descricao}" no valor de ${formatCurrency(t.valor)}?`, () => {
+        addAuditLog("Transaçõo Excluçda", `Exclusío de transaçõo: "${t.descricao}" de valor ${formatCurrency(t.valor)}`);
         
         state.transactions = state.transactions.filter(trans => trans.id !== id);
         saveStateToLocalStorage();
@@ -3284,7 +3284,7 @@ function deleteTransaction(id) {
 }
 
 /* --------------------------------------------------------------------------
-   F. SUBMISSÃO DE CONFIGURAÇÕES TRIBUTÁRIAS & RATES
+   F. SUBMISSÃ DE CONFIGURAÇÕS TRIBUTï¾ƒçãƒ½IAS & RATES
    -------------------------------------------------------------------------- */
 const formConfigTributaria = document.getElementById("form-config-tributaria");
 if (formConfigTributaria) {
@@ -3295,7 +3295,7 @@ if (formConfigTributaria) {
         const simplesAliquota = parseFloat(document.getElementById("simples-aliquota").value);
         
         const pis = parseFloat(document.getElementById("presumido-pis").value);
-        const cofinancas = parseFloat(document.getElementById("presumido-cofins").value); // Evita colisão
+        const cofinancas = parseFloat(document.getElementById("presumido-cofins").value); // Evita colisío
         const cofins = parseFloat(document.getElementById("presumido-cofins").value);
         const csll = parseFloat(document.getElementById("presumido-csll").value);
         const irrf = parseFloat(document.getElementById("presumido-irrf").value);
@@ -3309,19 +3309,19 @@ if (formConfigTributaria) {
         
         localStorage.setItem("nevixa_tax_config", JSON.stringify(state.taxConfig));
         
-        // Recalcular impostos automáticos
+        // Recalcular impostos automíticos
         state.invoices.forEach(inv => {
             if (inv.status !== "Cancelado" && inv.calcularImpostos !== false) {
                 sincronizarImpostosNota(inv.id, inv.numeroNota, inv.dataEmissao, inv.valorTotal, true);
             }
         });
         
-        addAuditLog("Alteração de Impostos", `Regime de impostos configurado como ${regime}.`);
+        addAuditLog("Alteraçõo de Impostos", `Regime de impostos configurado como ${regime}.`);
         saveStateToLocalStorage();
         closeModal("modal-config-tributaria");
         renderApp();
         
-        uiAlert("Configurações tributárias salvas e impostos recalculados!");
+        uiAlert("Configuraçï¾ƒï½µes tributírias salvas e impostos recalculados!");
     });
 }
 
@@ -3380,7 +3380,7 @@ window.uiAlert = function(message, type = "info", callback = null) {
             if (titleText) titleText.innerText = "Erro";
         } else if (type === "warning") {
             iconEl.className = "fa-solid fa-triangle-exclamation text-warning";
-            if (titleText) titleText.innerText = "Atenção";
+            if (titleText) titleText.innerText = "Atençõo";
         } else {
             iconEl.className = "fa-solid fa-circle-info text-info";
             if (titleText) titleText.innerText = "Aviso";
@@ -3402,7 +3402,7 @@ safeAddEventListener("btn-alert-custom-ok", "click", () => {
     }
 });
 
-// Listeners para os botões do confirm customizado
+// Listeners para os botï¾ƒï½µes do confirm customizado
 safeAddEventListener("btn-confirm-custom-cancel", "click", () => {
     closeModal("modal-confirm-custom");
     confirmCallback = null;
@@ -3425,7 +3425,7 @@ window.uiPrompt = function(message, defaultText, callback) {
     promptCallback = callback;
     openModal("modal-prompt-custom");
     
-    // Focus no input após um pequeno delay para a animação do modal
+    // Focus no input após um pequeno delay para a animaçõo do modal
     setTimeout(() => {
         if (inputEl) {
             inputEl.focus();
@@ -3506,10 +3506,10 @@ function closeModal(modalId) {
         } else if (modalId === "modal-transacao") {
             document.getElementById("form-transacao").reset();
             document.getElementById("form-transacao-id").value = "";
-            document.getElementById("modal-transacao-title").innerText = "Lançar Movimentação Financeira";
+            document.getElementById("modal-transacao-title").innerText = "Lançar Movimentaçõo Financeira";
             document.getElementById("trans-data").valueAsDate = new Date();
             
-            // Ocultar campos estendidos por padrão
+            // Ocultar campos estendidos por padrío
             document.getElementById("group-km-deslocamento").style.display = "none";
             document.getElementById("group-garantia-peca").style.display = "none";
         }
@@ -3518,7 +3518,7 @@ function closeModal(modalId) {
 
 // ==========================================================================
 // CONFIGURAÇÃ DOS EVENTOS (EVENT LISTENERS)
-// Funções auxiliares para registrar eventos de forma segura contra elementos nulos
+// Funçï¾ƒï½µes auxiliares para registrar eventos de forma segura contra elementos nulos
 function safeAddEventListener(id, event, callback) {
     const el = document.getElementById(id);
     if (el) {
@@ -3534,7 +3534,7 @@ function safeAddQueryEventListener(selector, event, callback) {
 }
 
 // ==========================================================================
-// MÓDULO DE ACESSOS E PERMISSÕES (ADMIN)
+// Mï¾ƒæ³¥ULO DE ACESSOS E PERMISSï¾ƒé«­S (ADMIN)
 // ==========================================================================
 window.carregarUsuarios = async function() {
     if (state.currentUser.papel !== 'admin') return;
@@ -3542,7 +3542,7 @@ window.carregarUsuarios = async function() {
     const tbody = document.querySelector("#table-users tbody");
     if (!tbody) return;
     
-    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Carregando usuários...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4"><i class="fa-solid fa-spinner fa-spin"></i> Carregando usuírios...</td></tr>';
     
     try {
         const { data, error } = await supabaseClient
@@ -3555,7 +3555,7 @@ window.carregarUsuarios = async function() {
         tbody.innerHTML = '';
         
         if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhum usuário encontrado.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhum usuírio encontrado.</td></tr>';
             return;
         }
         
@@ -3574,10 +3574,10 @@ window.carregarUsuarios = async function() {
                 </td>
                 <td>
                     <select class="form-select form-select-sm" style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 4px; padding: 4px; width: 100%; appearance: auto;" onchange="alterarPapelUsuario('${user.id}', this.value)" ${user.id === state.currentUser.id ? 'disabled' : ''}>
-                        <option value="tecnico" ${user.papel === 'tecnico' ? 'selected' : ''} style="background: var(--bg-card);">Técnico de Campo</option>
+                        <option value="tecnico" ${user.papel === 'tecnico' ? 'selected' : ''} style="background: var(--bg-card);">Tácnico de Campo</option>
                         <option value="financeiro" ${user.papel === 'financeiro' ? 'selected' : ''} style="background: var(--bg-card);">Financeiro</option>
                         <option value="admin" ${user.papel === 'admin' ? 'selected' : ''} style="background: var(--bg-card);">Administrador</option>
-                        <option value="cliente" ${user.papel === 'cliente' ? 'selected' : ''} style="background: var(--bg-card);">Cliente (Hospital / Clínica)</option>
+                        <option value="cliente" ${user.papel === 'cliente' ? 'selected' : ''} style="background: var(--bg-card);">Cliente (Hospital / Clçnica)</option>
                     </select>
                 </td>
                 <td>${statusBadge}</td>
@@ -3585,20 +3585,20 @@ window.carregarUsuarios = async function() {
                     ${user.id !== state.currentUser.id ? `
                         ${user.status !== 'ativo' ? `<button class="btn btn-sm btn-outline" style="color: #4ade80; border-color: #4ade80; padding: 4px 8px; background: transparent;" onclick="alterarStatusUsuario('${user.id}', 'ativo')" title="Aprovar/Ativar"><i class="fa-solid fa-check"></i></button>` : ''}
                         ${user.status !== 'bloqueado' ? `<button class="btn btn-sm btn-outline" style="color: #f87171; border-color: #f87171; padding: 4px 8px; margin-left: 5px; background: transparent;" onclick="alterarStatusUsuario('${user.id}', 'bloqueado')" title="Bloquear"><i class="fa-solid fa-ban"></i></button>` : ''}
-                    ` : '<span class="text-muted small">Você</span>'}
+                    ` : '<span class="text-muted small">Vocï¾ƒï½ª</span>'}
                 </td>
             `;
             tbody.appendChild(tr);
         });
         
     } catch (err) {
-        console.error("Erro ao carregar usuários:", err);
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Erro ao carregar lista de usuários.</td></tr>';
+        console.error("Erro ao carregar usuírios:", err);
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Erro ao carregar lista de usuírios.</td></tr>';
     }
 }
 
 window.alterarStatusUsuario = function(id, novoStatus) {
-    uiConfirm(`Tem certeza que deseja mudar o status deste usuário para ${novoStatus.toUpperCase()}?`, async () => {
+    uiConfirm(`Tem certeza que deseja mudar o status deste usuírio para ${novoStatus.toUpperCase()}?`, async () => {
         try {
             const { error } = await supabaseClient.from('perfis').update({ status: novoStatus }).eq('id', id);
             if (error) throw error;
@@ -3606,7 +3606,7 @@ window.alterarStatusUsuario = function(id, novoStatus) {
             carregarUsuarios();
         } catch (err) {
             console.error("Erro ao alterar status:", err);
-            uiAlert("Erro ao alterar o status do usuário.");
+            uiAlert("Erro ao alterar o status do usuírio.");
         }
     });
 };
@@ -3617,7 +3617,7 @@ window.alterarPapelUsuario = async function(id, novoPapel) {
         if (error) throw error;
     } catch (err) {
         console.error("Erro ao alterar papel:", err);
-        uiAlert("Erro ao alterar a função do usuário.");
+        uiAlert("Erro ao alterar a funçõo do usuírio.");
         carregarUsuarios(); 
     }
 };
@@ -3669,7 +3669,7 @@ function setupEventListeners() {
         carregarUsuarios();
     });
     
-    // Botão Sair da Conta (Logout)
+    // Botío Sair da Conta (Logout)
     safeAddEventListener("btn-logout", "click", () => {
         uiConfirm("Deseja realmente sair do sistema?", () => {
             sessionStorage.removeItem("nevixa_current_user");
@@ -3687,7 +3687,7 @@ function setupEventListeners() {
         });
     });
     
-    // Alternador de Sub-Abas Operações Técnicas
+    // Alternador de Sub-Abas Operaçï¾ƒï½µes Tácnicas
     const subTabBtns = document.querySelectorAll(".sub-tab-btn");
     subTabBtns.forEach(btn => {
         btn.addEventListener("click", () => {
@@ -3695,7 +3695,7 @@ function setupEventListeners() {
         });
     });
     
-    // 3. Modais - Botão Fechar Geral (Atributo data-close-modal)
+    // 3. Modais - Botío Fechar Geral (Atributo data-close-modal)
     document.querySelectorAll("[data-close-modal]").forEach(btn => {
         btn.addEventListener("click", () => {
             closeModal(btn.getAttribute("data-close-modal"));
@@ -3709,7 +3709,7 @@ function setupEventListeners() {
         });
     });
     
-    // 4. Botões de Abertura Rápidos de Lançamentos
+    // 4. Botï¾ƒï½µes de Abertura Rípidos de Lançamentos
     safeAddEventListener("btn-quick-invoice", "click", () => {
         document.getElementById("nota-data").valueAsDate = new Date();
         popularEquipamentosDropdown();
@@ -3734,25 +3734,25 @@ function setupEventListeners() {
         openModal("modal-transacao");
     });
     
-    // Botão de Configurações Tributárias
+    // Botío de Configuraçï¾ƒï½µes Tributírias
     safeAddEventListener("btn-config-tributaria", "click", () => {
         openConfigTributariaModal();
     });
     
-    // Botão na gaveta de detalhes da nota para adicionar custo direto a ela
+    // Botío na gaveta de detalhes da nota para adicionar custo direto a ela
     safeAddEventListener("btn-add-despesa-direta", "click", () => {
         const activeInvoiceId = document.getElementById("modal-detalhes-nota").getAttribute("data-active-invoice-id");
         if (!activeInvoiceId) return;
         
         updateInvoicesDropdown();
         document.getElementById("trans-nota").value = activeInvoiceId;
-        document.getElementById("trans-tipo").value = "Saída";
+        document.getElementById("trans-tipo").value = "Saçda";
         document.getElementById("trans-data").valueAsDate = new Date();
         
         openModal("modal-transacao");
     });
     
-    // Botão na gaveta de detalhes da nota para adicionar deslocamento/frota
+    // Botío na gaveta de detalhes da nota para adicionar deslocamento/frota
     safeAddEventListener("btn-add-deslocamento", "click", () => {
         const activeInvoiceId = document.getElementById("modal-detalhes-nota").getAttribute("data-active-invoice-id");
         if (!activeInvoiceId) return;
@@ -3768,7 +3768,7 @@ function setupEventListeners() {
         openModal("modal-deslocamento");
     });
     
-    // 5. Filtros Dinâmicos de Busca (Notas Fiscais)
+    // 5. Filtros Dinï¾ƒï½¢micos de Busca (Notas Fiscais)
     safeAddEventListener("search-nota", "input", (e) => {
         state.filters.nota.search = e.target.value;
         renderNotasTable();
@@ -3779,7 +3779,7 @@ function setupEventListeners() {
         renderNotasTable();
     });
     
-    // 6. Filtros Dinâmicos de Busca (Fluxo de Caixa)
+    // 6. Filtros Dinï¾ƒï½¢micos de Busca (Fluxo de Caixa)
     safeAddEventListener("search-transacao", "input", (e) => {
         state.filters.transacao.search = e.target.value;
         renderFluxoTable();
@@ -3805,12 +3805,12 @@ function setupEventListeners() {
         renderFluxoTable();
     });
     
-    // 7. Backup de Dados (Janela e Ações)
+    // 7. Backup de Dados (Janela e Açï¾ƒï½µes)
     safeAddEventListener("btn-backup", "click", () => {
         openModal("modal-backup");
     });
     
-    // Ação: Exportar DB JSON
+    // Açõo: Exportar DB JSON
     safeAddQueryEventListener("#action-export-db button", "click", () => {
         const dataExport = {
             invoices: state.invoices,
@@ -3838,7 +3838,7 @@ function setupEventListeners() {
         downloadAnchor.remove();
     });
     
-    // Ação: Importar DB JSON
+    // Açõo: Importar DB JSON
     const importInput = document.getElementById("input-import-file");
     if (importInput) {
         importInput.addEventListener("change", (e) => {
@@ -3851,7 +3851,7 @@ function setupEventListeners() {
                     const parsedData = JSON.parse(event.target.result);
                     
                     if (parsedData && Array.isArray(parsedData.invoices) && Array.isArray(parsedData.transactions)) {
-                        uiConfirm("Você tem certeza de que deseja restaurar este backup? Todos os dados atuais serão substituídos.", () => {
+                        uiConfirm("Vocï¾ƒï½ª tem certeza de que deseja restaurar este backup? Todos os dados atuais serío substituçdos.", () => {
                             state.invoices = parsedData.invoices;
                             state.transactions = parsedData.transactions;
                             state.equipments = parsedData.equipments || MOCK_EQUIPMENTS;
@@ -3872,10 +3872,10 @@ function setupEventListeners() {
                             uiAlert("Backup restaurado com sucesso!");
                         });
                     } else {
-                        uiAlert("Estrutura do arquivo de backup inválida. Certifique-se de usar um arquivo JSON gerado pelo sistema.");
+                        uiAlert("Estrutura do arquivo de backup invílida. Certifique-se de usar um arquivo JSON gerado pelo sistema.");
                     }
                 } catch (err) {
-                    uiAlert("Erro ao ler o arquivo JSON. O arquivo está corrompido ou em formato incorreto.");
+                    uiAlert("Erro ao ler o arquivo JSON. O arquivo estí corrompido ou em formato incorreto.");
                 }
             };
             fileReader.readAsText(file);
@@ -3915,7 +3915,7 @@ function setupEventListeners() {
         });
     }
 
-    // 10. Conciliação Bancária OFX (Melhoria 15)
+    // 10. Conciliaçõo Bancíria OFX (Melhoria 15)
     safeAddEventListener("btn-open-ofx", "click", () => {
         openModal("modal-ofx");
     });
@@ -3924,7 +3924,7 @@ function setupEventListeners() {
         executarConciliacaoOFXSimulada();
     });
 
-    // 11. Checklist Técnico Dinâmico por Equipamento (Melhoria 2)
+    // 11. Checklist Tácnico Dinï¾ƒï½¢mico por Equipamento (Melhoria 2)
     // Gerenciado dinamicamente ao abrir os detalhes de cada nota.
 
     // 12. Faturamento Misto / Split de Notas (Melhoria 18)
@@ -3936,21 +3936,21 @@ function setupEventListeners() {
         });
     }
 
-    // 13. Impressão de RAT Técnico (Melhoria 1)
+    // 13. Impressío de RAT Tácnico (Melhoria 1)
     safeAddEventListener("btn-imprimir-rat", "click", () => {
         document.body.classList.add("print-mode-rat");
-        window.scrollTo(0, 0); window.print();
+        window.print();
         document.body.classList.remove("print-mode-rat");
     });
 
-    // Impressão de Certificado RBC (Fase 4)
+    // Impressío de Certificado RBC (Fase 4)
     safeAddEventListener("btn-imprimir-certificado", "click", () => {
         document.body.classList.add("print-mode-certificado");
-        window.scrollTo(0, 0); window.print();
+        window.print();
         document.body.classList.remove("print-mode-certificado");
     });
 
-    // 14. Eventos e Filtros da Fase 4 (Operações Técnicas de Campo)
+    // 14. Eventos e Filtros da Fase 4 (Operaçï¾ƒï½µes Tácnicas de Campo)
     safeAddEventListener("search-equipamento", "input", () => {
         renderEquipamentos();
     });
@@ -4005,7 +4005,7 @@ function setupEventListeners() {
         openNovoChamado();
     });
 
-    // Submissão dos Formulários das Sub-Abas Técnicas
+    // Submissío dos Formulírios das Sub-Abas Tácnicas
     safeAddEventListener("form-equipamento", "submit", (e) => {
         e.preventDefault();
         const id = document.getElementById("form-equipamento-id").value;
@@ -4025,7 +4025,7 @@ function setupEventListeners() {
                     ...state.equipments[index], 
                     tag, serial, nome, cliente, status, ultimaPreventiva, periodicidade 
                 };
-                addAuditLog("Equipamento Editado", `Modificação das configurações do ativo ${tag}`);
+                addAuditLog("Equipamento Editado", `Modificaçõo das configuraçï¾ƒï½µes do ativo ${tag}`);
             }
         } else {
             // Criar
@@ -4042,7 +4042,7 @@ function setupEventListeners() {
         renderApp();
     });
 
-    // Formulário do Novo Calibrador
+    // Formulírio do Novo Calibrador
     safeAddEventListener("form-novo-calibrador", "submit", (e) => {
         e.preventDefault();
         const nome = document.getElementById("cal-form-nome").value;
@@ -4070,11 +4070,11 @@ function setupEventListeners() {
         };
         
         state.calibrators.push(novoCal);
-        addAuditLog("Calibrador Adicionado", `Nova ferramenta biométrica cadastrada: ${nome} - S/N: ${serial}`);
+        addAuditLog("Calibrador Adicionado", `Nova ferramenta biomátrica cadastrada: ${nome} - S/N: ${serial}`);
         saveStateToLocalStorage();
         closeModal("modal-novo-calibrador");
         renderApp();
-        uiAlert(`Sucesso! O calibrador "${nome}" foi cadastrado e sua calibração está válida por 1 ano.`);
+        uiAlert(`Sucesso! O calibrador "${nome}" foi cadastrado e sua calibraçõo estí vílida por 1 ano.`);
     });
 
     safeAddEventListener("form-cotacao", "submit", (e) => {
@@ -4100,7 +4100,7 @@ function setupEventListeners() {
         };
         
         state.quotations.push(novaCot);
-        addAuditLog("Cotação Requisitada", `Nova cotação de ${peca} solicitada para o fornecedor ${fornecedor}`);
+        addAuditLog("Cotaçõo Requisitada", `Nova cotaçõo de ${peca} solicitada para o fornecedor ${fornecedor}`);
         
         saveStateToLocalStorage();
         closeModal("modal-cotacao");
@@ -4124,7 +4124,7 @@ function setupEventListeners() {
             addAuditLog("Ativo Parado", `Ativo ${eq.tag} alterado para status Parado por abertura de corretiva ${assunto}`);
         }
         
-        // Gerar um número de OS sequencial
+        // Gerar um nímero de OS sequencial
         const numOS = `OS-2026${String(state.tickets.length + 501).padStart(3, "0")}`;
         
         const isCliente = state.currentUser && state.currentUser.papel === "cliente";
@@ -4138,7 +4138,7 @@ function setupEventListeners() {
             dataAbertura: new Date().toISOString(),
             status: isCliente ? "Pendente" : "Em Atendimento",
             slaHoras: sla,
-            assunto: assunto // Guardar o assunto/descrição para o admin ver
+            assunto: assunto // Guardar o assunto/descriçõo para o admin ver
         };
         
         state.tickets.push(novoChamado);
@@ -4151,7 +4151,7 @@ function setupEventListeners() {
 }
 
 // ==========================================================================
-// FUNÇÕES AUXILIARES DA FASE 3 (TEMA, CONCILIAÇÃ OFX, CHECKLISTS, TRIBUTAÇÃ)
+// FUNÇÕS AUXILIARES DA FASE 3 (TEMA, CONCILIAÇÃ OFX, CHECKLISTS, TRIBUTAÇÃ)
 // ==========================================================================
 function applyThemePreference() {
     const savedTheme = localStorage.getItem("nevixa_theme") || "dark";
@@ -4172,7 +4172,7 @@ function executarConciliacaoOFXSimulada() {
     const notasPendentes = state.invoices.filter(inv => inv.status === "Pendente");
     
     if (notasPendentes.length === 0) {
-        uiAlert("Não existem Notas Fiscais pendentes na base para conciliação no momento.");
+        uiAlert("Nío existem Notas Fiscais pendentes na base para conciliaçõo no momento.");
         closeModal("modal-ofx");
         return;
     }
@@ -4182,12 +4182,12 @@ function executarConciliacaoOFXSimulada() {
         inv.status = "Recebido";
         conciliadas++;
         
-        // Registrar uma transação de entrada de recebimento associada
+        // Registrar uma transaçõo de entrada de recebimento associada
         const entradaRecebimento = {
             id: generateUUID(),
             tipo: "Entrada",
             data: new Date().toISOString().slice(0, 10),
-            descricao: `Recebimento automatizado via Conciliação OFX - NF ${inv.numeroNota}`,
+            descricao: `Recebimento automatizado via Conciliaçõo OFX - NF ${inv.numeroNota}`,
             valor: inv.valorTotal,
             categoria: "Serviços",
             status: "Pago",
@@ -4195,15 +4195,15 @@ function executarConciliacaoOFXSimulada() {
         };
         state.transactions.push(entradaRecebimento);
         
-        addAuditLog("Conciliação OFX", `Fatura da NF ${inv.numeroNota} de ${inv.cliente} baixada no valor de ${formatCurrency(inv.valorTotal)}`);
+        addAuditLog("Conciliaçõo OFX", `Fatura da NF ${inv.numeroNota} de ${inv.cliente} baixada no valor de ${formatCurrency(inv.valorTotal)}`);
     });
     
-    // Inserir uma taxa bancária de conciliação avulsa no caixa
+    // Inserir uma taxa bancíria de conciliaçõo avulsa no caixa
     const taxaBancaria = {
         id: generateUUID(),
-        tipo: "Saída",
+        tipo: "Saçda",
         data: new Date().toISOString().slice(0, 10),
-        descricao: "Tarifa bancária mensal - Custódia OFX Conciliação",
+        descricao: "Tarifa bancíria mensal - Custódia OFX Conciliaçõo",
         valor: 45.00,
         categoria: "Outros",
         status: "Pago",
@@ -4215,7 +4215,7 @@ function executarConciliacaoOFXSimulada() {
     closeModal("modal-ofx");
     renderApp();
     
-    uiAlert(`Sucesso! Conciliação OFX realizada: \n- ${conciliadas} Notas Fiscais baixadas como Pagas.\n- Entrada de faturamento integrada.\n- Tarifa bancária de conciliação debitada.`);
+    uiAlert(`Sucesso! Conciliaçõo OFX realizada: \n- ${conciliadas} Notas Fiscais baixadas como Pagas.\n- Entrada de faturamento integrada.\n- Tarifa bancíria de conciliaçõo debitada.`);
 }
 
 function renderChecklistTecnico(inv) {
@@ -4234,33 +4234,33 @@ function renderChecklistTecnico(inv) {
     list.innerHTML = "";
     
     let checklistItens = [];
-    if (eq.nome.includes("Ressonância")) {
+    if (eq.nome.includes("Ressonï¾ƒï½¢ncia")) {
         checklistItens = [
             "Verificar blindagem e portas de RF",
-            "Checar nível e evaporação de Hélio Líquido",
-            "Medir bombas de vácuo e chiller de refrigeração",
-            "Calibração de homogeneidade de campo magnético"
+            "Checar nçvel e evaporaçõo de Hálio Lçquido",
+            "Medir bombas de vícuo e chiller de refrigeraçõo",
+            "Calibraçõo de homogeneidade de campo magnático"
         ];
     } else if (eq.nome.includes("Tomógrafo")) {
         checklistItens = [
-            "Checar desgaste de escovas e anéis do gantry",
-            "Verificar sistema de refrigeração de óleo do tubo",
+            "Checar desgaste de escovas e anáis do gantry",
+            "Verificar sistema de refrigeraçõo de óleo do tubo",
             "Limpeza de detectores e alinhamento do feixe laser",
-            "Calibração de ruído e uniformidade de imagem"
+            "Calibraçõo de ruçdo e uniformidade de imagem"
         ];
     } else if (eq.nome.includes("Raio-X")) {
         checklistItens = [
             "Checar funcionamento do colimador luminoso",
-            "Calibração de parâmetros de kV, mA e tempo",
-            "Verificar cabos de alta tensão e isolamento",
-            "Verificar barreira mecânica e freios da estativa"
+            "Calibraçõo de parï¾ƒï½¢metros de kV, mA e tempo",
+            "Verificar cabos de alta tensío e isolamento",
+            "Verificar barreira mecï¾ƒï½¢nica e freios da estativa"
         ];
     } else {
         checklistItens = [
-            "Inspeção visual e limpeza externa das carcaças",
-            "Medição de correntes de fuga e aterramento",
-            "Teste de funcionamento das interfaces de usuário",
-            "Verificação do estado físico de cabos e transdutores"
+            "Inspeçõo visual e limpeza externa das carcaças",
+            "Mediçõo de correntes de fuga e aterramento",
+            "Teste de funcionamento das interfaces de usuírio",
+            "Verificaçõo do estado fçsico de cabos e transdutores"
         ];
     }
     
@@ -4286,7 +4286,7 @@ function renderChecklistTecnico(inv) {
                 inv.checklistSalvo = inv.checklistSalvo.filter(i => i !== item);
             }
             saveStateToLocalStorage();
-            addAuditLog("Checklist Atualizado", `Alterado checklist técnico da OS ${inv.numeroNota} - Item: "${item}"`);
+            addAuditLog("Checklist Atualizado", `Alterado checklist tácnico da OS ${inv.numeroNota} - Item: "${item}"`);
         });
         
         list.appendChild(label);
@@ -4294,7 +4294,7 @@ function renderChecklistTecnico(inv) {
 }
 
 // ==========================================================================
-// FUNÇÕES AUXILIARES DA FASE 4 (OPERAÇÕES TÉCNICAS DE CAMPO)
+// FUNÇÕS AUXILIARES DA FASE 4 (OPERAÇÕS Tï¾ƒéŸ»NICAS DE CAMPO)
 // ==========================================================================
 window.openNovoCalibrador = function() {
     document.getElementById("form-novo-calibrador").reset();
@@ -4344,9 +4344,9 @@ window.openNovoChamado = function() {
         hospInput.readOnly = false;
     }
     
-    // Vincula o preenchimento automático do hospital ao selecionar o equipamento
+    // Vincula o preenchimento automítico do hospital ao selecionar o equipamento
     select.addEventListener("change", (e) => {
-        if (isCliente) return; // Se for cliente, não muda o campo
+        if (isCliente) return; // Se for cliente, nío muda o campo
         const eqSelected = state.equipments.find(item => item.id === e.target.value);
         if (eqSelected) {
             hospInput.value = eqSelected.cliente;
@@ -4357,11 +4357,11 @@ window.openNovoChamado = function() {
 };
 
 // ==========================================================================
-// FUNÇÕES AUXILIARES DA FASE 4B (FLUXO DE OS E ASSINATURAS RAT TÉCNICOS)
+// FUNÇÕS AUXILIARES DA FASE 4B (FLUXO DE OS E ASSINATURAS RAT Tï¾ƒéŸ»NICOS)
 // ==========================================================================
 
 // ==========================================================================
-// PREVENTIVA AUTOMÁTICA (Melhoria 12)
+// PREVENTIVA AUTOMï¾ƒçã‚ICA (Melhoria 12)
 // ==========================================================================
 function checkPreventivasAutomaticas() {
     let preventivasCriadas = 0;
@@ -4376,7 +4376,7 @@ function checkPreventivasAutomaticas() {
         const hoje = new Date();
         
         if (hoje >= nextDate) {
-            // Verificar se já existe um ticket aberto de preventiva para este equipamento
+            // Verificar se jí existe um ticket aberto de preventiva para este equipamento
             const jaExiste = state.tickets.some(tk => 
                 tk.equipamento === eq.nome && 
                 tk.tipo === "Preventiva" && 
@@ -4395,7 +4395,7 @@ function checkPreventivasAutomaticas() {
                     dataAbertura: new Date().toISOString().slice(0,19),
                     dataInicioAtendimento: null,
                     dataFimAtendimento: null,
-                    descricaoServico: `Manutenção Preventiva Automática (Periodicidade: ${eq.periodicidade} meses)`,
+                    descricaoServico: `Manutençõo Preventiva Automítica (Periodicidade: ${eq.periodicidade} meses)`,
                     responsavelNome: "",
                     responsavelCargo: "",
                     responsavelAssinatura: "",
@@ -4480,7 +4480,7 @@ function setupCanvasEvents(canvasId) {
         drawing = false;
     });
     
-    // Botão Limpar
+    // Botío Limpar
     const clearBtnId = canvasId === "rat-signature-canvas" ? "btn-clear-rat-signature" : "btn-clear-rat-tecnico-signature";
     const clearBtn = document.getElementById(clearBtnId);
     if (clearBtn) {
@@ -4499,12 +4499,12 @@ function clearSignatureCanvas(canvasId) {
     }
 }
 
-// LÓGICA DE ASSINATURA PADRÃO DO PERFIL
+// Lï¾ƒæ•µICA DE ASSINATURA PADRÃ DO PERFIL
 window.initPerfilSignature = function() {
     setupCanvasEvents("sig-canvas-perfil");
     clearSignatureCanvas("sig-canvas-perfil");
     
-    // Se já tiver uma assinatura salva, carregar no canvas
+    // Se jí tiver uma assinatura salva, carregar no canvas
     const savedSig = localStorage.getItem("nevixa_assinatura_" + state.currentUser.id);
     if (savedSig) {
         const canvas = document.getElementById("sig-canvas-perfil");
@@ -4558,7 +4558,7 @@ document.addEventListener("click", (e) => {
         if (!isCanvasBlank(canvas)) {
             const dataURL = canvas.toDataURL();
             localStorage.setItem("nevixa_assinatura_" + state.currentUser.id, dataURL);
-            uiAlert("Assinatura padrão salva com sucesso!");
+            uiAlert("Assinatura padrío salva com sucesso!");
         } else {
             localStorage.removeItem("nevixa_assinatura_" + state.currentUser.id);
             uiAlert("Assinatura limpa do perfil.");
@@ -4576,22 +4576,14 @@ document.addEventListener("click", (e) => {
                 ctx.drawImage(img, 0, 0);
             };
             img.src = savedSig;
-            uiAlert("Assinatura padrão carregada!");
+            uiAlert("Assinatura padrío carregada!");
         } else {
-            uiAlert("Você não possui uma assinatura salva. Cadastre no seu Perfil.");
+            uiAlert("Vocï¾ƒï½ª nío possui uma assinatura salva. Cadastre no seu Perfil.");
         }
     }
 });
 
-// Limpeza global das classes de impressão para suportar o iOS Safari
-// O iOS Safari não bloqueia a thread durante o window.print(), então não podemos remover as classes imediatamente.
-window.addEventListener("afterprint", () => {
-    document.body.classList.remove("print-mode-rat");
-    document.body.classList.remove("print-mode-certificado");
-    document.body.classList.remove("print-mode-rat-novo");
-});
-
-// Captura a seleção de fotos reais pelo input de arquivo no modal de execução
+// Captura a seleçõo de fotos reais pelo input de arquivo no modal de execuçõo
 document.addEventListener("change", (e) => {
     if (e.target && e.target.id === "rat-exec-file") {
         const files = e.target.files;
@@ -4618,7 +4610,7 @@ document.addEventListener("change", (e) => {
             reader.onload = function(event) {
                 const base64Data = event.target.result;
                 
-                // Determina se é Foto de Antes ou Depois baseado na quantidade
+                // Determina se á Foto de Antes ou Depois baseado na quantidade
                 const titulo = currentPhotos.length % 2 === 0 ? "Antes (Defeito)" : "Depois (Corrigido)";
                 
                 const newPhoto = {
@@ -4645,7 +4637,7 @@ document.addEventListener("change", (e) => {
     }
 });
 
-// Envio/Submit do Form de Execução de OS
+// Envio/Submit do Form de Execuçõo de OS
 document.addEventListener("submit", (e) => {
     if (e.target && e.target.id === "form-executar-chamado") {
         e.preventDefault();
@@ -4661,7 +4653,7 @@ document.addEventListener("submit", (e) => {
         const canvas = document.getElementById("rat-signature-canvas");
         const assinaturaData = canvas ? canvas.toDataURL() : "";
         
-        // Obter assinatura do canvas (Técnico)
+        // Obter assinatura do canvas (Tácnico)
         const tecnicoCanvas = document.getElementById("rat-tecnico-signature-canvas");
         const assinaturaTecnicoData = tecnicoCanvas ? tecnicoCanvas.toDataURL() : "";
         
@@ -4679,19 +4671,19 @@ document.addEventListener("submit", (e) => {
         tk.tecnicoAssinatura = assinaturaTecnicoData;
         tk.fotos = fotosJson;
         
-        // Integrar: Encontrar o equipamento associado (por nome) e restaurar seu status técnico para Operacional
+        // Integrar: Encontrar o equipamento associado (por nome) e restaurar seu status tácnico para Operacional
         const eq = state.equipments.find(item => eqMatch(item.nome, tk.equipamento) || eqMatch(item.tag, tk.equipamento));
         if (eq) {
             eq.status = "Operacional";
             eq.ultimaPreventiva = new Date().toISOString().slice(0, 10);
-            addAuditLog("Equipamento Restaurado", `Ativo ${eq.tag} voltou para Operacional após conclusão e assinatura de RAT da OS ${tk.numero}`);
+            addAuditLog("Equipamento Restaurado", `Ativo ${eq.tag} voltou para Operacional após conclusío e assinatura de RAT da OS ${tk.numero}`);
         }
         
-        addAuditLog("Chamado Concluído", `OS ${tk.numero} finalizada e RAT assinado por ${respNome} (${respCargo})`);
+        addAuditLog("Chamado Concluçdo", `OS ${tk.numero} finalizada e RAT assinado por ${respNome} (${respCargo})`);
         saveStateToLocalStorage();
         closeModal("modal-executar-chamado");
         renderApp();
-        uiAlert(`OS ${tk.numero} concluída com sucesso! Laudo RAT emitido e assinado digitalmente.`);
+        uiAlert(`OS ${tk.numero} concluçda com sucesso! Laudo RAT emitido e assinado digitalmente.`);
     }
 });
 
@@ -4705,16 +4697,16 @@ window.visualizarLaudoRAT = function(id) {
     document.getElementById("rat-view-equipamento").innerText = tk.equipamento;
     document.getElementById("rat-view-tipo").innerText = tk.tipo;
     document.getElementById("rat-view-sla").innerText = `${tk.slaHoras} horas`;
-    document.getElementById("rat-view-tecnico").innerText = tk.responsavelNome || "Não informado";
+    document.getElementById("rat-view-tecnico").innerText = tk.responsavelNome || "Nío informado";
     
     document.getElementById("rat-view-horario-inicio").innerText = formatDateTime(tk.dataInicioAtendimento || tk.dataAbertura);
     document.getElementById("rat-view-horario-fim").innerText = formatDateTime(tk.dataFimAtendimento || new Date().toISOString());
     document.getElementById("rat-view-horario-duracao").innerText = calcularDuracaoAtendimento(tk.dataInicioAtendimento || tk.dataAbertura, tk.dataFimAtendimento || new Date().toISOString());
     
-    document.getElementById("rat-view-servico").innerText = tk.descricaoServico || "Manutenção padrão realizada sem observações extras.";
-    document.getElementById("rat-view-resp-nome").innerText = tk.clienteNome || tk.responsavelNome || "Não informado";
-    document.getElementById("rat-view-resp-cargo").innerText = tk.clienteCargo || tk.responsavelCargo || "Não informado";
-    document.getElementById("rat-view-tecnico-assinatura-nome").innerText = tk.responsavelNome || "Não informado";
+    document.getElementById("rat-view-servico").innerText = tk.descricaoServico || "Manutençõo padrío realizada sem observaçï¾ƒï½µes extras.";
+    document.getElementById("rat-view-resp-nome").innerText = tk.clienteNome || tk.responsavelNome || "Nío informado";
+    document.getElementById("rat-view-resp-cargo").innerText = tk.clienteCargo || tk.responsavelCargo || "Nío informado";
+    document.getElementById("rat-view-tecnico-assinatura-nome").innerText = tk.responsavelNome || "Nío informado";
     
     // Assinatura do Cliente
     const sigImg = document.getElementById("rat-view-signature-img");
@@ -4725,7 +4717,7 @@ window.visualizarLaudoRAT = function(id) {
         sigImg.style.display = "none";
     }
     
-    // Assinatura do Técnico
+    // Assinatura do Tácnico
     const sigTecnicoImg = document.getElementById("rat-view-tecnico-signature-img");
     if (tk.tecnicoAssinatura) {
         sigTecnicoImg.src = tk.tecnicoAssinatura;
@@ -4767,66 +4759,9 @@ document.addEventListener("click", (e) => {
         document.body.classList.add("print-mode-rat-novo");
         
         setTimeout(() => {
-            window.scrollTo(0, 0); 
             window.print();
+            document.body.classList.remove("print-mode-rat-novo");
         }, 150);
-    }
-    if (e.target && e.target.closest("#btn-email-rat-novo")) {
-        e.preventDefault();
-        
-        const osNumber = document.getElementById("rat-view-numero")?.innerText || "";
-        const hospital = document.getElementById("rat-view-hospital")?.innerText || "";
-        const equipamento = document.getElementById("rat-view-equipamento")?.innerText || "";
-        const tipo = document.getElementById("rat-view-tipo")?.innerText || "";
-        const tecnico = document.getElementById("rat-view-tecnico")?.innerText || "";
-        const servicos = document.getElementById("rat-view-servico")?.innerText || "";
-        const dataConclusao = document.getElementById("rat-view-horario-fim")?.innerText || "";
-
-        const mensagem = `✅ *NEVIXA ENGENHARIA | RAT CONCLUÍDO*\n\n`
-            + `Olá! Informamos que o atendimento técnico foi finalizado com sucesso. Abaixo estão os dados do relatório:\n\n`
-            + `*📋 DADOS DO ATENDIMENTO*\n`
-            + `*OS Nº:* ${osNumber}\n`
-            + `*Cliente:* ${hospital}\n`
-            + `*Equipamento:* ${equipamento}\n`
-            + `*Tipo de Serviço:* ${tipo}\n`
-            + `*Técnico Responsável:* ${tecnico}\n`
-            + `*Data de Conclusão:* ${dataConclusao}\n\n`
-            + `*🛠 SERVIÇOS EXECUTADOS:*\n${servicos}\n\n`
-            + `O relatório (RAT) completo em PDF foi gerado e assinado em nosso sistema.\n`
-            + `Qualquer dúvida, estamos à disposição!\n\n*Equipe Nevixa Engenharia*`;
-
-        window.uiPrompt("Digite o e-mail do cliente para enviar o RAT:", "", (emailDestino) => {
-            if (!emailDestino || emailDestino.trim() === "") return;
-
-            const btn = document.getElementById("btn-email-rat-novo");
-            const originalText = btn.innerHTML;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Enviando...`;
-            btn.disabled = true;
-
-            if (typeof emailjs !== 'undefined') {
-                emailjs.send("service_91lrayf", "template_ae6xzsh", {
-                    email_destino: emailDestino.trim(),
-                    os_numero: osNumber,
-                    mensagem_completa: mensagem
-                }).then(
-                    (response) => {
-                        uiAlert("E-mail enviado com sucesso!", "success");
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                    },
-                    (error) => {
-                        console.error("Erro ao enviar e-mail", error);
-                        uiAlert("Erro ao enviar e-mail. Tente novamente.", "error");
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                    }
-                );
-            } else {
-                uiAlert("Erro: O serviço de e-mail não foi carregado corretamente.", "error");
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        });
     }
     if (e.target && e.target.closest("#btn-whatsapp-rat-novo")) {
         e.preventDefault();
@@ -4837,28 +4772,25 @@ document.addEventListener("click", (e) => {
         const equipamento = document.getElementById("rat-view-equipamento")?.innerText || "";
         const tipo = document.getElementById("rat-view-tipo")?.innerText || "";
         const tecnico = document.getElementById("rat-view-tecnico")?.innerText || "";
-        const servicos = document.getElementById("rat-view-servico")?.innerText || "";
-        const dataConclusao = document.getElementById("rat-view-horario-fim")?.innerText || "";
+        const servicos = document.getElementById("rat-view-servicos")?.innerText || "";
+        const dataConclusao = document.getElementById("rat-view-conclusao")?.innerText || "";
 
-        const mensagem = `✅ *NEVIXA ENGENHARIA | RAT CONCLUÍDO*\n\n`
-            + `Olá! Informamos que o atendimento técnico foi finalizado com sucesso. Abaixo estão os dados do relatório:\n\n`
-            + `*📋 DADOS DO ATENDIMENTO*\n`
-            + `*OS Nº:* ${osNumber}\n`
+        const mensagem = `*NEVIXA ENGENHARIA - RAT CONCLUÃDA*\n\n`
+            + `*OS NÂ°:* ${osNumber}\n`
             + `*Cliente:* ${hospital}\n`
             + `*Equipamento:* ${equipamento}\n`
-            + `*Tipo de Serviço:* ${tipo}\n`
-            + `*Técnico Responsável:* ${tecnico}\n`
-            + `*Data de Conclusão:* ${dataConclusao}\n\n`
-            + `*🛠 SERVIÇOS EXECUTADOS:*\n${servicos}\n\n`
-            + `O relatório (RAT) completo em PDF foi gerado e assinado em nosso sistema.\n`
-            + `Qualquer dúvida, estamos à disposição!\n\n*Equipe Nevixa Engenharia*`;
+            + `*Tipo:* ${tipo}\n`
+            + `*Data Conclusío:* ${dataConclusao}\n`
+            + `*Tácnico:* ${tecnico}\n\n`
+            + `*Serviços Executados:*\n${servicos}\n\n`
+            + `O relatório completo em PDF foi gerado pelo nosso sistema.\nQualquer dívida, estamos ï¾ƒï¿½ disposiçõo.`;
 
         const waLink = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
         window.open(waLink, '_blank');
     }
 });
 
-// Funções utilitárias
+// Funçï¾ƒï½µes utilitírias
 function formatDateTime(isoStr) {
     if (!isoStr) return "N/A";
     const date = new Date(isoStr);
@@ -4890,7 +4822,7 @@ function calcularDuracaoAtendimento(inicioStr, fimStr) {
 
 
 // ==========================================================================
-// AUDITORIA DE SEGURANÇA (Melhoria 16)
+// AUDITORIA DE SEGURANï¾‡A (Melhoria 16)
 // ==========================================================================
 window.addAuditLog = function(action, moduleName) {
     if (!state.auditLogs) state.auditLogs = [];
@@ -4929,206 +4861,3 @@ window.renderAuditLogs = function() {
 
 
 
-// ==========================================================================
-// ORÇAMENTO EXPRESSO E GERAÇÃ DE PDF
-// ==========================================================================
-document.addEventListener("DOMContentLoaded", () => {
-    const btnAddOrcItem = document.getElementById("btn-add-orc-item");
-    const tbodyOrcItems = document.querySelector("#table-orc-items tbody");
-    
-    if (btnAddOrcItem && tbodyOrcItems) {
-        btnAddOrcItem.addEventListener("click", () => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td><input type="text" class="form-control orc-desc" placeholder="Ex: Manutenção Preventiva..."></td>
-                <td><input type="number" class="form-control orc-qtd" value="1" min="1"></td>
-                <td><input type="text" class="form-control orc-tipo" placeholder="Ex: MANU. PREV."></td>
-                <td><input type="number" class="form-control orc-unit" value="0.00" step="0.01"></td>
-                <td><input type="text" class="form-control orc-total" readonly value="0.00"></td>
-                <td><button class="btn btn-icon btn-remove-item"><i class="fa-solid fa-trash"></i></button></td>
-            `;
-            tbodyOrcItems.appendChild(tr);
-            attachOrcRowEvents(tr);
-        });
-    }
-
-    function attachOrcRowEvents(row) {
-        const inputQtd = row.querySelector(".orc-qtd");
-        const inputUnit = row.querySelector(".orc-unit");
-        const btnRemove = row.querySelector(".btn-remove-item");
-
-        if (inputQtd) inputQtd.addEventListener("input", calcOrcTotals);
-        if (inputUnit) inputUnit.addEventListener("input", calcOrcTotals);
-        
-        if (btnRemove) {
-            btnRemove.addEventListener("click", () => {
-                row.remove();
-                calcOrcTotals();
-            });
-        }
-    }
-
-    // Attach events to existing row(s) on load
-    if (tbodyOrcItems) {
-        tbodyOrcItems.querySelectorAll("tr").forEach(attachOrcRowEvents);
-    }
-
-    function calcOrcTotals() {
-        if (!tbodyOrcItems) return;
-        let finalTotal = 0;
-        
-        tbodyOrcItems.querySelectorAll("tr").forEach(row => {
-            const qtd = parseFloat(row.querySelector(".orc-qtd").value) || 0;
-            const unit = parseFloat(row.querySelector(".orc-unit").value) || 0;
-            const rowTotal = qtd * unit;
-            
-            row.querySelector(".orc-total").value = rowTotal.toFixed(2);
-            finalTotal += rowTotal;
-        });
-        
-        const elValorFinal = document.getElementById("orc-valor-final");
-        if (elValorFinal) {
-            elValorFinal.innerText = finalTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        }
-    }
-
-    const btnGerarPdf = document.getElementById("btn-gerar-pdf-orcamento");
-    if (btnGerarPdf) {
-        btnGerarPdf.addEventListener("click", () => {
-            if (typeof html2pdf === 'undefined') {
-                showToast("Erro", "Biblioteca PDF não carregada. Atualize a página.", "error");
-                return;
-            }
-
-            // 1. Coletar dados do formulário
-            const cliente = document.getElementById("orc-cliente").value || "NÃO INFORMADO";
-            const endereco = document.getElementById("orc-endereco").value || "NÃO INFORMADO";
-            const contato = document.getElementById("orc-contato").value || "-";
-            const email = document.getElementById("orc-email").value || "-";
-            const equipamento = document.getElementById("orc-equipamento").value || "EQUIPAMENTO NÃO ESPECIFICADO";
-            
-            // 2. Preencher template PDF
-            document.getElementById("pdf-cliente-nome").innerText = cliente;
-            document.getElementById("pdf-cliente-endereco").innerText = endereco;
-            document.getElementById("pdf-cliente-contato").innerText = contato;
-            document.getElementById("pdf-cliente-email").innerText = email;
-            
-            if (state.currentUser && state.currentUser.nome) {
-                document.getElementById("pdf-funcionario-nome").innerText = state.currentUser.nome;
-                document.getElementById("pdf-signature-name").innerText = state.currentUser.nome;
-            } else {
-                document.getElementById("pdf-funcionario-nome").innerText = "Nevixa Engenharia";
-                document.getElementById("pdf-signature-name").innerText = "Representante";
-            }
-            
-            // Datas e números
-            const hoje = new Date();
-            const dataStr = hoje.toLocaleDateString("pt-BR");
-            document.getElementById("pdf-date").innerText = dataStr;
-            
-            // Gerar número de proposta (Ex: 145/2026)
-            const propNum = Math.floor(Math.random() * 900) + 100;
-            const propAno = hoje.getFullYear();
-            const propStr = `${propNum}/${propAno}`;
-            document.getElementById("pdf-number").innerText = `P.${propStr}`;
-            document.getElementById("pdf-prop-num").innerText = propStr;
-            document.getElementById("pdf-prop-num2").innerText = propNum;
-            
-            // 3. Preencher tabela do PDF
-            const tbodyPdf = document.getElementById("pdf-items-body");
-            tbodyPdf.innerHTML = "";
-            let sumQtd = 0;
-            let sumTotal = 0;
-            let lastTipo = "";
-            
-            let itemCounter = 1;
-            tbodyOrcItems.querySelectorAll("tr").forEach(row => {
-                const desc = row.querySelector(".orc-desc").value || "";
-                const qtd = parseFloat(row.querySelector(".orc-qtd").value) || 0;
-                const tipo = row.querySelector(".orc-tipo").value || "";
-                const unit = parseFloat(row.querySelector(".orc-unit").value) || 0;
-                const total = qtd * unit;
-                
-                sumQtd += qtd;
-                sumTotal += total;
-                if (tipo) lastTipo = tipo;
-                
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${String(itemCounter).padStart(2, '0')}</td>
-                    <td style="text-align: left;">${desc}</td>
-                    <td>${String(qtd).padStart(2, '0')}</td>
-                    <td>${tipo}</td>
-                    <td>${unit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                    <td>${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                `;
-                tbodyPdf.appendChild(tr);
-                itemCounter++;
-            });
-            
-            // Totais
-            document.getElementById("pdf-total-qtd").innerText = String(sumQtd).padStart(2, '0');
-            document.getElementById("pdf-total-valor").innerText = sumTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            
-            // 4. Cadastrar no sistema (Opcional)
-            const chkCadastrar = document.getElementById("orc-cadastrar-cliente");
-            let cadastrado = false;
-            if (chkCadastrar && chkCadastrar.checked) {
-                if (cliente && cliente !== "NÃO INFORMADO") {
-                    const novoEq = {
-                        id: generateUUID(),
-                        tag: "N/A",
-                        serial: "N/A",
-                        nome: equipamento,
-                        cliente: cliente,
-                        status: "Ativo",
-                        ultimaPreventiva: "",
-                        periodicidade: "12"
-                    };
-                    if(!state.equipments) state.equipments = [];
-                    state.equipments.push(novoEq);
-                    saveStateToLocalStorage();
-                    addAuditLog("Cliente Avulso", `Cliente ${cliente} cadastrado via Orçamento Expresso`);
-                    cadastrado = true;
-                }
-            }
-            
-            // 5. Gerar o PDF usando html2pdf
-            const element = document.getElementById('pdf-template');
-            
-            // Precisamos mostrar o elemento temporariamente para o html2pdf renderizar
-            element.style.display = 'block';
-            
-            const opt = {
-              margin:       0,
-              filename:     `Orcamento_${cliente.replace(/\s+/g, '_')}_${propStr.replace('/','-')}.pdf`,
-              image:        { type: 'jpeg', quality: 0.98 },
-              html2canvas:  { scale: 2, useCORS: true },
-              jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-            
-            // Mostrar estado de carregamento no botão
-            const btnOriginalText = btnGerarPdf.innerHTML;
-            btnGerarPdf.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GERANDO PDF...';
-            btnGerarPdf.disabled = true;
-
-            html2pdf().set(opt).from(element).save().then(() => {
-                element.style.display = 'none';
-                btnGerarPdf.innerHTML = btnOriginalText;
-                btnGerarPdf.disabled = false;
-                
-                if (cadastrado) {
-                    showToast("Sucesso", "PDF Gerado e Cliente Cadastrado!", "success");
-                } else {
-                    showToast("Sucesso", "Orçamento PDF gerado com sucesso!", "success");
-                }
-            }).catch(err => {
-                console.error("Erro ao gerar PDF:", err);
-                element.style.display = 'none';
-                btnGerarPdf.innerHTML = btnOriginalText;
-                btnGerarPdf.disabled = false;
-                showToast("Erro", "Falha ao gerar PDF.", "error");
-            });
-        });
-    }
-});
