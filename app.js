@@ -4944,8 +4944,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td><input type="number" class="form-control orc-qtd" value="1" min="1"></td>
                 <td><input type="text" class="form-control orc-tipo" placeholder="Ex: MANU. PREV."></td>
                 <td><input type="number" class="form-control orc-unit" value="0.00" step="0.01"></td>
-                <td><input type="text" class="form-control orc-total" readonly value="0.00"></td>
-                <td><button class="btn btn-icon btn-remove-item"><i class="fa-solid fa-trash"></i></button></td>
+                <td><input type="text" class="form-control orc-total" readonly value="0.00" style="background: var(--color-bg-body);"></td>
+                <td class="text-center"><button class="btn btn-icon-danger btn-remove-orc-item" style="border: 1px solid var(--color-border); padding: 5px 10px;"><i class="fa-solid fa-trash" style="color: var(--color-danger);"></i></button></td>
             `;
             tbodyOrcItems.appendChild(tr);
             attachOrcRowEvents(tr);
@@ -5099,14 +5099,11 @@ document.addEventListener("DOMContentLoaded", () => {
             // Precisamos mostrar o elemento temporariamente para o html2pdf renderizar
             element.style.display = 'block';
             
-            // Converter logo para base64 para evitar problemas de CORS no html2canvas
+            // Injetar logo em base64 vindo do arquivo logo_b64.js carregado no HTML
             try {
-                const response = await fetch('logo.svg');
-                if (response.ok) {
-                    const svgText = await response.text();
-                    const base64Svg = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgText)));
+                if (typeof LOGO_BASE64 !== 'undefined') {
                     document.querySelectorAll('.pdf-logo').forEach(img => {
-                        img.src = base64Svg;
+                        img.src = LOGO_BASE64;
                     });
                 }
             } catch (e) {
