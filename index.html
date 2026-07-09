@@ -895,16 +895,16 @@
                             <h3 class="section-title m-0">Serviços e Valores</h3>
                             <button class="btn btn-outline" id="btn-add-orc-item"><i class="fa-solid fa-plus"></i> Adicionar Serviço</button>
                         </div>
-                        <div class="table-responsive">
-                            <table class="data-table" id="table-orc-items">
+                        <div class="table-responsive" style="overflow-x: auto; background: var(--color-bg-card); border-radius: 8px; border: 1px solid var(--color-border); margin-bottom: 20px;">
+                            <table class="data-table" id="table-orc-items" style="width: 100%; min-width: 800px;">
                                 <thead>
                                     <tr>
-                                        <th>Descrição do Serviço</th>
-                                        <th style="width: 80px;">Qtd.</th>
-                                        <th style="width: 150px;">Tipo (Opcional)</th>
-                                        <th style="width: 150px;">Valor Unitário (R$)</th>
-                                        <th style="width: 150px;">Valor Total (R$)</th>
-                                        <th style="width: 60px;"></th>
+                                        <th style="width: 40%;">Descrição do Serviço</th>
+                                        <th style="width: 10%;">Qtd.</th>
+                                        <th style="width: 20%;">Tipo (Opcional)</th>
+                                        <th style="width: 15%;">Valor Unitário (R$)</th>
+                                        <th style="width: 15%;">Valor Total (R$)</th>
+                                        <th style="width: 50px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -938,7 +938,7 @@
                     <div class="pdf-page">
                         <div class="pdf-header">
                             <div class="pdf-logo-area">
-                                <img src="logo.svg" alt="Nevixa" class="pdf-logo">
+                                <img src="logo.svg" alt="Nevixa" class="pdf-logo" style="width: 200px; height: auto;">
                             </div>
                             <div class="pdf-title-area">
                                 <h2>NEVIXA ENGENHARIA COMÉRCIO & SERVIÇOS</h2>
@@ -990,7 +990,7 @@
                         </table>
 
                         <div class="pdf-section-title">2. DESCRIÇÃO DOS SERVIÇOS X QUANTIDADES X PREÇOS:</div>
-                        <table class="pdf-table pdf-items-table" id="pdf-items-table">
+                        <table class="pdf-table pdf-items-table" id="pdf-items-table" style="table-layout: fixed;">
                             <thead>
                                 <tr>
                                     <th style="width: 8%;">Item</th>
@@ -1037,7 +1037,9 @@
                         </div>
 
                         <div class="pdf-signature-area">
-                            <div class="watermark-bg"></div>
+                            <div class="watermark-bg">
+                                <img src="logo.svg" class="pdf-logo" style="width: 80%; height: auto; opacity: 0.1;" alt="Watermark">
+                            </div>
                             <p style="margin-bottom: 0;">Atenciosamente</p>
                             <p style="font-weight: bold; margin-bottom: 0;" id="pdf-signature-name">Joabe Lima Mendes</p>
                             <p style="font-weight: bold;">Diretor Comercial</p>

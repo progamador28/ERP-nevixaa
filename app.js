@@ -4994,7 +4994,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const btnGerarPdf = document.getElementById("btn-gerar-pdf-orcamento");
     if (btnGerarPdf) {
-        btnGerarPdf.addEventListener("click", () => {
+        btnGerarPdf.addEventListener("click", async () => {
             if (typeof html2pdf === 'undefined') {
                 showToast("Erro", "Biblioteca PDF não carregada. Atualize a página.", "error");
                 return;
@@ -5099,10 +5099,25 @@ document.addEventListener("DOMContentLoaded", () => {
             // Precisamos mostrar o elemento temporariamente para o html2pdf renderizar
             element.style.display = 'block';
             
+            // Converter logo para base64 para evitar problemas de CORS no html2canvas
+            try {
+                const response = await fetch('logo.svg');
+                if (response.ok) {
+                    const svgText = await response.text();
+                    const base64Svg = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgText)));
+                    document.querySelectorAll('.pdf-logo').forEach(img => {
+                        img.src = base64Svg;
+                    });
+                }
+            } catch (e) {
+                console.error("Erro ao carregar logo:", e);
+            }
+            
             const opt = {
               margin:       0,
               filename:     `Orcamento_${cliente.replace(/\s+/g, '_')}_${propStr.replace('/','-')}.pdf`,
               image:        { type: 'jpeg', quality: 0.98 },
+              pagebreak:    { mode: ['css', 'legacy'] },
               html2canvas:  { scale: 2, useCORS: true },
               jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
