@@ -1636,7 +1636,7 @@ body.role-cliente #table-notas-body tr td:last-child button:not(:first-child) {
         gap: 4px;
         font-size: 0.65rem;
         color: var(--color-text-muted);
-        width: 20%;
+        flex: 1;
         text-align: center;
     }
     

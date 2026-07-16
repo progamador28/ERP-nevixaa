@@ -652,6 +652,10 @@ function initMobileNavigation() {
             <i class="fa-solid fa-helmet-safety"></i>
             <span>Op. Técnicas</span>
         </a>
+        <a href="#" class="mobile-nav-link" data-tab="orcamentos" id="mob-menu-orcamentos">
+            <i class="fa-solid fa-file-pdf"></i>
+            <span>Orçamento</span>
+        </a>
         <a href="#" class="mobile-nav-link" data-tab="relatorios" id="mob-menu-relatorios">
             <i class="fa-solid fa-chart-line"></i>
             <span>BI</span>
@@ -5117,7 +5121,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             
             const opt = {
-              margin:       [0, 0, 0.1, 0],
+              margin:       0,
               filename:     `Orcamento_${cliente.replace(/\s+/g, '_')}_${propStr.replace('/','-')}.pdf`,
               image:        { type: 'jpeg', quality: 0.98 },
               pagebreak:    { mode: ['css', 'legacy'] },
