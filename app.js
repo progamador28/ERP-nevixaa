@@ -3586,7 +3586,8 @@ window.carregarUsuarios = async function() {
                 <td>
                     ${user.id !== state.currentUser.id ? `
                         ${user.status !== 'ativo' ? `<button class="btn btn-sm btn-outline" style="color: #4ade80; border-color: #4ade80; padding: 4px 8px; background: transparent;" onclick="alterarStatusUsuario('${user.id}', 'ativo')" title="Aprovar/Ativar"><i class="fa-solid fa-check"></i></button>` : ''}
-                        ${user.status !== 'bloqueado' ? `<button class="btn btn-sm btn-outline" style="color: #f87171; border-color: #f87171; padding: 4px 8px; margin-left: 5px; background: transparent;" onclick="alterarStatusUsuario('${user.id}', 'bloqueado')" title="Bloquear"><i class="fa-solid fa-ban"></i></button>` : ''}
+                        ${user.status !== 'bloqueado' ? `<button class="btn btn-sm btn-outline" style="color: #facc15; border-color: #facc15; padding: 4px 8px; margin-left: 5px; background: transparent;" onclick="alterarStatusUsuario('${user.id}', 'bloqueado')" title="Bloquear"><i class="fa-solid fa-ban"></i></button>` : ''}
+                        <button class="btn btn-sm btn-outline" style="color: #f87171; border-color: #f87171; padding: 4px 8px; margin-left: 5px; background: transparent;" onclick="excluirUsuario('${user.id}')" title="Excluir Usuário permanentemente"><i class="fa-solid fa-trash"></i></button>
                     ` : '<span class="text-muted small">Você</span>'}
                 </td>
             `;
