@@ -63,6 +63,10 @@
                     </div>
                 </div>
                 
+                <div class="mt-2 text-end">
+                    <a href="#" id="btn-show-forgot" style="color: var(--primary-color); font-size: 0.85rem; text-decoration: none;">Esqueci minha senha</a>
+                </div>
+                
                 <button type="submit" class="btn btn-primary-gradient btn-block mt-3">
                     <i class="fa-solid fa-right-to-bracket"></i> Acessar Sistema
                 </button>
@@ -104,13 +108,29 @@
                             <option value="cliente" style="background: var(--bg-card); color: white;">Cliente (Hospital / Clínica)</option>
                         </select>
                     </div>
-                </div>
-                
-                <button type="submit" class="btn btn-primary-gradient btn-block mt-3">
-                    <i class="fa-solid fa-user-plus"></i> Enviar Solicitação
+                     <button type="submit" class="btn btn-primary-gradient btn-block mt-3">
+                    <i class="fa-solid fa-user-plus"></i> Concluir Cadastro
                 </button>
                 <div class="mt-3 text-center">
-                    <a href="#" id="btn-show-login" style="color: var(--text-muted); font-size: 0.9rem; text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Voltar para Login</a>
+                    <a href="#" id="btn-show-login" style="color: var(--text-muted); font-size: 0.9rem; text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Voltar ao Login</a>
+                </div>
+            </form>
+
+            <!-- Formulário de Esqueci Minha Senha -->
+            <form id="form-forgot-password" class="d-none">
+                <p class="text-muted text-center mb-3" style="font-size: 0.9rem;">Informe seu e-mail cadastrado para receber um link de redefinição de senha.</p>
+                <div class="form-group">
+                    <label for="forgot-email">E-mail Cadastrado *</label>
+                    <div class="input-icon-wrapper">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="forgot-email" required placeholder="seuemail@nevixa.com.br">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary-gradient btn-block mt-3">
+                    <i class="fa-solid fa-key"></i> Redefinir Senha
+                </button>
+                <div class="mt-3 text-center">
+                    <a href="#" id="btn-show-login-from-forgot" style="color: var(--text-muted); font-size: 0.9rem; text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> Voltar ao Login</a>
                 </div>
             </form>
             

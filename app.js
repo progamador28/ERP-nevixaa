@@ -3655,14 +3655,71 @@ function setupEventListeners() {
         document.getElementById("form-register").classList.add("d-none");
         document.getElementById("form-login").classList.remove("d-none");
     });
+
+    safeAddEventListener("btn-show-forgot", "click", (e) => {
+        e.preventDefault();
+        document.getElementById("form-login").classList.add("d-none");
+        document.getElementById("form-register").classList.add("d-none");
+        document.getElementById("form-forgot-password").classList.remove("d-none");
+    });
+
+    safeAddEventListener("btn-show-login-from-forgot", "click", (e) => {
+        e.preventDefault();
+        document.getElementById("form-forgot-password").classList.add("d-none");
+        document.getElementById("form-login").classList.remove("d-none");
+    });
+
+    safeAddEventListener("form-forgot-password", "submit", async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("forgot-email").value.trim().toLowerCase();
+        const btn = document.querySelector("#form-forgot-password button");
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verificando...';
+        btn.disabled = true;
+
+        try {
+            // Verifica se email existe
+            const { data, error } = await supabaseClient
+                .from('perfis')
+                .select('id')
+                .eq('email', email)
+                .single();
+
+            if (error || !data) {
+                uiAlert("EMAIL INCORRETO PARA REDEFINIR SENHA");
+                return;
+            }
+
+            // Envia email de recup
+            const { error: resetError } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin
+            });
+
+            if (resetError) {
+                uiAlert("Erro ao enviar o e-mail de recuperação.");
+            } else {
+                uiAlert("Link de redefinição enviado com sucesso para o seu e-mail!");
+                document.getElementById("form-forgot-password").reset();
+                document.getElementById("form-forgot-password").classList.add("d-none");
+                document.getElementById("form-login").classList.remove("d-none");
+            }
+        } catch (err) {
+            uiAlert("Erro de conexão.");
+        } finally {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+    });
     
     window.alternarModoJanelaLogin = function(modo) {
         if(modo === 'login') {
             document.getElementById("form-register").classList.add("d-none");
+            document.getElementById("form-forgot-password").classList.add("d-none");
             document.getElementById("form-login").classList.remove("d-none");
             document.getElementById("form-register").reset();
         } else {
             document.getElementById("form-login").classList.add("d-none");
+            document.getElementById("form-forgot-password").classList.add("d-none");
             document.getElementById("form-register").classList.remove("d-none");
         }
         exibirCarregamentoLogin(false);
