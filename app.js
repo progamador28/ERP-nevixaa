@@ -363,11 +363,11 @@ async function initDatabase() {
             const cloud = data.dados;
             state.invoices = cloud.invoices || [];
             state.transactions = cloud.transactions || [];
-            state.equipments = cloud.equipments || MOCK_EQUIPMENTS;
-            state.calibrators = cloud.calibrators || MOCK_CALIBRATORS;
-            state.quotations = cloud.quotations || MOCK_QUOTATIONS;
-            state.tickets = cloud.tickets || MOCK_TICKETS;
-            state.timesheets = cloud.timesheets || MOCK_TIMESHEETS;
+            state.equipments = cloud.equipments || [];
+            state.calibrators = cloud.calibrators || [];
+            state.quotations = cloud.quotations || [];
+            state.tickets = cloud.tickets || [];
+            state.timesheets = cloud.timesheets || [];
             state.auditLogs = cloud.auditLogs || [];
             state.taxConfig = cloud.taxConfig || DEFAULT_TAX_CONFIG;
             state.rateioConfig = cloud.rateioConfig || 10;
@@ -408,24 +408,22 @@ async function initDatabase() {
     if (storedInvoices && storedTransactions && JSON.parse(storedInvoices).length > 0) {
         state.invoices = JSON.parse(storedInvoices);
         state.transactions = JSON.parse(storedTransactions);
-        state.equipments = JSON.parse(storedEquipments) || MOCK_EQUIPMENTS;
-        state.calibrators = JSON.parse(storedCalibrators) || MOCK_CALIBRATORS;
-        state.quotations = JSON.parse(storedQuotations) || MOCK_QUOTATIONS;
-        state.tickets = JSON.parse(storedTickets) || MOCK_TICKETS;
-        state.timesheets = JSON.parse(storedTimesheets) || MOCK_TIMESHEETS;
+        state.equipments = JSON.parse(storedEquipments) || [];
+        state.calibrators = JSON.parse(storedCalibrators) || [];
+        state.quotations = JSON.parse(storedQuotations) || [];
+        state.tickets = JSON.parse(storedTickets) || [];
+        state.timesheets = JSON.parse(storedTimesheets) || [];
         state.auditLogs = JSON.parse(storedAuditLogs) || [];
     } else {
-        // Popula com dados mockados completos para demonstrar o ERP rodando
-        state.invoices = MOCK_INVOICES;
-        state.transactions = MOCK_TRANSACTIONS;
-        state.equipments = MOCK_EQUIPMENTS;
-        state.calibrators = MOCK_CALIBRATORS;
-        state.quotations = MOCK_QUOTATIONS;
-        state.tickets = MOCK_TICKETS;
-        state.timesheets = MOCK_TIMESHEETS;
-        state.auditLogs = [
-            { timestamp: new Date().toISOString(), usuario: "Sistema", operacao: "Banco Inicializado", descricao: "Banco de dados preenchido com dados fictícios de demonstração." }
-        ];
+        // Popula com arrays vazios para uso em produção
+        state.invoices = [];
+        state.transactions = [];
+        state.equipments = [];
+        state.calibrators = [];
+        state.quotations = [];
+        state.tickets = [];
+        state.timesheets = [];
+        state.auditLogs = [];
     }
     saveStateToLocalStorage();
 }
@@ -3858,11 +3856,11 @@ function setupEventListeners() {
                         uiConfirm("Você tem certeza de que deseja restaurar este backup? Todos os dados atuais serão substituídos.", () => {
                             state.invoices = parsedData.invoices;
                             state.transactions = parsedData.transactions;
-                            state.equipments = parsedData.equipments || MOCK_EQUIPMENTS;
-                            state.calibrators = parsedData.calibrators || MOCK_CALIBRATORS;
-                            state.quotations = parsedData.quotations || MOCK_QUOTATIONS;
-                            state.tickets = parsedData.tickets || MOCK_TICKETS;
-                            state.timesheets = parsedData.timesheets || MOCK_TIMESHEETS;
+                            state.equipments = parsedData.equipments || [];
+                            state.calibrators = parsedData.calibrators || [];
+                            state.quotations = parsedData.quotations || [];
+                            state.tickets = parsedData.tickets || [];
+                            state.timesheets = parsedData.timesheets || [];
                             state.taxConfig = parsedData.taxConfig || DEFAULT_TAX_CONFIG;
                             state.rateioConfig = parsedData.rateioConfig || 10;
                             state.auditLogs = parsedData.auditLogs || [];
