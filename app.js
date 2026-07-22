@@ -235,59 +235,10 @@ const MOCK_TICKETS = [
         equipamento: "Ressonância Philips", 
         tipo: "Preventiva", 
         dataAbertura: "2026-07-02T10:00:00", 
-        dataInicioAtendimento: "2026-07-02T11:00:00",
-        dataFimAtendimento: null,
-        descricaoServico: "",
-        responsavelNome: "",
-        responsavelCargo: "",
-        responsavelAssinatura: "",
-        fotos: [],
-        status: "Em Atendimento", 
-        slaHoras: 72 
     }
 ];
 
-const MOCK_QUOTATIONS = [
-    { id: "q-1", peca: "Tubo de Raios-X de Reposição (CT GE)", equipamento: "Tomógrafo GE Optima", solicitante: "Rodrigo Lima (Técnico)", fornecedor: "GE Healthcare Brasil", valor: 28000.00, status: "Aprovado" },
-    { id: "q-2", peca: "Placa de Controle de Colimação Sobressalente", equipamento: "Raio-X Siemens", solicitante: "Rodrigo Lima (Técnico)", fornecedor: "Siemens Healthineers", valor: 7500.00, status: "Aprovado" },
-    { id: "q-3", peca: "Bobina de Cabeça de 8 Canais para RM", equipamento: "Ressonância Philips", solicitante: "Rodrigo Lima (Técnico)", fornecedor: "Philips Medical", valor: 14500.00, status: "Pendente" }
-];
-
-const MOCK_TIMESHEETS = [
-    { id: "ts-1", notaFiscalId: "inv-1", tecnico: "Rodrigo Lima", horas: 12, valorHora: 120.00, custoTotal: 1440.00 },
-    { id: "ts-2", notaFiscalId: "inv-2", tecnico: "Rodrigo Lima", horas: 8, valorHora: 120.00, custoTotal: 960.00 },
-    { id: "ts-3", notaFiscalId: "inv-3", tecnico: "Rodrigo Lima", horas: 4, valorHora: 120.00, custoTotal: 480.00 }
-];
-
-const MOCK_INVOICES = [
-    { id: "inv-1", numeroNota: "NF-2026001", equipamentoId: "eq-2", cliente: "Hospital Albert Einstein", descricao: "Manutenção corretiva com troca de tubos no equipamento de Tomografia Computadora GE Optima", valorTotal: 45000.00, dataEmissao: "2026-07-02", status: "Recebido", calcularImpostos: true },
-    { id: "inv-2", numeroNota: "NF-2026002", equipamentoId: "eq-1", cliente: "Clínica Radiosul", descricao: "Calibração anual e manutenção preventiva de Ressonância Magnética Philips Achieva 1.5T", valorTotal: 18500.00, dataEmissao: "2026-07-05", status: "Pendente", calcularImpostos: true },
-    { id: "inv-3", numeroNota: "NF-2026003", equipamentoId: "eq-3", cliente: "Santa Casa de Misericórdia", descricao: "Conserto emergencial no sistema de colimação do Raio-X Digital Siemens Multix", valorTotal: 8900.00, dataEmissao: "2026-07-08", status: "Recebido", calcularImpostos: true },
-    { id: "inv-4", numeroNota: "NF-2026004", equipamentoId: "eq-4", cliente: "Clínica UltraScan", descricao: "Manutenção preventiva em 4 aparelhos de Ultrassonografia Doppler Colorido", valorTotal: 12000.00, dataEmissao: "2026-07-12", status: "Recebido", calcularImpostos: false }
-];
-
-const MOCK_TRANSACTIONS = [
-    // Impostos Automáticos (DAS Simples Nacional - 8.0%)
-    { id: "tax-1", data: "2026-07-02", descricao: "Imposto DAS - Simples Nacional (8.0%) sobre NF NF-2026001", tipo: "Saída", valor: 3600.00, categoria: "Impostos", status: "Pendente", notaFiscalId: "inv-1", isImpostoAuto: true },
-    { id: "tax-2", data: "2026-07-05", descricao: "Imposto DAS - Simples Nacional (8.0%) sobre NF NF-2026002", tipo: "Saída", valor: 1480.00, categoria: "Impostos", status: "Pendente", notaFiscalId: "inv-2", isImpostoAuto: true },
-    { id: "tax-3", data: "2026-07-08", descricao: "Imposto DAS - Simples Nacional (8.0%) sobre NF NF-2026003", tipo: "Saída", valor: 712.00, categoria: "Impostos", status: "Pendente", notaFiscalId: "inv-3", isImpostoAuto: true },
-
-    // Despesas Diretas com Peças e Km
-    { id: "t-1", data: "2026-07-03", descricao: "Importação do tubo de raios-x de reposição (peça direta)", tipo: "Saída", valor: 28000.00, categoria: "Peças", status: "Pago", notaFiscalId: "inv-1", garantiaMeses: 12 },
-    { id: "t-3", data: "2026-07-04", descricao: "Deslocamento técnico - 150Km rodados (Reembolso)", tipo: "Saída", valor: 450.00, categoria: "Deslocamento", status: "Pago", notaFiscalId: "inv-1", kmRodados: 150 },
-    
-    // Despesas Preventiva Philips RM
-    { id: "t-4", data: "2026-07-06", descricao: "Locação de kit de ferramentas e calibração de hélio líquido", tipo: "Saída", valor: 2500.00, categoria: "Serviços", status: "Pago", notaFiscalId: "inv-2" },
-    { id: "t-5", data: "2026-07-06", descricao: "Despesas com hospedagem dos engenheiros de campo (3 dias)", tipo: "Saída", valor: 820.00, categoria: "Deslocamento", status: "Pago", notaFiscalId: "inv-2" },
-    
-    // Despesa Santa Casa
-    { id: "t-6", data: "2026-07-09", descricao: "Compra de placa de controle de colimação sobressalente", tipo: "Saída", valor: 7500.00, categoria: "Peças", status: "Pago", notaFiscalId: "inv-3", garantiaMeses: 6 },
-    
-    // Custos fixos
-    { id: "t-8", data: "2026-07-05", descricao: "Honorários contabilidade mensal Nevixa", tipo: "Saída", valor: 1200.00, categoria: "Outros", status: "Pago", notaFiscalId: "" },
-    { id: "t-9", data: "2026-07-10", descricao: "Retirada Pró-labore Sócios", tipo: "Saída", valor: 8000.00, categoria: "Salários", status: "Pago", notaFiscalId: "" },
-    { id: "t-10", data: "2026-07-11", descricao: "Entrada de reembolso de seguro de viagem anterior", tipo: "Entrada", valor: 1500.00, categoria: "Outros", status: "Pago", notaFiscalId: "" }
-];
+// MOCK DATA REMOVIDO PARA PRODUÇÃO
 
 const DEFAULT_TAX_CONFIG = {
     regime: "SimplesNacional",
@@ -400,6 +351,11 @@ async function initDatabase() {
             state.taxConfig = cloud.taxConfig || DEFAULT_TAX_CONFIG;
             state.rateioConfig = cloud.rateioConfig || 10;
             
+            // INTEGRIDADE DE DADOS: Limpa timesheets/transações órfãs cujas notas foram deletadas antes das atualizações de sistema
+            const validInvoiceIds = new Set(state.invoices.map(inv => inv.id));
+            state.timesheets = state.timesheets.filter(ts => validInvoiceIds.has(ts.notaFiscalId));
+            state.transactions = state.transactions.filter(t => !t.notaFiscalId || validInvoiceIds.has(t.notaFiscalId));
+
             const inputRateio = document.getElementById("input-bi-rateio-perc");
             if (inputRateio) inputRateio.value = state.rateioConfig;
             
