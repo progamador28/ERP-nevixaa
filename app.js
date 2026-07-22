@@ -10,6 +10,21 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+window.isPasswordRecovery = false;
+supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+        window.isPasswordRecovery = true;
+        if (document.readyState !== 'loading') {
+            document.getElementById("form-login").classList.add("d-none");
+            document.getElementById("form-register").classList.add("d-none");
+            document.getElementById("form-forgot-password").classList.add("d-none");
+            document.getElementById("form-reset-password").classList.remove("d-none");
+            document.getElementById("login-overlay").classList.add("active");
+            window.history.replaceState(null, null, ' ');
+        }
+    }
+});
+
 // Nome oficializado para relatórios, cabeçalhos e logs do sistema ERP
 const EMPRESA_NOME_OFICIAL = "NEVIXA ENGENHARIA COMERCIO & SERVICOS LTDA";
 
@@ -342,16 +357,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     setCurrentDateHeader();
     applyThemePreference();
 
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-        if (event === 'PASSWORD_RECOVERY') {
-            document.getElementById("form-login").classList.add("d-none");
-            document.getElementById("form-register").classList.add("d-none");
-            document.getElementById("form-forgot-password").classList.add("d-none");
-            document.getElementById("form-reset-password").classList.remove("d-none");
-            document.getElementById("login-overlay").classList.add("active");
-            window.history.replaceState(null, null, ' '); // Limpa a URL
-        }
-    });
+    if (window.isPasswordRecovery) {
+        document.getElementById("form-login").classList.add("d-none");
+        document.getElementById("form-register").classList.add("d-none");
+        document.getElementById("form-forgot-password").classList.add("d-none");
+        document.getElementById("form-reset-password").classList.remove("d-none");
+        document.getElementById("login-overlay").classList.add("active");
+        window.history.replaceState(null, null, ' ');
+    }
 
     // Sincronização multi-abas em tempo real (Sincronismo Operacional)
     window.addEventListener("storage", async (e) => {
