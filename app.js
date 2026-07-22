@@ -331,6 +331,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         checkPreventivasAutomaticas();
     }
     
+    if (typeof verificarAcessoRecuperacaoSenha === 'function') {
+        verificarAcessoRecuperacaoSenha();
+    }
+    
     checkAuth();
     initMobileNavigation();
     setupEventListeners();
@@ -3700,8 +3704,57 @@ function setupEventListeners() {
             } else {
                 uiAlert("Link de redefinição enviado com sucesso para o seu e-mail!");
                 document.getElementById("form-forgot-password").reset();
-                document.getElementById("form-forgot-password").classList.add("d-none");
-                document.getElementById("form-login").classList.remove("d-none");
+                window.alternarModoJanelaLogin('login');
+            }
+        } catch (err) {
+            uiAlert("Erro de conexão.");
+        } finally {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+    });
+
+    function verificarAcessoRecuperacaoSenha() {
+        const hash = window.location.hash;
+        if (hash && hash.includes("type=recovery")) {
+            // Mostra o formulário de nova senha
+            document.getElementById("form-login").classList.add("d-none");
+            document.getElementById("form-register").classList.add("d-none");
+            document.getElementById("form-forgot-password").classList.add("d-none");
+            document.getElementById("form-reset-password").classList.remove("d-none");
+            document.getElementById("login-overlay").classList.add("active");
+        } else if (hash && hash.includes("error_code=otp_expired")) {
+            uiAlert("Seu link de redefinição de senha é inválido ou expirou. Por favor, solicite um novo.");
+            window.history.replaceState(null, null, ' '); // Limpa a URL
+        }
+    }
+
+    safeAddEventListener("btn-cancel-reset", "click", (e) => {
+        e.preventDefault();
+        window.history.replaceState(null, null, ' ');
+        window.alternarModoJanelaLogin('login');
+    });
+
+    safeAddEventListener("form-reset-password", "submit", async (e) => {
+        e.preventDefault();
+        const novaSenha = document.getElementById("reset-nova-senha").value;
+        const btn = document.querySelector("#form-reset-password button");
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+        btn.disabled = true;
+
+        try {
+            const { data, error } = await supabaseClient.auth.updateUser({
+                password: novaSenha
+            });
+
+            if (error) {
+                uiAlert("Erro ao atualizar senha: " + error.message);
+            } else {
+                uiAlert("Sua senha foi atualizada com sucesso! Faça login com a nova senha.");
+                await supabaseClient.auth.signOut();
+                window.history.replaceState(null, null, ' ');
+                window.alternarModoJanelaLogin('login');
             }
         } catch (err) {
             uiAlert("Erro de conexão.");
@@ -3715,11 +3768,15 @@ function setupEventListeners() {
         if(modo === 'login') {
             document.getElementById("form-register").classList.add("d-none");
             document.getElementById("form-forgot-password").classList.add("d-none");
+            document.getElementById("form-reset-password").classList.add("d-none");
             document.getElementById("form-login").classList.remove("d-none");
             document.getElementById("form-register").reset();
+            document.getElementById("form-forgot-password").reset();
+            document.getElementById("form-reset-password").reset();
         } else {
             document.getElementById("form-login").classList.add("d-none");
             document.getElementById("form-forgot-password").classList.add("d-none");
+            document.getElementById("form-reset-password").classList.add("d-none");
             document.getElementById("form-register").classList.remove("d-none");
         }
         exibirCarregamentoLogin(false);
