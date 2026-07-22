@@ -342,6 +342,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     setCurrentDateHeader();
     applyThemePreference();
 
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (event === 'PASSWORD_RECOVERY') {
+            document.getElementById("form-login").classList.add("d-none");
+            document.getElementById("form-register").classList.add("d-none");
+            document.getElementById("form-forgot-password").classList.add("d-none");
+            document.getElementById("form-reset-password").classList.remove("d-none");
+            document.getElementById("login-overlay").classList.add("active");
+            window.history.replaceState(null, null, ' '); // Limpa a URL
+        }
+    });
+
     // Sincronização multi-abas em tempo real (Sincronismo Operacional)
     window.addEventListener("storage", async (e) => {
         if (e.key && e.key.startsWith("nevixa_")) {
