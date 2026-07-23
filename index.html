@@ -204,6 +204,12 @@
                             <span>BI & Relatórios</span>
                         </a>
                     </li>
+                    <li id="menu-item-docs">
+                        <a href="#" class="nav-link" data-tab="docs">
+                            <i class="fa-solid fa-file-contract"></i>
+                            <span>Documentação</span>
+                        </a>
+                    </li>
                     <li id="menu-item-acessos" class="d-none"> <!-- Apenas Admin -->
                         <a href="#" class="nav-link" data-tab="acessos">
                             <i class="fa-solid fa-users-gear"></i>
@@ -269,6 +275,11 @@
                 
                 <!-- 1. ABA DASHBOARD -->
                 <section id="tab-dashboard" class="tab-pane active">
+                    <!-- ALERTAS DE DOCUMENTOS (Aparece se houver documentos vencendo/vencidos) -->
+                    <div id="docs-alerts-container" class="mb-4 d-none">
+                        <!-- Alertas injetados via JS -->
+                    </div>
+
                     <!-- ================= DASHBOARD GERAL (ENGENHARIA/ADMIN) ================= -->
                     <div id="dashboard-geral" class="d-none">
                         <div class="metrics-grid mb-4" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
@@ -1092,6 +1103,36 @@
                 </div>
 
                 <!-- ==========================================================================
+                   ABA: DOCUMENTAÇÃO E CERTIDÕES
+                   ========================================================================== -->
+                <section id="tab-docs" class="tab-pane">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="fa-solid fa-file-contract text-primary"></i> Documentações e Certidões</h2>
+                        <button class="btn btn-primary" onclick="openDocModal()">
+                            <i class="fa-solid fa-plus"></i> Novo Documento
+                        </button>
+                    </div>
+
+                    <div class="card p-0">
+                        <div class="table-responsive">
+                            <table class="data-table" id="table-docs" style="width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th>Documento</th>
+                                        <th>Vencimento</th>
+                                        <th>Status</th>
+                                        <th class="text-right">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-docs-body">
+                                    <!-- Renderizado via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==========================================================================
                    ABA: ACESSOS E PERMISSÕES (ADMIN)
                    ========================================================================== -->
                 <section id="tab-acessos" class="tab-pane">
@@ -1505,6 +1546,8 @@
                 </div>
 
                 <hr class="divider">
+
+    <!-- Modal Assinatura Digital Cliente -->
 
                 <!-- Assinatura Digital do RAT (Melhoria 8) -->
                 <div class="rat-signature-section mt-3">
@@ -2404,6 +2447,40 @@
                 <button class="btn btn-primary" id="btn-email-rat-novo" style="background-color: #3b82f6; color: white; border-color: #3b82f6;"><i class="fa-solid fa-envelope"></i> E-mail</button>
                 <button class="btn btn-success" id="btn-whatsapp-rat-novo" style="background-color: #25D366; color: white; border-color: #25D366;"><i class="fa-brands fa-whatsapp"></i> Compartilhar</button>
                 <button class="btn btn-primary" id="btn-imprimir-rat-novo"><i class="fa-solid fa-print"></i> Imprimir RAT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Novo Documento -->
+    <div class="modal-overlay" id="modal-docs">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-file-arrow-up"></i> Adicionar Documento</h3>
+                <button class="btn-close" onclick="closeDocModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-doc">
+                    <input type="hidden" id="doc-id">
+                    <div class="form-group">
+                        <label>Nome do Documento (Ex: Alvará, CNPJ, Certidão Negativa)</label>
+                        <input type="text" id="doc-nome" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Data de Validade (Vencimento)</label>
+                        <input type="date" id="doc-validade" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Arquivo (PDF, PNG, JPG)</label>
+                        <div class="file-upload-wrapper">
+                            <input type="file" id="doc-arquivo" class="form-control" accept=".pdf,image/*">
+                            <small class="text-muted mt-1 d-block"><i class="fa-solid fa-circle-info"></i> Selecione o arquivo (máx 5MB). Ele ficará salvo na nuvem.</small>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end mt-4 gap-2">
+                        <button type="button" class="btn btn-outline" onclick="closeDocModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> Salvar Documento</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

@@ -257,6 +257,7 @@ const state = {
     quotations: [],
     tickets: [],
     timesheets: [],
+    documents: [],
     auditLogs: [],
     taxConfig: {},
     rateioConfig: 10, // 10% rateio padrão (Melhoria 14)
@@ -347,6 +348,7 @@ async function initDatabase() {
             state.quotations = cloud.quotations || [];
             state.tickets = cloud.tickets || [];
             state.timesheets = cloud.timesheets || [];
+            state.documents = cloud.documents || [];
             state.auditLogs = cloud.auditLogs || [];
             state.taxConfig = cloud.taxConfig || DEFAULT_TAX_CONFIG;
             state.rateioConfig = cloud.rateioConfig || 10;
@@ -397,6 +399,8 @@ async function initDatabase() {
         state.quotations = JSON.parse(storedQuotations) || [];
         state.tickets = JSON.parse(storedTickets) || [];
         state.timesheets = JSON.parse(storedTimesheets) || [];
+        const storedDocuments = localStorage.getItem("nevixa_documents");
+        state.documents = JSON.parse(storedDocuments) || [];
         state.auditLogs = JSON.parse(storedAuditLogs) || [];
     } else {
         // Popula com arrays vazios para uso em produção
@@ -407,6 +411,7 @@ async function initDatabase() {
         state.quotations = [];
         state.tickets = [];
         state.timesheets = [];
+        state.documents = [];
         state.auditLogs = [];
     }
     saveStateToLocalStorage();
@@ -424,6 +429,7 @@ async function saveStateToLocalStorage() {
         quotations: state.quotations,
         tickets: state.tickets,
         timesheets: state.timesheets,
+        documents: state.documents,
         auditLogs: state.auditLogs,
         taxConfig: state.taxConfig,
         rateioConfig: state.rateioConfig
@@ -448,6 +454,7 @@ function saveStateToLocalStorageOnly() {
     localStorage.setItem("nevixa_quotations", JSON.stringify(state.quotations));
     localStorage.setItem("nevixa_tickets", JSON.stringify(state.tickets));
     localStorage.setItem("nevixa_timesheets", JSON.stringify(state.timesheets));
+    localStorage.setItem("nevixa_documents", JSON.stringify(state.documents));
     localStorage.setItem("nevixa_audit_logs", JSON.stringify(state.auditLogs));
     localStorage.setItem("nevixa_tax_config", JSON.stringify(state.taxConfig));
     localStorage.setItem("nevixa_rateio_perc", state.rateioConfig.toString());
@@ -767,6 +774,7 @@ function renderTab(tabName) {
     else if (tabName === "fluxo") renderFluxoTable();
     else if (tabName === "operacoes") renderSubTab(state.activeSubTab);
     else if (tabName === "relatorios") renderRelatorios();
+    else if (tabName === "docs") renderDocs();
 }
 
 // ==========================================================================
@@ -816,6 +824,8 @@ function renderDashboard() {
         renderDashboardCliente();
         return;
     }
+
+    checkDocsExpiration(); // Verifica documentos a vencer/vencidos
 
     // ==== DASHBOARD GERAL (ENGENHARIA/ADMIN) ====
     const elAb = document.getElementById("dash-geral-os-abertas");
@@ -3628,6 +3638,8 @@ function setupEventListeners() {
         realizarCadastroReal(nome, email, senha, papel);
     });
 
+    safeAddEventListener("form-doc", "submit", saveDocument);
+
     safeAddEventListener("btn-show-register", "click", (e) => {
         e.preventDefault();
         document.getElementById("form-login").classList.add("d-none");
@@ -5245,5 +5257,158 @@ document.addEventListener("DOMContentLoaded", () => {
                 showToast("Erro", "Falha ao gerar PDF.", "error");
             });
         });
+    }
+}
+
+// ==========================================================================
+// MÓDULO DE DOCUMENTAÇÃO E CERTIDÕES
+// ==========================================================================
+
+function openDocModal() {
+    document.getElementById("form-doc").reset();
+    document.getElementById("doc-id").value = "";
+    document.getElementById("modal-docs").classList.add("active");
+}
+
+function closeDocModal() {
+    document.getElementById("modal-docs").classList.remove("active");
+}
+
+async function saveDocument(e) {
+    e.preventDefault();
+    const id = document.getElementById("doc-id").value;
+    const nome = document.getElementById("doc-nome").value;
+    const validade = document.getElementById("doc-validade").value;
+    const fileInput = document.getElementById("doc-arquivo");
+    
+    let docObj = id ? state.documents.find(d => d.id === id) : { id: "doc_" + Date.now(), dataInclusao: new Date().toISOString() };
+    if(!docObj) return;
+    
+    docObj.nome = nome;
+    docObj.validade = validade;
+    
+    const btnSubmit = e.target.querySelector("button[type='submit']");
+    const originalText = btnSubmit.innerHTML;
+    
+    try {
+        if (fileInput && fileInput.files.length > 0) {
+            btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Fazendo upload...`;
+            btnSubmit.disabled = true;
+            
+            const file = fileInput.files[0];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `documentos/${fileName}`;
+            
+            const { data, error } = await supabaseClient.storage
+                .from('arquivos-nevixa')
+                .upload(filePath, file);
+                
+            if (error) throw error;
+            
+            const { data: publicUrlData } = supabaseClient.storage
+                .from('arquivos-nevixa')
+                .getPublicUrl(filePath);
+                
+            docObj.arquivoUrl = publicUrlData.publicUrl;
+        } else if (!id && !docObj.arquivoUrl) {
+            alert("É necessário anexar um arquivo para o documento.");
+            return;
+        }
+        
+        if (!id) state.documents.push(docObj);
+        await saveStateToLocalStorage();
+        renderDocs();
+        closeDocModal();
+        if (state.activeTab === "dashboard") renderDashboard();
+    } catch (err) {
+        console.error(err);
+        alert("Erro ao salvar documento: " + err.message);
+    } finally {
+        btnSubmit.innerHTML = originalText;
+        btnSubmit.disabled = false;
+    }
+}
+
+async function deleteDocument(id) {
+    if(!confirm("Tem certeza que deseja excluir este documento?")) return;
+    state.documents = state.documents.filter(d => d.id !== id);
+    await saveStateToLocalStorage();
+    renderDocs();
+    if (state.activeTab === "dashboard") renderDashboard();
+}
+
+function renderDocs() {
+    const tbody = document.getElementById("table-docs-body");
+    if(!tbody) return;
+    tbody.innerHTML = "";
+    
+    if(!state.documents || state.documents.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Nenhum documento cadastrado.</td></tr>`;
+        return;
+    }
+    
+    // Sort by validade (vencendo primeiro)
+    const sorted = [...state.documents].sort((a,b) => new Date(a.validade) - new Date(b.validade));
+    
+    sorted.forEach(doc => {
+        let { statusText, statusClass } = getDocStatus(doc.validade);
+        
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td><strong>${doc.nome}</strong></td>
+            <td>${formatDateBR(doc.validade)}</td>
+            <td><span class="${statusClass}">${statusText}</span></td>
+            <td class="text-right">
+                ${doc.arquivoUrl ? `<a href="${doc.arquivoUrl}" target="_blank" class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i> Baixar</a>` : ''}
+                <button class="btn btn-sm btn-outline text-danger" onclick="deleteDocument('${doc.id}')" style="border-color:transparent"><i class="fa-solid fa-trash"></i></button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function getDocStatus(validadeDateString) {
+    const hoje = new Date();
+    hoje.setHours(0,0,0,0);
+    const validade = new Date(validadeDateString + "T00:00:00");
+    
+    const diffTime = validade - hoje;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) {
+        return { statusText: "Vencido", statusClass: "badge-docs-expired" };
+    } else if (diffDays <= 30) {
+        return { statusText: `Vence em ${diffDays} dias`, statusClass: "badge-docs-warning" };
+    } else {
+        return { statusText: "Válido", statusClass: "badge-docs-valid" };
+    }
+}
+
+function checkDocsExpiration() {
+    const alertContainer = document.getElementById("docs-alerts-container");
+    if(!alertContainer) return;
+    
+    if(!state.documents || state.documents.length === 0) {
+        alertContainer.classList.add("d-none");
+        return;
+    }
+    
+    const alertas = [];
+    state.documents.forEach(doc => {
+        let status = getDocStatus(doc.validade);
+        if (status.statusClass === "badge-docs-expired") {
+            alertas.push(`<div class="alert" style="background-color: #fee2e2; color: #991b1b; padding: 10px; border-radius: 4px; border-left: 4px solid #ef4444; margin-bottom: 10px;"><i class="fa-solid fa-circle-exclamation"></i> O documento <strong>${doc.nome}</strong> venceu no dia ${formatDateBR(doc.validade)}. É necessário atualizá-lo!</div>`);
+        } else if (status.statusClass === "badge-docs-warning") {
+            alertas.push(`<div class="alert" style="background-color: #fef3c7; color: #92400e; padding: 10px; border-radius: 4px; border-left: 4px solid #f59e0b; margin-bottom: 10px;"><i class="fa-solid fa-triangle-exclamation"></i> O documento <strong>${doc.nome}</strong> ${status.statusText.toLowerCase()} (${formatDateBR(doc.validade)}).</div>`);
+        }
+    });
+    
+    if(alertas.length > 0) {
+        alertContainer.innerHTML = alertas.join("");
+        alertContainer.classList.remove("d-none");
+    } else {
+        alertContainer.innerHTML = "";
+        alertContainer.classList.add("d-none");
     }
 });
