@@ -5302,7 +5302,10 @@ async function saveDocument(e) {
             
             const file = fileInput.files[0];
             const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+            
+            // Sanitiza o nome do documento para usar no nome do arquivo
+            const safeName = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
+            const fileName = `${safeName}_${Date.now()}.${fileExt}`;
             const filePath = `documentos/${fileName}`;
             
             const { data, error } = await supabaseClient.storage
@@ -5365,7 +5368,7 @@ function renderDocs() {
             <td>${formatDate(doc.validade)}</td>
             <td><span class="${statusClass}">${statusText}</span></td>
             <td class="text-right">
-                ${doc.arquivoUrl ? `<a href="${doc.arquivoUrl}" target="_blank" class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i> Baixar</a>` : ''}
+                ${doc.arquivoUrl ? `<a href="${doc.arquivoUrl}" download="${doc.nome}" target="_blank" class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i> Baixar</a>` : ''}
                 <button class="btn btn-sm btn-outline text-danger" onclick="deleteDocument('${doc.id}')" style="border-color:transparent"><i class="fa-solid fa-trash"></i></button>
             </td>
         `;
