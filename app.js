@@ -645,6 +645,10 @@ function initMobileNavigation() {
             <i class="fa-solid fa-file-pdf"></i>
             <span>Orçamento</span>
         </a>
+        <a href="#" class="mobile-nav-link" data-tab="docs" id="mob-menu-docs">
+            <i class="fa-solid fa-file-contract"></i>
+            <span>Documentos</span>
+        </a>
         <a href="#" class="mobile-nav-link" data-tab="relatorios" id="mob-menu-relatorios">
             <i class="fa-solid fa-chart-line"></i>
             <span>BI</span>

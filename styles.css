@@ -1620,7 +1620,7 @@ body.role-cliente #table-notas-body tr td:last-child button:not(:first-child) {
         background-color: var(--color-bg-sidebar);
     }
     
-    /* Mostrar barra de abas inferior no mobile (5 links) */
+    /* Mostrar barra de abas inferior no mobile (7 links - scrollavel) */
     .sidebar-nav-mobile {
         display: flex;
         position: fixed;
@@ -1630,8 +1630,15 @@ body.role-cliente #table-notas-body tr td:last-child button:not(:first-child) {
         background-color: var(--color-bg-sidebar);
         border-top: 1px solid var(--color-border);
         z-index: 99;
-        justify-content: space-around;
-        padding: 10px 0;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        padding: 10px 15px;
+        gap: 15px;
+    }
+    
+    .sidebar-nav-mobile::-webkit-scrollbar {
+        display: none;
     }
     
     .sidebar-nav-mobile a {
@@ -1641,7 +1648,8 @@ body.role-cliente #table-notas-body tr td:last-child button:not(:first-child) {
         gap: 4px;
         font-size: 0.65rem;
         color: var(--color-text-muted);
-        flex: 1;
+        flex: 0 0 auto;
+        min-width: 65px;
         text-align: center;
     }
     
