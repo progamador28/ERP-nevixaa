@@ -5258,7 +5258,8 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     }
-}
+});
+
 
 // ==========================================================================
 // MÓDULO DE DOCUMENTAÇÃO E CERTIDÕES
@@ -5411,4 +5412,4 @@ function checkDocsExpiration() {
         alertContainer.innerHTML = "";
         alertContainer.classList.add("d-none");
     }
-});
+}
