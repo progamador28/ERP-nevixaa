@@ -5358,7 +5358,7 @@ function renderDocs() {
         let tr = document.createElement("tr");
         tr.innerHTML = `
             <td><strong>${doc.nome}</strong></td>
-            <td>${formatDateBR(doc.validade)}</td>
+            <td>${formatDate(doc.validade)}</td>
             <td><span class="${statusClass}">${statusText}</span></td>
             <td class="text-right">
                 ${doc.arquivoUrl ? `<a href="${doc.arquivoUrl}" target="_blank" class="btn btn-sm btn-outline"><i class="fa-solid fa-download"></i> Baixar</a>` : ''}
@@ -5399,9 +5399,9 @@ function checkDocsExpiration() {
     state.documents.forEach(doc => {
         let status = getDocStatus(doc.validade);
         if (status.statusClass === "badge-docs-expired") {
-            alertas.push(`<div class="alert" style="background-color: #fee2e2; color: #991b1b; padding: 10px; border-radius: 4px; border-left: 4px solid #ef4444; margin-bottom: 10px;"><i class="fa-solid fa-circle-exclamation"></i> O documento <strong>${doc.nome}</strong> venceu no dia ${formatDateBR(doc.validade)}. É necessário atualizá-lo!</div>`);
+            alertas.push(`<div class="alert" style="background-color: #fee2e2; color: #991b1b; padding: 10px; border-radius: 4px; border-left: 4px solid #ef4444; margin-bottom: 10px;"><i class="fa-solid fa-circle-exclamation"></i> O documento <strong>${doc.nome}</strong> venceu no dia ${formatDate(doc.validade)}. É necessário atualizá-lo!</div>`);
         } else if (status.statusClass === "badge-docs-warning") {
-            alertas.push(`<div class="alert" style="background-color: #fef3c7; color: #92400e; padding: 10px; border-radius: 4px; border-left: 4px solid #f59e0b; margin-bottom: 10px;"><i class="fa-solid fa-triangle-exclamation"></i> O documento <strong>${doc.nome}</strong> ${status.statusText.toLowerCase()} (${formatDateBR(doc.validade)}).</div>`);
+            alertas.push(`<div class="alert" style="background-color: #fef3c7; color: #92400e; padding: 10px; border-radius: 4px; border-left: 4px solid #f59e0b; margin-bottom: 10px;"><i class="fa-solid fa-triangle-exclamation"></i> O documento <strong>${doc.nome}</strong> ${status.statusText.toLowerCase()} (${formatDate(doc.validade)}).</div>`);
         }
     });
     
