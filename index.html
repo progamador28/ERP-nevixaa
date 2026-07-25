@@ -270,8 +270,8 @@
                 </div>
             </header>
 
-            <!-- Telas das Abas (Abas ativas alternadas por JS) -->
-            <div class="tab-content-wrapper">
+        <!-- Telas das Abas (Abas ativas alternadas por JS) -->
+        <div class="tab-content-wrapper">
                 
                 <!-- 1. ABA DASHBOARD -->
                 <section id="tab-dashboard" class="tab-pane active">
@@ -2481,6 +2481,110 @@
                         <button type="submit" class="btn btn-primary"><i class="fa-solid fa-cloud-arrow-up"></i> Salvar Documento</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- TELA PÚBLICA DE VALIDAÇÃO DE ETIQUETA (Invisível por padrão) -->
+    <div id="public-view-container" style="display: none;">
+        <div class="public-validation-card">
+            <div class="text-center mb-3">
+                <img src="https://i.ibb.co/3s4K3W4/image.png" alt="Nevixa Logo" style="max-height: 50px;">
+            </div>
+            <div class="text-center mb-4">
+                <i class="fa-solid fa-circle-check text-success" style="font-size: 4rem;"></i>
+                <h3 class="mt-3 text-success">Equipamento Seguro</h3>
+                <p class="text-muted">Aprovado pela Nevixa Engenharia</p>
+            </div>
+            
+            <div class="equip-public-info">
+                <div class="info-group">
+                    <label>Equipamento</label>
+                    <div id="pub-eq-nome" class="font-weight-bold">Bomba de Infusão</div>
+                </div>
+                <div class="info-group">
+                    <label>TAG / Patrimônio</label>
+                    <div id="pub-eq-tag">001</div>
+                </div>
+                <div class="info-group">
+                    <label>Número de Série</label>
+                    <div id="pub-eq-serial">123456</div>
+                </div>
+                <div class="info-group">
+                    <label>Última Execução</label>
+                    <div id="pub-eq-ultima">15/07/2026</div>
+                </div>
+                <div class="info-group">
+                    <label>Próxima Manutenção</label>
+                    <div id="pub-eq-proxima" class="text-primary font-weight-bold">15/01/2027</div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="https://wa.me/5596991141628" target="_blank" class="btn btn-primary w-100"><i class="fa-solid fa-headset"></i> Abrir Chamado</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: GERAÇÃO DE ETIQUETA -->
+    <div id="modal-etiqueta" class="modal-overlay">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fa-solid fa-print"></i> Gerar Etiqueta</h3>
+                <button class="modal-close" onclick="fecharModalEtiqueta()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body text-center" style="background-color: #f8fafc;">
+                <div class="mb-3">
+                    <label class="form-label text-left">Tipo de Etiqueta</label>
+                    <select id="select-etiqueta-tipo" class="form-control" onchange="atualizarPreviewEtiqueta()">
+                        <option value="preventiva">Preventiva (Azul)</option>
+                        <option value="corretiva">Corretiva (Laranja)</option>
+                        <option value="calibracao">Calibração (Verde)</option>
+                        <option value="seguranca">Teste de Segurança (Cinza)</option>
+                    </select>
+                </div>
+                
+                <p class="text-muted" style="font-size: 0.8rem;">Visualização (tamanho adaptável para impressão)</p>
+                
+                <!-- A Etiqueta em Si -->
+                <div id="print-label-container" class="print-label-wrapper">
+                    <div class="etiqueta-card tipo-preventiva" id="etiqueta-preview">
+                        <div class="etiqueta-header">
+                            <div class="et-logo">
+                                <img src="https://i.ibb.co/3s4K3W4/image.png" alt="Nevixa">
+                            </div>
+                            <div class="et-contato">
+                                <span><i class="fa-solid fa-phone"></i> (96) 99114-1628</span>
+                                <span><i class="fa-solid fa-envelope"></i> nevixaengenharia@gmail.com</span>
+                            </div>
+                        </div>
+                        <div class="etiqueta-title" id="et-title">PREVENTIVA</div>
+                        <div class="etiqueta-body">
+                            <div class="et-fields">
+                                <div class="et-row">
+                                    <strong>OS / TAG:</strong>
+                                    <span id="et-tag">001</span>
+                                </div>
+                                <div class="et-row">
+                                    <strong>EXECUÇÃO:</strong>
+                                    <span id="et-execucao">15/07/2026</span>
+                                </div>
+                                <div class="et-row">
+                                    <strong>PRÓXIMA:</strong>
+                                    <span id="et-proxima">15/01/2027</span>
+                                </div>
+                            </div>
+                            <div class="et-qr">
+                                <img id="et-qrcode" src="" alt="QR Code">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="fecharModalEtiqueta()">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="imprimirEtiqueta()"><i class="fa-solid fa-print"></i> Imprimir Etiqueta</button>
             </div>
         </div>
     </div>

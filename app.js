@@ -291,6 +291,14 @@ window.prefillLogin = function(email, senha) {
 // INICIALIZAÇÃ DA APLICAÇÃ
 // ==========================================================================
 document.addEventListener("DOMContentLoaded", async () => {
+    // Interceptar Rota Pública de Etiqueta QR Code
+    const urlParams = new URLSearchParams(window.location.search);
+    const publicEquip = urlParams.get('public_equip');
+    if (publicEquip) {
+        initPublicView(publicEquip);
+        return; // Interrompe o carregamento normal do app
+    }
+    
     await initDatabase(); // Inicializa o banco de dados (localStorage ou Mock)
     
     // Auto-gerar preventivas se necessário
@@ -1407,6 +1415,9 @@ function renderEquipamentos() {
                 <div class="d-flex gap-2">
                     <button class="btn btn-outline btn-sm" onclick="abrirProntuarioEquipamento('${eq.id}')" title="Ver Prontuário Completo">
                         <i class="fa-solid fa-file-medical"></i> Laudos
+                    </button>
+                    <button class="btn btn-outline btn-sm" onclick="abrirModalEtiqueta('${eq.id}')" title="Imprimir Etiqueta Inteligente">
+                        <i class="fa-solid fa-qrcode"></i> Etiqueta
                     </button>
                     ${isCliente ? '' : `
                     <button class="btn btn-outline btn-sm" onclick="editEquipamento('${eq.id}')" title="Editar Equipamento">
@@ -5418,5 +5429,127 @@ function checkDocsExpiration() {
     } else {
         alertContainer.innerHTML = "";
         alertContainer.classList.add("d-none");
+    }
+}
+
+// ==========================================================================
+// ETIQUETAS INTELIGENTES (QR CODE)
+// ==========================================================================
+
+let equipamentoAtualEtiqueta = null;
+
+function abrirModalEtiqueta(eqId) {
+    equipamentoAtualEtiqueta = state.equipments.find(e => e.id === eqId);
+    if (!equipamentoAtualEtiqueta) return;
+    
+    document.getElementById("modal-etiqueta").style.display = "flex";
+    atualizarPreviewEtiqueta();
+}
+
+function fecharModalEtiqueta() {
+    document.getElementById("modal-etiqueta").style.display = "none";
+    equipamentoAtualEtiqueta = null;
+}
+
+function atualizarPreviewEtiqueta() {
+    if (!equipamentoAtualEtiqueta) return;
+    
+    const eq = equipamentoAtualEtiqueta;
+    const tipo = document.getElementById("select-etiqueta-tipo").value;
+    const card = document.getElementById("etiqueta-preview");
+    const title = document.getElementById("et-title");
+    
+    // Atualizar Classes de Cor e Título
+    card.className = `etiqueta-card tipo-${tipo}`;
+    
+    if (tipo === "preventiva") title.innerText = "PREVENTIVA";
+    else if (tipo === "corretiva") title.innerText = "CORRETIVA";
+    else if (tipo === "calibracao") title.innerText = "CALIBRAÇÃO";
+    else if (tipo === "seguranca") title.innerText = "TESTES DE SEGURANÇA";
+    
+    // Calcular Datas
+    const dataExecucao = eq.ultimaPreventiva;
+    let dataProximaHTML = "-";
+    
+    if (dataExecucao) {
+        document.getElementById("et-execucao").innerText = formatDate(dataExecucao);
+        
+        if (tipo === "preventiva" || tipo === "calibracao" || tipo === "seguranca") {
+            const mesesCiclo = eq.periodicidade || 6;
+            const proxima = new Date(dataExecucao);
+            proxima.setMonth(proxima.getMonth() + mesesCiclo);
+            document.getElementById("et-proxima").innerText = formatDate(proxima.toISOString());
+        } else {
+            // Corretiva não tem próxima
+            document.getElementById("et-proxima").innerText = "-";
+        }
+    } else {
+        document.getElementById("et-execucao").innerText = "-";
+        document.getElementById("et-proxima").innerText = "-";
+    }
+    
+    document.getElementById("et-tag").innerText = eq.tag || "-";
+    
+    // Gerar QR Code Dinâmico apontando para o site atual com parametro
+    const baseUrl = window.location.origin + window.location.pathname;
+    const publicUrl = `${baseUrl}?public_equip=${eq.id}`;
+    
+    const qrCodeImg = document.getElementById("et-qrcode");
+    qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(publicUrl)}`;
+}
+
+function imprimirEtiqueta() {
+    window.print();
+}
+
+// ==========================================================================
+// TELA PÚBLICA DE VALIDAÇÃO (QR CODE)
+// ==========================================================================
+
+async function initPublicView(equipId) {
+    try {
+        // Esconder container principal do app e mostrar view pública
+        document.querySelector(".app-container").style.display = "none";
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("public-view-container").style.display = "block";
+        document.body.style.backgroundColor = "#f1f5f9";
+        
+        // Buscar equipamento no banco
+        const { data: eq, error } = await supabaseClient
+            .from("equipments")
+            .select("*")
+            .eq("id", equipId)
+            .single();
+            
+        if (error || !eq) {
+            document.querySelector(".public-validation-card").innerHTML = `
+                <div class="text-center p-4">
+                    <i class="fa-solid fa-triangle-exclamation text-warning mb-3" style="font-size: 3rem;"></i>
+                    <h4>Equipamento Não Encontrado</h4>
+                    <p class="text-muted">A etiqueta escaneada é inválida ou o equipamento foi removido do sistema.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        document.getElementById("pub-eq-nome").innerText = eq.nome;
+        document.getElementById("pub-eq-tag").innerText = eq.tag || "-";
+        document.getElementById("pub-eq-serial").innerText = eq.serial || "-";
+        
+        const dataExecucao = eq.ultimaPreventiva;
+        if (dataExecucao) {
+            document.getElementById("pub-eq-ultima").innerText = formatDate(dataExecucao);
+            
+            const mesesCiclo = eq.periodicidade || 6;
+            const proxima = new Date(dataExecucao);
+            proxima.setMonth(proxima.getMonth() + mesesCiclo);
+            document.getElementById("pub-eq-proxima").innerText = formatDate(proxima.toISOString());
+        } else {
+            document.getElementById("pub-eq-ultima").innerText = "-";
+            document.getElementById("pub-eq-proxima").innerText = "-";
+        }
+        
+    } catch (err) {
+        console.error("Erro na view publica:", err);
     }
 }
