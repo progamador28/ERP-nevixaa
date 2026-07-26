@@ -881,6 +881,7 @@ hr.divider {
 .search-input-wrapper input {
     width: 100%;
     background-color: var(--color-bg-input);
+    color: var(--color-text-main);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     padding: 10px 16px 10px 40px;

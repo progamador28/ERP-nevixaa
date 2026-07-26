@@ -5478,7 +5478,7 @@ function atualizarPreviewEtiqueta() {
             const mesesCiclo = eq.periodicidade || 6;
             const proxima = new Date(dataExecucao);
             proxima.setMonth(proxima.getMonth() + mesesCiclo);
-            document.getElementById("et-proxima").innerText = formatDate(proxima.toISOString());
+            document.getElementById("et-proxima").innerText = formatDate(proxima.toISOString().split("T")[0]);
         } else {
             // Corretiva não tem próxima
             document.getElementById("et-proxima").innerText = "-";
@@ -5543,7 +5543,7 @@ async function initPublicView(equipId) {
             const mesesCiclo = eq.periodicidade || 6;
             const proxima = new Date(dataExecucao);
             proxima.setMonth(proxima.getMonth() + mesesCiclo);
-            document.getElementById("pub-eq-proxima").innerText = formatDate(proxima.toISOString());
+            document.getElementById("pub-eq-proxima").innerText = formatDate(proxima.toISOString().split("T")[0]);
         } else {
             document.getElementById("pub-eq-ultima").innerText = "-";
             document.getElementById("pub-eq-proxima").innerText = "-";
