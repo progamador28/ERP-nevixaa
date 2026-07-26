@@ -5524,12 +5524,17 @@ async function initPublicView(equipId) {
         document.getElementById("public-view-container").style.display = "block";
         document.body.style.backgroundColor = "#f1f5f9";
         
-        // Buscar equipamento no banco
-        const { data: eq, error } = await supabaseClient
-            .from("equipments")
-            .select("*")
-            .eq("id", equipId)
+        // Buscar equipamento no banco (dados_sistema)
+        const { data, error } = await supabaseClient
+            .from('dados_sistema')
+            .select('dados')
+            .eq('id', 1)
             .single();
+            
+        let eq = null;
+        if (data && data.dados && data.dados.equipments) {
+            eq = data.dados.equipments.find(e => e.id == equipId);
+        }
             
         if (error || !eq) {
             document.querySelector(".public-validation-card").innerHTML = `
