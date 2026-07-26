@@ -5525,7 +5525,7 @@ async function initPublicView(equipId) {
         document.body.style.backgroundColor = "#f1f5f9";
         
         // Buscar equipamento no banco
-        const { data: eq, error } = await window.supabaseClient
+        const { data: eq, error } = await supabaseClient
             .from("equipments")
             .select("*")
             .eq("id", equipId)
