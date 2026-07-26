@@ -5442,12 +5442,12 @@ function abrirModalEtiqueta(eqId) {
     equipamentoAtualEtiqueta = state.equipments.find(e => e.id === eqId);
     if (!equipamentoAtualEtiqueta) return;
     
-    document.getElementById("modal-etiqueta").style.display = "flex";
+    document.getElementById("modal-etiqueta").classList.add("active");
     atualizarPreviewEtiqueta();
 }
 
 function fecharModalEtiqueta() {
-    document.getElementById("modal-etiqueta").style.display = "none";
+    document.getElementById("modal-etiqueta").classList.remove("active");
     equipamentoAtualEtiqueta = null;
 }
 
