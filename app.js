@@ -5518,12 +5518,14 @@ async function initPublicView(equipId) {
     try {
         // Esconder container principal do app e mostrar view pública
         document.querySelector(".app-container").style.display = "none";
-        document.getElementById("login-container").style.display = "none";
+        const loginOverlay = document.getElementById("login-overlay");
+        if (loginOverlay) loginOverlay.style.display = "none";
+        
         document.getElementById("public-view-container").style.display = "block";
         document.body.style.backgroundColor = "#f1f5f9";
         
         // Buscar equipamento no banco
-        const { data: eq, error } = await supabaseClient
+        const { data: eq, error } = await window.supabaseClient
             .from("equipments")
             .select("*")
             .eq("id", equipId)
@@ -5548,10 +5550,7 @@ async function initPublicView(equipId) {
         if (dataExecucao) {
             document.getElementById("pub-eq-ultima").innerText = formatDate(dataExecucao);
             
-            let mesesCiclo = eq.periodicidade || 3;
-            if (tipo === "preventiva") mesesCiclo = 3;
-            else if (tipo === "calibracao") mesesCiclo = 12;
-            else if (tipo === "seguranca") mesesCiclo = 12;
+            const mesesCiclo = eq.periodicidade || 3;
             
             const proxima = new Date(dataExecucao);
             proxima.setMonth(proxima.getMonth() + mesesCiclo);
