@@ -2569,29 +2569,77 @@ body.light-mode .desgaste-tubo-box {
 .tipo-seguranca .etiqueta-title { background-color: #6c757d; }
 
 /* Regras de Impressão */
+#select-etiqueta-tipo {
+    background-color: var(--color-bg-input);
+    color: var(--color-text-main);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    width: 100%;
+    margin-bottom: 10px;
+    outline: none;
+}
+
 @media print {
-    body * {
-        visibility: hidden;
+    body.print-mode-etiqueta > *:not(#modal-etiqueta) {
+        display: none !important;
     }
     
-    #print-label-container, #print-label-container * {
-        visibility: visible;
+    body.print-mode-etiqueta #modal-etiqueta {
+        display: flex !important;
+        position: static !important;
+        opacity: 1 !important;
+        background: none !important;
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+    
+    body.print-mode-etiqueta #modal-etiqueta .modal-content {
+        box-shadow: none !important;
+        border: none !important;
+        width: 100% !important;
+        max-width: none !important;
+        transform: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+    }
+    
+    body.print-mode-etiqueta #modal-etiqueta .modal-header,
+    body.print-mode-etiqueta #modal-etiqueta .modal-footer,
+    body.print-mode-etiqueta #modal-etiqueta .modal-body > *:not(#print-label-container) {
+        display: none !important;
     }
     
     #print-label-container {
-        position: absolute;
-        left: 0;
-        top: 0;
-        border: none !important;
-        padding: 0 !important;
-        background: transparent !important;
-        margin: 0 !important;
+        display: block !important;
+        visibility: visible !important;
+        width: 100% !important;
+        height: auto !important;
+        page-break-inside: avoid;
     }
     
     .etiqueta-card {
         border-width: 3px !important;
         box-shadow: none !important;
         background: white !important;
+    }
+    
+    .etiqueta-card.tipo-preventiva { border-color: #0056b3 !important; }
+    .etiqueta-card.tipo-preventiva .et-header { background-color: #0056b3 !important; color: white !important; }
+    
+    .etiqueta-card.tipo-corretiva { border-color: #d35400 !important; }
+    .etiqueta-card.tipo-corretiva .et-header { background-color: #d35400 !important; color: white !important; }
+    
+    .etiqueta-card.tipo-calibracao { border-color: #27ae60 !important; }
+    .etiqueta-card.tipo-calibracao .et-header { background-color: #27ae60 !important; color: white !important; }
+    
+    .etiqueta-card.tipo-seguranca { border-color: #7f8c8d !important; }
+    .etiqueta-card.tipo-seguranca .et-header { background-color: #7f8c8d !important; color: white !important; }
+    
+    * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
     }
     
     @page {

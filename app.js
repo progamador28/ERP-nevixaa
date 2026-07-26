@@ -5475,7 +5475,11 @@ function atualizarPreviewEtiqueta() {
         document.getElementById("et-execucao").innerText = formatDate(dataExecucao);
         
         if (tipo === "preventiva" || tipo === "calibracao" || tipo === "seguranca") {
-            const mesesCiclo = eq.periodicidade || 6;
+            let mesesCiclo = eq.periodicidade || 3;
+            if (tipo === "preventiva") mesesCiclo = 3;
+            else if (tipo === "calibracao") mesesCiclo = 12;
+            else if (tipo === "seguranca") mesesCiclo = 12;
+            
             const proxima = new Date(dataExecucao);
             proxima.setMonth(proxima.getMonth() + mesesCiclo);
             document.getElementById("et-proxima").innerText = formatDate(proxima.toISOString().split("T")[0]);
@@ -5499,7 +5503,11 @@ function atualizarPreviewEtiqueta() {
 }
 
 function imprimirEtiqueta() {
+    document.body.classList.add("print-mode-etiqueta");
     window.print();
+    setTimeout(() => {
+        document.body.classList.remove("print-mode-etiqueta");
+    }, 500);
 }
 
 // ==========================================================================
@@ -5540,7 +5548,11 @@ async function initPublicView(equipId) {
         if (dataExecucao) {
             document.getElementById("pub-eq-ultima").innerText = formatDate(dataExecucao);
             
-            const mesesCiclo = eq.periodicidade || 6;
+            let mesesCiclo = eq.periodicidade || 3;
+            if (tipo === "preventiva") mesesCiclo = 3;
+            else if (tipo === "calibracao") mesesCiclo = 12;
+            else if (tipo === "seguranca") mesesCiclo = 12;
+            
             const proxima = new Date(dataExecucao);
             proxima.setMonth(proxima.getMonth() + mesesCiclo);
             document.getElementById("pub-eq-proxima").innerText = formatDate(proxima.toISOString().split("T")[0]);
