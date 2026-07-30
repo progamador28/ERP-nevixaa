@@ -2291,6 +2291,10 @@ body.light-mode .desgaste-tubo-box {
     font-family: 'Times New Roman', Times, serif;
     padding: 20mm;
     box-sizing: border-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -9999;
 }
 
 .pdf-page {

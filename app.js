@@ -5245,7 +5245,7 @@ document.addEventListener("DOMContentLoaded", () => {
               filename:     `Orcamento_${cliente.replace(/\s+/g, '_')}_${propStr.replace('/','-')}.pdf`,
               image:        { type: 'jpeg', quality: 0.98 },
               pagebreak:    { mode: ['css', 'legacy'] },
-              html2canvas:  { scale: 2, useCORS: true },
+              html2canvas:  { scale: 2, useCORS: true, scrollY: 0, windowWidth: 1200 },
               jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
             
