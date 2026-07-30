@@ -2425,6 +2425,7 @@ body.light-mode .desgaste-tubo-box {
     width: 100%;
     padding: 8px;
     border-radius: 4px;
+    font-size: 16px !important;
 }
 
 /* Evitar quebra de página no meio dessas divs no PDF */
