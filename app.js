@@ -5226,8 +5226,18 @@ document.addEventListener("DOMContentLoaded", () => {
             // 5. Gerar o PDF usando html2pdf
             const element = document.getElementById('pdf-template');
             
-            // Precisamos mostrar o elemento temporariamente para o html2pdf renderizar
+            // Salvar estilos originais
+            const originalPosition = element.style.position;
+            const originalTop = element.style.top;
+            const originalLeft = element.style.left;
+            const originalZIndex = element.style.zIndex;
+            
+            // Colocar no topo absoluto temporariamente
             element.style.display = 'block';
+            element.style.position = 'absolute';
+            element.style.top = '0';
+            element.style.left = '0';
+            element.style.zIndex = '99999';
             
             // Injetar logo em base64 vindo do arquivo logo_b64.js carregado no HTML
             try {
@@ -5255,7 +5265,13 @@ document.addEventListener("DOMContentLoaded", () => {
             btnGerarPdf.disabled = true;
 
             html2pdf().set(opt).from(element).save().then(() => {
+                // Restaurar estilos originais
                 element.style.display = 'none';
+                element.style.position = originalPosition;
+                element.style.top = originalTop;
+                element.style.left = originalLeft;
+                element.style.zIndex = originalZIndex;
+                
                 btnGerarPdf.innerHTML = btnOriginalText;
                 btnGerarPdf.disabled = false;
                 
