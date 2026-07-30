@@ -5264,29 +5264,36 @@ document.addEventListener("DOMContentLoaded", () => {
             btnGerarPdf.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GERANDO PDF...';
             btnGerarPdf.disabled = true;
 
-            html2pdf().set(opt).from(element).save().then(() => {
-                // Restaurar estilos originais
-                element.style.display = 'none';
-                element.style.position = originalPosition;
-                element.style.top = originalTop;
-                element.style.left = originalLeft;
-                element.style.zIndex = originalZIndex;
-                
-                btnGerarPdf.innerHTML = btnOriginalText;
-                btnGerarPdf.disabled = false;
-                
-                if (cadastrado) {
-                    showToast("Sucesso", "PDF Gerado e Cliente Cadastrado!", "success");
-                } else {
-                    showToast("Sucesso", "Orçamento PDF gerado com sucesso!", "success");
-                }
-            }).catch(err => {
-                console.error("Erro ao gerar PDF:", err);
-                element.style.display = 'none';
-                btnGerarPdf.innerHTML = btnOriginalText;
-                btnGerarPdf.disabled = false;
-                showToast("Erro", "Falha ao gerar PDF.", "error");
-            });
+            // Timeout necessário para o iOS Safari renderizar o elemento recém exibido antes de capturar
+            setTimeout(() => {
+                html2pdf().set(opt).from(element).save().then(() => {
+                    // Restaurar estilos originais
+                    element.style.display = 'none';
+                    element.style.position = originalPosition;
+                    element.style.top = originalTop;
+                    element.style.left = originalLeft;
+                    element.style.zIndex = originalZIndex;
+                    
+                    btnGerarPdf.innerHTML = btnOriginalText;
+                    btnGerarPdf.disabled = false;
+                    
+                    if (cadastrado) {
+                        showToast("Sucesso", "PDF Gerado e Cliente Cadastrado!", "success");
+                    } else {
+                        showToast("Sucesso", "Orçamento PDF gerado com sucesso!", "success");
+                    }
+                }).catch(err => {
+                    console.error("Erro ao gerar PDF:", err);
+                    element.style.display = 'none';
+                    element.style.position = originalPosition;
+                    element.style.top = originalTop;
+                    element.style.left = originalLeft;
+                    element.style.zIndex = originalZIndex;
+                    btnGerarPdf.innerHTML = btnOriginalText;
+                    btnGerarPdf.disabled = false;
+                    showToast("Erro", "Falha ao gerar PDF.", "error");
+                });
+            }, 250);
         });
     }
 });
