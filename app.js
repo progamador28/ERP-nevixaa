@@ -1312,6 +1312,11 @@ function renderFluxoTable() {
             <td>${statusBadge}</td>
             <td>
                 <div class="d-flex gap-2">
+                    ${t.comprovanteUrl ? `
+                    <button class="btn btn-outline btn-sm text-info" onclick="window.open('${t.comprovanteUrl}', '_blank')" title="Ver Comprovante / Recibo">
+                        <i class="fa-solid fa-paperclip"></i>
+                    </button>
+                    ` : ''}
                     <button class="btn btn-outline btn-sm" onclick="editTransaction('${t.id}')">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
@@ -3131,8 +3136,16 @@ function deleteInvoice(id) {
    -------------------------------------------------------------------------- */
 const formTransacao = document.getElementById("form-transacao");
 if (formTransacao) {
-    formTransacao.addEventListener("submit", (e) => {
+    formTransacao.addEventListener("submit", async (e) => {
         e.preventDefault();
+        
+        const btnSubmit = formTransacao.querySelector('button[type="submit"]') || formTransacao.querySelector('button.btn-primary');
+        const originalBtnText = btnSubmit ? btnSubmit.innerHTML : "Registrar";
+        
+        if (btnSubmit) {
+            btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Salvando...`;
+            btnSubmit.disabled = true;
+        }
         
         const id = document.getElementById("form-transacao-id").value;
         const tipo = document.getElementById("trans-tipo").value;
@@ -3157,11 +3170,42 @@ if (formTransacao) {
         // Garantia de peça (Melhoria 10)
         let garantia = parseInt(document.getElementById("trans-garantia").value);
         
+        // Upload de Comprovante
+        const comprovanteInput = document.getElementById("trans-comprovante");
+        let comprovanteUrl = undefined;
+        
+        if (comprovanteInput && comprovanteInput.files.length > 0) {
+            try {
+                const file = comprovanteInput.files[0];
+                const fileExt = file.name.split('.').pop();
+                const safeName = "comprovante";
+                const fileName = `${safeName}_${Date.now()}.${fileExt}`;
+                const filePath = `comprovantes/${fileName}`;
+                
+                const { data: uploadData, error } = await supabaseClient.storage
+                    .from('arquivos-nevixa')
+                    .upload(filePath, file);
+                    
+                if (error) throw error;
+                
+                const { data: publicUrlData } = supabaseClient.storage
+                    .from('arquivos-nevixa')
+                    .getPublicUrl(filePath);
+                    
+                comprovanteUrl = publicUrlData.publicUrl;
+            } catch (err) {
+                console.error("Erro no upload do comprovante:", err);
+                uiAlert("Aviso: Falha ao fazer upload do comprovante. A transação será salva sem o anexo.");
+            }
+        }
+        
         if (id) {
             // Editar Transação Existente
             const index = state.transactions.findIndex(t => t.id === id);
             if (index !== -1) {
                 const tAntiga = state.transactions[index];
+                const urlFinal = comprovanteUrl || tAntiga.comprovanteUrl; // mantém antigo se não enviar novo
+                
                 state.transactions[index] = { 
                     ...tAntiga, 
                     tipo, 
@@ -3172,7 +3216,8 @@ if (formTransacao) {
                     status, 
                     notaFiscalId,
                     kmRodados: km || undefined,
-                    garantiaMeses: garantia || undefined
+                    garantiaMeses: garantia || undefined,
+                    comprovanteUrl: urlFinal
                 };
                 addAuditLog("Transação Editada", `Modificação da transação "${tAntiga.descricao}" -> "${descFinal}" no valor ${formatCurrency(valorFinal)}`);
             }
@@ -3188,10 +3233,16 @@ if (formTransacao) {
                 status,
                 notaFiscalId,
                 kmRodados: km || undefined,
-                garantiaMeses: garantia || undefined
+                garantiaMeses: garantia || undefined,
+                comprovanteUrl: comprovanteUrl
             };
             state.transactions.push(novaTrans);
             addAuditLog("Transação Lançada", `Registro de ${tipo}: "${descFinal}" no valor de ${formatCurrency(valorFinal)}`);
+        }
+        
+        if (btnSubmit) {
+            btnSubmit.innerHTML = originalBtnText;
+            btnSubmit.disabled = false;
         }
         
         // Se for offline, avisa o usuário do salvamento local (Melhoria 17)
@@ -3204,7 +3255,7 @@ if (formTransacao) {
         renderApp();
         
         const modalDetalhes = document.getElementById("modal-detalhes-nota");
-        if (modalDetalhes.classList.contains("active")) {
+        if (modalDetalhes && modalDetalhes.classList.contains("active")) {
             const activeInvoiceId = modalDetalhes.getAttribute("data-active-invoice-id");
             if (activeInvoiceId) updateInvoiceDetailsModal(activeInvoiceId);
         }
