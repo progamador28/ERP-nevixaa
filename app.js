@@ -4047,6 +4047,76 @@ function setupEventListeners() {
     safeAddEventListener("btn-simular-ofx-auto", "click", () => {
         executarConciliacaoOFXSimulada();
     });
+    
+    safeAddEventListener("input-ofx-file", "change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const text = event.target.result;
+            
+            // Simples parser OFX procurando valores recebidos
+            const valoresRecebidos = [];
+            
+            // Regex para buscar <TRNAMT> positivos (créditos)
+            const trnamtRegex = /<TRNAMT>\s*([+-]?[0-9.]+)/g;
+            let match;
+            while ((match = trnamtRegex.exec(text)) !== null) {
+                const val = parseFloat(match[1]);
+                if (val > 0) valoresRecebidos.push(val); // Apenas depósitos/créditos
+            }
+            
+            // Lógica de conciliação real
+            const notasPendentes = state.invoices.filter(inv => inv.status === "Pendente");
+            let conciliadas = 0;
+            
+            if (valoresRecebidos.length > 0) {
+                notasPendentes.forEach(inv => {
+                    const valorNota = parseFloat(inv.valorTotal);
+                    // Verifica se existe um recebimento no extrato com esse exato valor
+                    const index = valoresRecebidos.findIndex(v => Math.abs(v - valorNota) < 0.01);
+                    
+                    if (index !== -1) {
+                        inv.status = "Recebido";
+                        conciliadas++;
+                        
+                        const entradaRecebimento = {
+                            id: generateUUID(),
+                            tipo: "Entrada",
+                            data: new Date().toISOString().slice(0, 10),
+                            descricao: `Conciliação Automática OFX - NF ${inv.numeroNota}`,
+                            valor: inv.valorTotal,
+                            categoria: "Serviços",
+                            status: "Pago",
+                            notaFiscalId: inv.id
+                        };
+                        state.transactions.push(entradaRecebimento);
+                        addAuditLog("Conciliação OFX", `Fatura da NF ${inv.numeroNota} baixada (Valor correspondente no extrato OFX)`);
+                        
+                        // Remove o valor do array para não conciliar duas vezes o mesmo deposito
+                        valoresRecebidos.splice(index, 1);
+                    }
+                });
+                
+                saveStateToLocalStorage();
+                renderApp();
+                closeModal("modal-ofx");
+                
+                if (conciliadas > 0) {
+                    uiAlert(`Sucesso! Foram encontradas correspondências bancárias no OFX e ${conciliadas} nota(s) fiscal(is) foram marcadas como Recebidas automaticamente.`);
+                } else {
+                    uiAlert(`O extrato foi lido e contém ${valoresRecebidos.length} entrada(s), mas nenhum valor bateu exatamente com o total das Notas Fiscais pendentes.`);
+                }
+            } else {
+                uiAlert("Nenhuma transação de crédito (entrada) válida foi encontrada no arquivo OFX fornecido.");
+            }
+            
+            // Limpar input para permitir novo envio
+            e.target.value = '';
+        };
+        reader.readAsText(file);
+    });
 
     // 11. Checklist Técnico Dinâmico por Equipamento (Melhoria 2)
     // Gerenciado dinamicamente ao abrir os detalhes de cada nota.
