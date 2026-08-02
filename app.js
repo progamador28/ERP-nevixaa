@@ -1794,16 +1794,21 @@ function renderCotacoes() {
         
         if (q.status === "Pendente") {
             statusClass = "badge-warning";
-            // Admin ou Financeiro podem aprovar cotação
+            // Admin, Financeiro ou Cliente podem aprovar ou recusar a cotação
             if (state.currentUser.papel !== "tecnico") {
                 actionBtn = `
-                    <button class="btn btn-secondary btn-sm" onclick="aprovarCotacao('${q.id}')">
-                        <i class="fa-solid fa-thumbs-up"></i> Aprovar Peça
+                    <button class="btn btn-sm btn-outline" style="color: #4ade80; border-color: #4ade80; background: transparent; padding: 4px 8px;" onclick="aprovarCotacao('${q.id}')" title="Aprovar">
+                        <i class="fa-solid fa-check"></i> Aprovar
+                    </button>
+                    <button class="btn btn-sm btn-outline" style="color: #f87171; border-color: #f87171; background: transparent; padding: 4px 8px; margin-left: 5px;" onclick="recusarCotacao('${q.id}')" title="Recusar">
+                        <i class="fa-solid fa-xmark"></i> Recusar
                     </button>
                 `;
             }
         } else if (q.status === "Aprovado") {
             statusClass = "badge-success";
+        } else if (q.status === "Recusado") {
+            statusClass = "badge-danger";
         }
         
         const row = document.createElement("tr");
@@ -1854,6 +1859,19 @@ window.aprovarCotacao = function(id) {
         saveStateToLocalStorage();
         renderApp();
         uiAlert(`Sucesso! A cotação foi aprovada e um débito de ${formatCurrency(q.valor)} sob a categoria Peças foi criado no Fluxo de Caixa.`);
+    });
+};
+
+window.recusarCotacao = function(id) {
+    const q = state.quotations.find(cot => cot.id === id);
+    if (!q) return;
+    
+    uiConfirm(`Tem certeza que deseja recusar a compra da peça "${q.peca}"?`, () => {
+        q.status = "Recusado";
+        addAuditLog("Recusa de Peça", `Compra recusada: ${q.peca}`);
+        saveStateToLocalStorage();
+        renderApp();
+        uiAlert(`Cotação recusada com sucesso.`);
     });
 };
 
