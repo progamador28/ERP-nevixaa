@@ -2763,7 +2763,7 @@ if (btnExportContabil) {
         const totalImpostos = state.transactions.filter(t => t.tipo === "Saída" && t.categoria === "Impostos").reduce((sum, t) => sum + t.valor, 0);
         
         let rateioPercent = 0;
-        const inputRateio = document.getElementById("rateio-fixo-perc");
+        const inputRateio = document.getElementById("input-bi-rateio-perc");
         if(inputRateio) {
             rateioPercent = parseFloat(inputRateio.value) || 0;
         }
@@ -2782,6 +2782,7 @@ if (btnExportContabil) {
         const contabilidade = state.transactions.filter(t => t.tipo === "Saída" && t.descricao && t.descricao.toLowerCase().includes("contabilidade")).reduce((sum, t) => sum + t.valor, 0);
         const socios = state.transactions.filter(t => t.tipo === "Saída" && t.categoria === "Salários").reduce((sum, t) => sum + t.valor, 0);
         const despesasOperacionais = custosFixosGerais + custoFixoRateado;
+        const despesasAdminExcel = custosFixosGerais - socios;
         
         const resultadoExercicio = margemBruta - despesasOperacionais;
 
