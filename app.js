@@ -889,10 +889,9 @@ function initGlobalMonthFilter() {
         state.globalMonth = e.target.value;
         saveStateToLocalStorage();
         renderDashboard();
-        renderFluxoTabela();
-        updateSaldosCaixa();
+        renderFluxoTable();
         renderRelatorios();
-        renderNotasTabela();
+        renderNotasTable();
     });
 }
 
@@ -930,20 +929,13 @@ function renderDashboard() {
         elEq.innerText = state.equipments.length;
     }
 
-
-    const dataAtual = new Date();
-    const anoAtual = dataAtual.getFullYear();
-    const mesAtual = dataAtual.getMonth();
-    
     const currentMonthInvoices = state.invoices.filter(inv => {
         if (inv.status === "Cancelado") return false;
-        const parts = inv.dataEmissao.split("-");
-        return parseInt(parts[0]) === anoAtual && (parseInt(parts[1]) - 1) === mesAtual;
+        return matchesGlobalMonth(inv.dataEmissao);
     });
 
     const currentMonthTransactions = state.transactions.filter(t => {
-        const parts = t.data.split("-");
-        return parseInt(parts[0]) === anoAtual && (parseInt(parts[1]) - 1) === mesAtual;
+        return matchesGlobalMonth(t.dataPagamento || t.data);
     });
     
     // Entradas = Notas Recebidas + Entradas Gerais Avulsas
@@ -1217,7 +1209,7 @@ function renderNotasTable() {
     const filterStatus = state.filters.nota.status;
     
     const isCliente = state.currentUser && state.currentUser.papel === "cliente";
-    const nomeCliente = state.currentUser ? state.currentUser.nome : "";
+const nomeCliente = state.currentUser ? state.currentUser.nome : "";
 
     const filteredInvoices = state.invoices.filter(inv => {
         if (isCliente && inv.cliente !== nomeCliente) return false;
@@ -1226,7 +1218,7 @@ function renderNotasTable() {
                               inv.cliente.toLowerCase().includes(query) || 
                               (inv.descricao && inv.descricao.toLowerCase().includes(query));
         const matchesStatus = filterStatus === "Todos" || inv.status === filterStatus;
-        return matchesSearch && matchesStatus;
+        return matchesSearch && matchesStatus && matchesGlobalMonth(inv.dataEmissao);
     });
 
     const badgeRegime = document.getElementById("badge-active-tax-regime");
@@ -1344,7 +1336,7 @@ function renderFluxoTable() {
         if (filterInicio) matchesData = matchesData && (t.data >= filterInicio);
         if (filterFim) matchesData = matchesData && (t.data <= filterFim);
         
-        return matchesSearch && matchesTipo && matchesCategoria && matchesData;
+        return matchesSearch && matchesTipo && matchesCategoria && matchesData && matchesGlobalMonth(t.dataPagamento || t.data);
     });
     
     if (filteredTransactions.length === 0) {
