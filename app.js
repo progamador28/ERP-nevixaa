@@ -1741,8 +1741,13 @@ window.visualizarCertificadoRBC = function(id) {
     document.getElementById("cert-ultima").innerText = formatDate(cal.ultimaCalibracao);
     document.getElementById("cert-validade").innerText = formatDate(cal.proximaCalibracao);
     
-    document.getElementById("cert-engenheiro").innerText = cal.engenheiro || "Eng. Felipe de Souza Monte";
-    document.getElementById("cert-crea").innerText = cal.crea || "507189332-A";
+    document.getElementById("cert-engenheiro").innerText = cal.engenheiro || "";
+    document.getElementById("cert-engenheiro").parentElement.style.display = cal.engenheiro ? "block" : "none";
+    
+    document.getElementById("cert-crea").innerText = cal.crea || "";
+    document.getElementById("cert-crea").parentElement.style.display = cal.crea ? "block" : "none";
+    
+    document.getElementById("cert-assinatura-bloco").style.display = cal.engenheiro ? "block" : "none";
     
     // Gerar um número de laudo aleatório mas persistente baseado no serial
     const hashNum = cal.serial.replace(/[^0-9]/g, "") || "488192";
