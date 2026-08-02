@@ -5739,6 +5739,7 @@ function parseMoedaCalc(str) {
 function calcularPrecificacao() {
     // Pegar Valores
     const custoBase = parseMoedaCalc(document.getElementById("calc-custo-base").value);
+    const terceiros = parseMoedaCalc(document.getElementById("calc-terceiros").value);
     const combustivel = parseMoedaCalc(document.getElementById("calc-combustivel").value);
     const passagem = parseMoedaCalc(document.getElementById("calc-passagem").value);
     const hospedagem = parseMoedaCalc(document.getElementById("calc-hospedagem").value);
@@ -5746,9 +5747,10 @@ function calcularPrecificacao() {
     
     let impostoPerc = parseFloat(document.getElementById("calc-imposto").value) || 0;
     let markupPerc = parseFloat(document.getElementById("calc-markup").value) || 0;
+    let reservaPerc = parseFloat(document.getElementById("calc-reserva").value) || 0;
 
     // Calcular Custo Total
-    const custoTotal = custoBase + combustivel + passagem + hospedagem + frete;
+    const custoTotal = custoBase + terceiros + combustivel + passagem + hospedagem + frete;
 
     // Calcular Preço Sugerido (Fórmula de Markup divisor para incluir imposto na margem real)
     // Preco = CustoTotal / (1 - (Imposto% + Markup%) / 100) -- *Nota: Pode dar erro se Imposto+Markup >= 100
@@ -5766,12 +5768,17 @@ function calcularPrecificacao() {
     const valorImposto = precoSugerido * (impostoPerc / 100);
     const lucroLiquido = precoSugerido - custoTotal - valorImposto;
 
+    const valorReserva = lucroLiquido * (reservaPerc / 100);
+    const lucroSocios = lucroLiquido - valorReserva;
+
     // Atualizar UI
     document.getElementById("res-custo-total").innerText = formatCurrency(custoTotal);
     document.getElementById("res-preco-sugerido").innerText = formatCurrency(precoSugerido);
     document.getElementById("res-valor-imposto").innerText = formatCurrency(valorImposto);
     document.getElementById("res-custo-resumo").innerText = formatCurrency(custoTotal);
     document.getElementById("res-lucro-liquido").innerText = formatCurrency(lucroLiquido);
+    document.getElementById("res-reserva-empresa").innerText = formatCurrency(valorReserva);
+    document.getElementById("res-lucro-socios").innerText = formatCurrency(lucroSocios);
 }
 
 function limparCalculadora() {
@@ -5782,5 +5789,7 @@ function limparCalculadora() {
     document.getElementById("calc-frete").value = "";
     document.getElementById("calc-imposto").value = "5";
     document.getElementById("calc-markup").value = "80";
+    document.getElementById("calc-reserva").value = "20";
+    document.getElementById("calc-terceiros").value = "";
     atualizarLabelCustoBase(); // reseta cálculos e label
 }

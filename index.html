@@ -1136,6 +1136,12 @@
                                         <input type="text" id="calc-custo-base" class="form-control" placeholder="0,00" oninput="mascaraMoeda(this); calcularPrecificacao()">
                                     </div>
                                 </div>
+                                <div class="form-row">
+                                    <div class="form-group col-12">
+                                        <label>Mão de Obra Terceirizada / Fábrica (R$)</label>
+                                        <input type="text" id="calc-terceiros" class="form-control" placeholder="0,00" oninput="mascaraMoeda(this); calcularPrecificacao()">
+                                    </div>
+                                </div>
 
                                 <hr style="border-color: var(--color-border); margin: 20px 0;">
                                 <h5 class="mb-3"><i class="fa-solid fa-truck-fast text-muted"></i> Despesas Logísticas (Opcional)</h5>
@@ -1174,6 +1180,12 @@
                                         <input type="number" id="calc-markup" class="form-control" placeholder="Ex: 80" value="80" step="1" min="0" oninput="calcularPrecificacao()">
                                     </div>
                                 </div>
+                                <div class="form-row">
+                                    <div class="form-group col-12">
+                                        <label>Reserva da Empresa (% do Lucro)</label>
+                                        <input type="number" id="calc-reserva" class="form-control" placeholder="Ex: 20" value="20" step="1" min="0" max="100" oninput="calcularPrecificacao()">
+                                    </div>
+                                </div>
                                 
                                 <button type="button" class="btn btn-outline w-100 mt-2" onclick="limparCalculadora()">
                                     <i class="fa-solid fa-eraser"></i> Limpar Calculadora
@@ -1207,9 +1219,18 @@
                                             <span id="res-custo-resumo" class="text-danger" style="font-weight: bold;">R$ 0,00</span>
                                         </div>
                                         <hr style="border-color: var(--color-border); margin: 10px 0;">
-                                        <div class="d-flex justify-content-between">
-                                            <span style="font-weight: bold; color: var(--color-success); font-size: 1.1rem;">(=) Lucro Líquido Real:</span>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span style="font-weight: bold; color: var(--color-success); font-size: 1.1rem;">(=) Lucro Líquido Total:</span>
                                             <span id="res-lucro-liquido" style="font-weight: bold; color: var(--color-success); font-size: 1.2rem;">R$ 0,00</span>
+                                        </div>
+                                        <hr style="border-color: var(--color-border); margin: 10px 0; border-style: dashed;">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-muted"><i class="fa-solid fa-building-columns"></i> Fundo de Reserva da Empresa:</span>
+                                            <span id="res-reserva-empresa" style="font-weight: bold; color: var(--color-secondary);">R$ 0,00</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span style="font-weight: bold; color: var(--color-warning); font-size: 1.1rem;"><i class="fa-solid fa-handshake"></i> Pró-labore / Sócios:</span>
+                                            <span id="res-lucro-socios" style="font-weight: bold; color: var(--color-warning); font-size: 1.2rem;">R$ 0,00</span>
                                         </div>
                                     </div>
                                 </div>
