@@ -2758,37 +2758,148 @@ if (btnViewLogs) {
 const btnExportContabil = document.getElementById("btn-export-contabil");
 if (btnExportContabil) {
     btnExportContabil.addEventListener("click", () => {
-        // Gerar um CSV do DRE e Notas do mês
-        const faturamentoBruto = state.invoices
-            .filter(inv => inv.status === "Recebido")
-            .reduce((sum, inv) => sum + inv.valorTotal, 0);
-        const totalImpostos = state.transactions
-            .filter(t => t.tipo === "Saída" && t.categoria === "Impostos" && t.notaFiscalId)
-            .reduce((sum, t) => sum + t.valor, 0);
-    
-        // Formatar decimais com vírgula para compatibilidade com o Excel brasileiro
-        const formatDecimalCSV = (val) => val.toFixed(2).replace(".", ",");
-    
-        let csvContent = "sep=;\r\n";
-        csvContent += "CONTA CONTABIL;DESCRICAO;DEBITO;CREDITO;DATA\r\n";
-        csvContent += `1.1.01.002;Receita Bruta Faturamento;${formatDecimalCSV(0)};${formatDecimalCSV(faturamentoBruto)};${new Date().toISOString().slice(0,10)}\r\n`;
-        csvContent += `3.1.02.001;Deducoes Tributarias (Impostos);${formatDecimalCSV(totalImpostos)};${formatDecimalCSV(0)};${new Date().toISOString().slice(0,10)}\r\n`;
+        // Gerar um DRE Corporativo formatado em XLS (HTML-based)
+        const faturamentoBruto = state.invoices.filter(inv => inv.status === "Recebido").reduce((sum, inv) => sum + inv.valorTotal, 0);
+        const totalImpostos = state.transactions.filter(t => t.tipo === "Saída" && t.categoria === "Impostos" && t.notaFiscalId).reduce((sum, t) => sum + t.valor, 0);
         
-        // Adicionar cada nota fiscal faturada
-        state.invoices.filter(inv => inv.status === "Recebido").forEach(inv => {
-            csvContent += `1.1.03.001;Faturamento Nota ${inv.numeroNota};${formatDecimalCSV(0)};${formatDecimalCSV(inv.valorTotal)};${inv.dataEmissao}\r\n`;
-        });
-    
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        let rateioPercent = 0;
+        const inputRateio = document.getElementById("rateio-fixo-perc");
+        if(inputRateio) {
+            rateioPercent = parseFloat(inputRateio.value) || 0;
+        }
+        const custoFixoRateado = faturamentoBruto * (rateioPercent / 100);
+        
+        const custosFixosGerais = state.transactions.filter(t => t.tipo === "Saída" && !t.notaFiscalId && t.categoria !== "Impostos").reduce((sum, t) => sum + t.valor, 0);
+        const receitaLiquida = faturamentoBruto - totalImpostos;
+        const custosDiretosTrans = state.transactions.filter(t => t.tipo === "Saída" && t.notaFiscalId && t.categoria !== "Impostos").reduce((sum, t) => sum + t.valor, 0);
+        const pecas = state.transactions.filter(t => t.notaFiscalId && t.categoria === "Peças").reduce((sum, t) => sum + t.valor, 0);
+        const deslocamentos = state.transactions.filter(t => t.notaFiscalId && t.categoria === "Deslocamento").reduce((sum, t) => sum + t.valor, 0);
+        const custosDiretosTS = state.timesheets.reduce((sum, ts) => sum + ts.custoTotal, 0);
+        
+        const custoServicoPrestado = custosDiretosTrans + custosDiretosTS;
+        const margemBruta = receitaLiquida - custoServicoPrestado;
+        
+        const contabilidade = state.transactions.filter(t => !t.notaFiscalId && t.descricao && t.descricao.toLowerCase().includes("contabilidade")).reduce((sum, t) => sum + t.valor, 0);
+        const socios = state.transactions.filter(t => !t.notaFiscalId && t.categoria === "Salários").reduce((sum, t) => sum + t.valor, 0);
+        const despesasOperacionais = custosFixosGerais + custoFixoRateado;
+        
+        const resultadoExercicio = margemBruta - despesasOperacionais;
+
+        const formatExcel = (val) => val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const dataHoje = new Date().toLocaleDateString('pt-BR');
+
+        // Construindo a tabela HTML com CSS Inline compatível com Excel (XLS)
+        let htmlContent = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head>
+                <meta charset="utf-8">
+                <style>
+                    .titulo { font-size: 16pt; font-weight: bold; color: #1e3a8a; text-align: center; height: 35px; vertical-align: middle; }
+                    .subtitulo { font-size: 11pt; font-weight: bold; color: #475569; text-align: center; }
+                    .cabecalho { font-weight: bold; background-color: #0f172a; color: #ffffff; text-align: left; height: 25px; vertical-align: middle; }
+                    .grupo { font-weight: bold; background-color: #e2e8f0; color: #0f172a; height: 22px; }
+                    .linha-positiva { font-weight: bold; background-color: #dcfce7; color: #166534; height: 22px; }
+                    .linha-negativa { font-weight: bold; background-color: #fee2e2; color: #991b1b; height: 22px; }
+                    .resultado-final { font-weight: bold; background-color: #1e40af; color: #ffffff; font-size: 12pt; height: 30px; }
+                    .item { color: #334155; padding-left: 20px; }
+                    .valor { text-align: right; }
+                    td { border: 1px solid #cbd5e1; font-family: Calibri, sans-serif; font-size: 11pt; }
+                </style>
+            </head>
+            <body>
+                <table border="1" cellpadding="3" cellspacing="0" width="100%">
+                    <tr>
+                        <td colspan="2" class="titulo">DRE - DEMONSTRATIVO DE RESULTADO DO EXERCÍCIO</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="subtitulo">NEVIXA ENGENHARIA - Posição em ${dataHoje}</td>
+                    </tr>
+                    <tr><td colspan="2"></td></tr>
+                    
+                    <tr>
+                        <td class="cabecalho" width="500">DESCRIÇÃO DA CONTA</td>
+                        <td class="cabecalho" width="150" style="text-align: right;">VALOR (R$)</td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="linha-positiva">1. RECEITA OPERACIONAL BRUTA</td>
+                        <td class="linha-positiva valor">${formatExcel(faturamentoBruto)}</td>
+                    </tr>
+                    <tr>
+                        <td class="linha-negativa">2. DEDUÇÕES DA RECEITA BRUTA</td>
+                        <td class="linha-negativa valor">-${formatExcel(totalImpostos)}</td>
+                    </tr>
+                    <tr>
+                        <td class="item">   (-) Impostos sobre Faturamento</td>
+                        <td class="valor">-${formatExcel(totalImpostos)}</td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="linha-positiva">3. RECEITA OPERACIONAL LÍQUIDA (1 - 2)</td>
+                        <td class="linha-positiva valor">${formatExcel(receitaLiquida)}</td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="linha-negativa">4. CUSTOS DIRETOS (CSP / CMV)</td>
+                        <td class="linha-negativa valor">-${formatExcel(custoServicoPrestado)}</td>
+                    </tr>
+                    <tr>
+                        <td class="item">   (-) Peças de Reposição e Insumos</td>
+                        <td class="valor">-${formatExcel(pecas)}</td>
+                    </tr>
+                    <tr>
+                        <td class="item">   (-) Deslocamento, Estadias e Logística</td>
+                        <td class="valor">-${formatExcel(deslocamentos)}</td>
+                    </tr>
+                    <tr>
+                        <td class="item">   (-) Mão de Obra Direta e Terceirizados</td>
+                        <td class="valor">-${formatExcel(custosDiretosTS)}</td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="grupo">5. LUCRO BRUTO / MARGEM (3 - 4)</td>
+                        <td class="grupo valor">${formatExcel(margemBruta)}</td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="linha-negativa">6. DESPESAS OPERACIONAIS E ADMINISTRATIVAS</td>
+                        <td class="linha-negativa valor">-${formatExcel(despesasOperacionais)}</td>
+                    </tr>
+                    <tr>
+                        <td class="item">   (-) Rateio de Custo Fixo Corporativo</td>
+                        <td class="valor">-${formatExcel(custoFixoRateado)}</td>
+                    </tr>
+                    <tr>
+                        <td class="item">   (-) Despesas Administrativas Fixas</td>
+                        <td class="valor">-${formatExcel(custosFixosGerais)}</td>
+                    </tr>
+                    <tr>
+                        <td class="item">       - Honorários de Contabilidade</td>
+                        <td class="valor">-${formatExcel(contabilidade)}</td>
+                    </tr>
+                    <tr>
+                        <td class="item">       - Pró-Labore / Retiradas de Sócios</td>
+                        <td class="valor">-${formatExcel(socios)}</td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="resultado-final">7. RESULTADO LÍQUIDO DO EXERCÍCIO</td>
+                        <td class="resultado-final valor">${formatExcel(resultadoExercicio)}</td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+        `;
+
+        const blob = new Blob(['\uFEFF' + htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const downloadAnchor = document.createElement('a');
         downloadAnchor.setAttribute("href", url);
-        downloadAnchor.setAttribute("download", `contabilidade_nevixa_${new Date().toISOString().slice(0,10)}.csv`);
+        downloadAnchor.setAttribute("download", `DRE_Corporativo_Nevixa_${new Date().toISOString().slice(0,10)}.xls`);
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
         
-        addAuditLog("Exportação Contábil", "Arquivos de integração contábil e SPD gerados e baixados pelo Administrador.");
         uiAlert("Exportação Contábil CSV gerada com sucesso e formatada para o Microsoft Excel!");
     });
 }
