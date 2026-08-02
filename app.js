@@ -482,14 +482,9 @@ function addAuditLog(operacao, descricao) {
     saveStateToLocalStorage();
 }
 
-// Define o cabeçalho com a data atual formatada
+// Define o cabeçalho com o seletor de mês
 function setCurrentDateHeader() {
-    const dataAtual = new Date();
-    const meses = [
-        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-    ];
-    document.getElementById("header-date").innerText = `${meses[dataAtual.getMonth()]} ${dataAtual.getFullYear()}`;
+    initGlobalMonthFilter();
 }
 
 // ==========================================================================
@@ -834,6 +829,76 @@ function renderDashboardCliente() {
     const clientTickets = state.tickets.filter(tk => tk.hospital === nomeCliente && (tk.status === "Pendente" || tk.status === "Em Atendimento"));
     const chamadosEl = document.getElementById("dash-cliente-chamados-count");
     if (chamadosEl) chamadosEl.innerText = clientTickets.length;
+}
+
+const meses = [
+    "Janeiro", "Feveiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+];
+
+function matchesGlobalMonth(dateString) {
+    if (!state.globalMonth || state.globalMonth === "ALL") return true;
+    if (!dateString) return false;
+    return dateString.startsWith(state.globalMonth);
+}
+
+function initGlobalMonthFilter() {
+    const select = document.getElementById("global-month-filter");
+    if(!select) return;
+    
+    let minDate = new Date();
+    let maxDate = new Date();
+    const allDates = [];
+    state.transactions.forEach(t => { 
+        if(t.data) { const d = new Date(t.data); if(!isNaN(d)) allDates.push(d); }
+        if(t.dataPagamento) { const d = new Date(t.dataPagamento); if(!isNaN(d)) allDates.push(d); }
+    });
+    state.invoices.forEach(i => { 
+        if(i.dataEmissao) { const d = new Date(i.dataEmissao); if(!isNaN(d)) allDates.push(d); }
+    });
+    
+    if (allDates.length > 0) {
+        minDate = new Date(Math.min(...allDates));
+        maxDate = new Date(Math.max(...allDates));
+    }
+    if (maxDate < new Date()) maxDate = new Date();
+    
+    select.innerHTML = '<option value="ALL">Todos os Meses</option>';
+    
+    let current = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+    const end = new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
+    
+    const options = [];
+    while(current <= end) {
+        const val = current.getFullYear() + "-" + String(current.getMonth() + 1).padStart(2, '0');
+        const label = meses[current.getMonth()] + " " + current.getFullYear();
+        options.unshift({val, label});
+        current.setMonth(current.getMonth() + 1);
+    }
+    
+    options.forEach(opt => select.innerHTML += `<option value="${opt.val}">${opt.label}</option>`);
+    
+    if(!state.globalMonth) {
+        const todayVal = new Date().getFullYear() + "-" + String(new Date().getMonth() + 1).padStart(2, '0');
+        state.globalMonth = todayVal;
+    }
+    
+    select.value = state.globalMonth;
+    
+    select.addEventListener("change", (e) => {
+        state.globalMonth = e.target.value;
+        saveData();
+        renderDashboard();
+        renderFluxoTabela();
+        updateSaldosCaixa();
+        renderRelatorios();
+        renderNotasTabela();
+    });
+}
+
+function init() {
+    initGlobalMonthFilter();
+    renderDashboard();
 }
 
 function renderDashboard() {
