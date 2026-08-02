@@ -63,11 +63,12 @@ async function realizarLoginReal(email, senha) {
             return;
         }
 
-        // 3. Regra de Negócio: Aprovação automática de contas pendentes para testes
+        // 3. Regra de Negócio: Contas pendentes precisam de aprovação
         if (perfil.status === 'pendente') {
-            // Auto-ativa o perfil para não bloquear o usuário durante a fase de testes
-            perfil.status = 'ativo';
-            await supabaseClient.from('perfis').update({ status: 'ativo' }).eq('id', perfil.id);
+            uiAlert("Seu cadastro está em análise. Aguarde a aprovação de um administrador.");
+            await supabaseClient.auth.signOut();
+            exibirCarregamentoLogin(false);
+            return;
         }
 
         if (perfil.status === 'bloqueado') {
@@ -3844,6 +3845,21 @@ window.alterarStatusUsuario = function(id, novoStatus) {
         } catch (err) {
             console.error("Erro ao alterar status:", err);
             uiAlert("Erro ao alterar o status do usuário.");
+        }
+    });
+};
+
+window.excluirUsuario = function(id) {
+    uiConfirm("Tem certeza que deseja excluir permanentemente este usuário? Esta ação não pode ser desfeita.", async () => {
+        try {
+            // Remove the user from perfis (Note: this does not remove them from auth.users unless there's a cascade delete)
+            const { error } = await supabaseClient.from('perfis').delete().eq('id', id);
+            if (error) throw error;
+            uiAlert("Usuário excluído com sucesso!");
+            carregarUsuarios();
+        } catch (err) {
+            console.error("Erro ao excluir usuário:", err);
+            uiAlert("Erro ao excluir usuário.");
         }
     });
 };
