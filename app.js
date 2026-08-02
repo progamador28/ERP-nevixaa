@@ -887,7 +887,7 @@ function initGlobalMonthFilter() {
     
     select.addEventListener("change", (e) => {
         state.globalMonth = e.target.value;
-        saveData();
+        saveStateToLocalStorage();
         renderDashboard();
         renderFluxoTabela();
         updateSaldosCaixa();

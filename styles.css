@@ -349,8 +349,8 @@ hr.divider {
 }
 
 .header-select option {
-    background-color: var(--color-card);
-    color: var(--color-text);
+    background-color: #0f172a;
+    color: #ffffff;
 }
 
 /* ==========================================================================
