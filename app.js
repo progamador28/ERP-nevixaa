@@ -1839,27 +1839,35 @@ window.aprovarCotacao = function(id) {
     const q = state.quotations.find(cot => cot.id === id);
     if (!q) return;
     
-    uiConfirm(`Aprovar a cotação da peça "${q.peca}" no valor de ${formatCurrency(q.valor)}?`, () => {
-        q.status = "Aprovado";
-        
-        // Gera automaticamente um faturamento (Entrada) a receber no Fluxo de Caixa
-        const novaReceita = {
-            id: generateUUID(),
-            data: new Date().toISOString().slice(0,10),
-            descricao: `Faturamento de Peça: ${q.peca}`,
-            tipo: "Entrada",
-            valor: q.valor,
-            categoria: "Peças",
-            status: "Pendente", // Pendente de recebimento do cliente
-            notaFiscalId: ""
-        };
-        state.transactions.push(novaReceita);
-        
-        addAuditLog("Aprovação de Peça", `Orçamento aprovado: ${q.peca} - Valor a faturar: ${formatCurrency(q.valor)}`);
-        saveStateToLocalStorage();
-        renderApp();
-        uiAlert(`Sucesso! A cotação foi aprovada e um Faturamento (ENTRADA) de ${formatCurrency(q.valor)} foi criado no Fluxo de Caixa aguardando pagamento.`);
-    });
+    // Se for admin ou financeiro, dá a opção de como lançar
+    if (state.currentUser.papel === "admin" || state.currentUser.papel === "financeiro") {
+        document.getElementById("admin-cot-id").value = id;
+        document.getElementById("admin-cot-text").innerText = `Aprovar a cotação de ${q.peca} no valor de ${formatCurrency(q.valor)}?`;
+        openModal("modal-admin-cotacao");
+    } else {
+        // Fluxo Cliente (Padrão: Gera Entrada)
+        uiConfirm(`Aprovar a cotação da peça "${q.peca}" no valor de ${formatCurrency(q.valor)}?`, () => {
+            q.status = "Aprovado";
+            
+            // Gera automaticamente um faturamento (Entrada) a receber no Fluxo de Caixa
+            const novaReceita = {
+                id: generateUUID(),
+                data: new Date().toISOString().slice(0,10),
+                descricao: `Faturamento de Peça: ${q.peca}`,
+                tipo: "Entrada",
+                valor: q.valor,
+                categoria: "Peças",
+                status: "Pendente", // Pendente de recebimento do cliente
+                notaFiscalId: ""
+            };
+            state.transactions.push(novaReceita);
+            
+            addAuditLog("Aprovação de Peça", `Orçamento aprovado pelo cliente: ${q.peca} - Valor a faturar: ${formatCurrency(q.valor)}`);
+            saveStateToLocalStorage();
+            renderApp();
+            uiAlert(`Sucesso! A cotação foi aprovada e um Faturamento (ENTRADA) de ${formatCurrency(q.valor)} foi criado no Fluxo de Caixa aguardando pagamento.`);
+        });
+    }
 };
 
 window.recusarCotacao = function(id) {
@@ -4602,6 +4610,52 @@ function setupEventListeners() {
         } else {
             processarESalvar(null);
         }
+    });
+
+    safeAddEventListener("form-admin-cotacao", "submit", (e) => {
+        e.preventDefault();
+        const id = document.getElementById("admin-cot-id").value;
+        const acaoCaixa = document.getElementById("admin-cot-acao").value;
+        
+        const q = state.quotations.find(cot => cot.id === id);
+        if (!q) return;
+        
+        q.status = "Aprovado";
+        
+        if (acaoCaixa === "entrada") {
+            const novaReceita = {
+                id: generateUUID(),
+                data: new Date().toISOString().slice(0,10),
+                descricao: `Faturamento de Peça: ${q.peca}`,
+                tipo: "Entrada",
+                valor: q.valor,
+                categoria: "Peças",
+                status: "Pendente",
+                notaFiscalId: ""
+            };
+            state.transactions.push(novaReceita);
+            uiAlert(`Aprovado! Uma ENTRADA de ${formatCurrency(q.valor)} foi gerada no Fluxo de Caixa.`);
+        } else if (acaoCaixa === "saida") {
+            const novaDespesa = {
+                id: generateUUID(),
+                data: new Date().toISOString().slice(0,10),
+                descricao: `Compra de Peça (Custo Interno): ${q.peca}`,
+                tipo: "Saída",
+                valor: q.valor,
+                categoria: "Peças",
+                status: "Pendente",
+                notaFiscalId: ""
+            };
+            state.transactions.push(novaDespesa);
+            uiAlert(`Aprovado! Uma SAÍDA de ${formatCurrency(q.valor)} foi gerada no Fluxo de Caixa.`);
+        } else {
+            uiAlert(`Cotação Aprovada com sucesso! Nenhum lançamento foi feito no Fluxo de Caixa.`);
+        }
+        
+        addAuditLog("Aprovação de Peça (Gestor)", `Peça: ${q.peca} | Ação Caixa: ${acaoCaixa.toUpperCase()}`);
+        saveStateToLocalStorage();
+        closeModal("modal-admin-cotacao");
+        renderApp();
     });
 
     safeAddEventListener("form-chamado", "submit", (e) => {

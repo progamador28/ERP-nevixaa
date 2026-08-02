@@ -2406,6 +2406,36 @@
         </div>
     </div>
 
+    <!-- MODAL APROVAÇÃO ADMIN COTAÇÃO -->
+    <div id="modal-admin-cotacao" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Aprovação de Gestor</h3>
+                <button class="modal-close" data-close-modal="modal-admin-cotacao">&times;</button>
+            </div>
+            <form id="form-admin-cotacao">
+                <input type="hidden" id="admin-cot-id">
+                <div class="modal-body">
+                    <p id="admin-cot-text" style="font-weight: bold; color: var(--color-primary);"></p>
+                    <p class="text-muted mb-3">Escolha como o sistema deve registrar este valor no Fluxo de Caixa Geral:</p>
+                    
+                    <div class="form-group mb-3">
+                        <label for="admin-cot-acao">Ação Automática de Caixa</label>
+                        <select class="form-control" id="admin-cot-acao" required>
+                            <option value="entrada">Faturar ao Cliente (Gerar ENTRADA a receber)</option>
+                            <option value="saida">Custo Interno Nevixa (Gerar SAÍDA a pagar)</option>
+                            <option value="nenhum">Apenas Aprovar (NÃO gerar lançamento no caixa)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close-modal="modal-admin-cotacao">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" style="background-color: #4ade80; border-color: #4ade80; color: #0f172a;"><i class="fa-solid fa-check"></i> Aprovar e Lançar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL 13: ABERTURA DE CHAMADO / OS COM SLA -->
     <div id="modal-chamado" class="modal-overlay">
         <div class="modal-content">
