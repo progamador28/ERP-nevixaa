@@ -2009,9 +2009,9 @@ window.deleteChamado = function(id) {
    -------------------------------------------------------------------------- */
 function renderRelatorios() {
     // 1. Calcular Ponto de Equilíbrio
-    // Custos fixos = Salários (sem nota) + Contabilidade/Outros (sem nota)
+    // Custos fixos = Salários (independente de nota) + Contabilidade/Outros (independente de nota)
     const custosFixosGerais = state.transactions
-        .filter(t => t.tipo === "Saída" && t.status === "Pago" && !t.notaFiscalId && (t.categoria === "Salários" || t.categoria === "Outros"))
+        .filter(t => t.tipo === "Saída" && t.status === "Pago" && (t.categoria === "Salários" || t.categoria === "Outros"))
         .reduce((sum, t) => sum + t.valor, 0);
 
     // Rateio geral (Melhoria 14)
@@ -2082,14 +2082,14 @@ function renderDRETable(faturamentoBruto, custoFixoRateado, custosFixosGerais) {
     
     // Impostos Totais Retidos nas Notas Recebidas
     const totalImpostos = state.transactions
-        .filter(t => t.tipo === "Saída" && t.categoria === "Impostos" && t.notaFiscalId)
+        .filter(t => t.tipo === "Saída" && t.categoria === "Impostos")
         .reduce((sum, t) => sum + t.valor, 0);
 
     const receitaLiquida = faturamentoBruto - totalImpostos - custoFixoRateado;
 
     // Custos diretos (Peças, Deslocamentos de campo, Serviços diretos e Mão de Obra Timesheet das Notas recebidas)
     const custosDiretosTrans = state.transactions
-        .filter(t => t.tipo === "Saída" && t.notaFiscalId && t.categoria !== "Impostos")
+        .filter(t => t.tipo === "Saída" && ["Peças", "Deslocamento", "Serviços"].includes(t.categoria))
         .reduce((sum, t) => sum + t.valor, 0);
 
     const custosDiretosTS = state.timesheets.reduce((sum, ts) => sum + ts.custoTotal, 0);
@@ -2104,13 +2104,13 @@ function renderDRETable(faturamentoBruto, custoFixoRateado, custosFixosGerais) {
         { desc: "(-) Rateio de Custos Fixo Corporativo", valor: custoFixoRateado, classe: "dre-sub val-despesa" },
         { desc: "(=) RECEITA LÍQUIDA DE SERVIÇOS", valor: receitaLiquida, classe: "dre-total" },
         { desc: "(-) Custos dos Serviços Prestados (CSP)", valor: custoServicoPrestado, classe: "dre-sub val-despesa" },
-        { desc: "    ⚖️ Peças de Reposição & Materiais", valor: state.transactions.filter(t => t.notaFiscalId && t.categoria === "Peças").reduce((sum, t) => sum + t.valor, 0), classNested: true },
-        { desc: "    ⚖️ Deslocamento & Estadias", valor: state.transactions.filter(t => t.notaFiscalId && t.categoria === "Deslocamento").reduce((sum, t) => sum + t.valor, 0), classNested: true },
+        { desc: "    ⚖️ Peças de Reposição & Materiais", valor: state.transactions.filter(t => t.categoria === "Peças").reduce((sum, t) => sum + t.valor, 0), classNested: true },
+        { desc: "    ⚖️ Deslocamento & Estadias", valor: state.transactions.filter(t => t.categoria === "Deslocamento").reduce((sum, t) => sum + t.valor, 0), classNested: true },
         { desc: "    ⚖️ Mão de Obra Direta (Timesheet)", valor: custosDiretosTS, classNested: true },
         { desc: "(=) MARGEM BRUTA DE SERVIÇOS", valor: margemBruta, classe: "dre-total" },
         { desc: "(-) Despesas Administrativas / Fixas", valor: custosFixosGerais, classe: "dre-sub val-despesa" },
-        { desc: "    ⚖️ Honorários de Contabilidade", valor: state.transactions.filter(t => !t.notaFiscalId && t.descricao && t.descricao.toLowerCase().includes("contabilidade")).reduce((sum, t) => sum + t.valor, 0), classNested: true },
-        { desc: "    ⚖️ Retiradas de Sócios (Salários)", valor: state.transactions.filter(t => !t.notaFiscalId && t.categoria === "Salários").reduce((sum, t) => sum + t.valor, 0), classNested: true },
+        { desc: "    ⚖️ Honorários de Contabilidade", valor: state.transactions.filter(t => t.tipo === "Saída" && t.descricao && t.descricao.toLowerCase().includes("contabilidade")).reduce((sum, t) => sum + t.valor, 0), classNested: true },
+        { desc: "    ⚖️ Retiradas de Sócios (Salários)", valor: state.transactions.filter(t => t.tipo === "Saída" && t.categoria === "Salários").reduce((sum, t) => sum + t.valor, 0), classNested: true },
         { desc: "(=) RESULTADO LÍQUIDO DO EXERCÍCIO (LUCRO)", valor: resultadoExercicio, classe: "dre-net-profit" }
     ];
     
@@ -2760,7 +2760,7 @@ if (btnExportContabil) {
     btnExportContabil.addEventListener("click", () => {
         // Gerar um DRE Corporativo formatado em XLS (HTML-based)
         const faturamentoBruto = state.invoices.filter(inv => inv.status === "Recebido").reduce((sum, inv) => sum + inv.valorTotal, 0);
-        const totalImpostos = state.transactions.filter(t => t.tipo === "Saída" && t.categoria === "Impostos" && t.notaFiscalId).reduce((sum, t) => sum + t.valor, 0);
+        const totalImpostos = state.transactions.filter(t => t.tipo === "Saída" && t.categoria === "Impostos").reduce((sum, t) => sum + t.valor, 0);
         
         let rateioPercent = 0;
         const inputRateio = document.getElementById("rateio-fixo-perc");
@@ -2769,18 +2769,18 @@ if (btnExportContabil) {
         }
         const custoFixoRateado = faturamentoBruto * (rateioPercent / 100);
         
-        const custosFixosGerais = state.transactions.filter(t => t.tipo === "Saída" && !t.notaFiscalId && t.categoria !== "Impostos").reduce((sum, t) => sum + t.valor, 0);
-        const receitaLiquida = faturamentoBruto - totalImpostos;
-        const custosDiretosTrans = state.transactions.filter(t => t.tipo === "Saída" && t.notaFiscalId && t.categoria !== "Impostos").reduce((sum, t) => sum + t.valor, 0);
-        const pecas = state.transactions.filter(t => t.notaFiscalId && t.categoria === "Peças").reduce((sum, t) => sum + t.valor, 0);
-        const deslocamentos = state.transactions.filter(t => t.notaFiscalId && t.categoria === "Deslocamento").reduce((sum, t) => sum + t.valor, 0);
+        const custosFixosGerais = state.transactions.filter(t => t.tipo === "Saída" && ["Salários", "Outros"].includes(t.categoria)).reduce((sum, t) => sum + t.valor, 0);
+        const receitaLiquida = faturamentoBruto - totalImpostos - custoFixoRateado;
+        const custosDiretosTrans = state.transactions.filter(t => t.tipo === "Saída" && ["Peças", "Deslocamento", "Serviços"].includes(t.categoria)).reduce((sum, t) => sum + t.valor, 0);
+        const pecas = state.transactions.filter(t => t.tipo === "Saída" && t.categoria === "Peças").reduce((sum, t) => sum + t.valor, 0);
+        const deslocamentos = state.transactions.filter(t => t.tipo === "Saída" && t.categoria === "Deslocamento").reduce((sum, t) => sum + t.valor, 0);
         const custosDiretosTS = state.timesheets.reduce((sum, ts) => sum + ts.custoTotal, 0);
         
         const custoServicoPrestado = custosDiretosTrans + custosDiretosTS;
         const margemBruta = receitaLiquida - custoServicoPrestado;
         
-        const contabilidade = state.transactions.filter(t => !t.notaFiscalId && t.descricao && t.descricao.toLowerCase().includes("contabilidade")).reduce((sum, t) => sum + t.valor, 0);
-        const socios = state.transactions.filter(t => !t.notaFiscalId && t.categoria === "Salários").reduce((sum, t) => sum + t.valor, 0);
+        const contabilidade = state.transactions.filter(t => t.tipo === "Saída" && t.descricao && t.descricao.toLowerCase().includes("contabilidade")).reduce((sum, t) => sum + t.valor, 0);
+        const socios = state.transactions.filter(t => t.tipo === "Saída" && t.categoria === "Salários").reduce((sum, t) => sum + t.valor, 0);
         const despesasOperacionais = custosFixosGerais + custoFixoRateado;
         
         const resultadoExercicio = margemBruta - despesasOperacionais;
