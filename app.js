@@ -5713,3 +5713,74 @@ async function initPublicView(equipId) {
         console.error("Erro na view publica:", err);
     }
 }
+
+// ==========================================================================
+// MÓDULO: PRECIFICAÇÃO INTELIGENTE
+// ==========================================================================
+
+function atualizarLabelCustoBase() {
+    const tipo = document.getElementById("calc-tipo").value;
+    const label = document.getElementById("label-custo-base");
+    if (tipo === "produto") {
+        label.innerText = "Valor de Compra da Peça (R$)";
+    } else {
+        label.innerText = "Valor Total da Mão de Obra / Custo Técnico (R$)";
+    }
+    calcularPrecificacao();
+}
+
+function parseMoedaCalc(str) {
+    if (!str) return 0;
+    // Remove tudo que não for dígito ou vírgula, e troca vírgula por ponto
+    const numeroStr = str.replace(/[^\d,]/g, '').replace(',', '.');
+    return parseFloat(numeroStr) || 0;
+}
+
+function calcularPrecificacao() {
+    // Pegar Valores
+    const custoBase = parseMoedaCalc(document.getElementById("calc-custo-base").value);
+    const combustivel = parseMoedaCalc(document.getElementById("calc-combustivel").value);
+    const passagem = parseMoedaCalc(document.getElementById("calc-passagem").value);
+    const hospedagem = parseMoedaCalc(document.getElementById("calc-hospedagem").value);
+    const frete = parseMoedaCalc(document.getElementById("calc-frete").value);
+    
+    let impostoPerc = parseFloat(document.getElementById("calc-imposto").value) || 0;
+    let markupPerc = parseFloat(document.getElementById("calc-markup").value) || 0;
+
+    // Calcular Custo Total
+    const custoTotal = custoBase + combustivel + passagem + hospedagem + frete;
+
+    // Calcular Preço Sugerido (Fórmula de Markup divisor para incluir imposto na margem real)
+    // Preco = CustoTotal / (1 - (Imposto% + Markup%) / 100) -- *Nota: Pode dar erro se Imposto+Markup >= 100
+    // Fórmula clássica simplificada: PreçoBase = CustoTotal * (1 + Markup%). PreçoFinal = PreçoBase / (1 - Imposto%)
+    
+    // Usando fórmula segura B2B: Markup sobre o Custo, e depois acréscimo do Imposto (Gross-up)
+    const precoBase = custoTotal * (1 + (markupPerc / 100));
+    
+    // Se o imposto for 100% quebra a conta, colocar limite
+    if (impostoPerc >= 100) impostoPerc = 99;
+    
+    const precoSugerido = precoBase / (1 - (impostoPerc / 100));
+
+    // Cálculos Derivados
+    const valorImposto = precoSugerido * (impostoPerc / 100);
+    const lucroLiquido = precoSugerido - custoTotal - valorImposto;
+
+    // Atualizar UI
+    document.getElementById("res-custo-total").innerText = formatCurrency(custoTotal);
+    document.getElementById("res-preco-sugerido").innerText = formatCurrency(precoSugerido);
+    document.getElementById("res-valor-imposto").innerText = formatCurrency(valorImposto);
+    document.getElementById("res-custo-resumo").innerText = formatCurrency(custoTotal);
+    document.getElementById("res-lucro-liquido").innerText = formatCurrency(lucroLiquido);
+}
+
+function limparCalculadora() {
+    document.getElementById("calc-custo-base").value = "";
+    document.getElementById("calc-combustivel").value = "";
+    document.getElementById("calc-passagem").value = "";
+    document.getElementById("calc-hospedagem").value = "";
+    document.getElementById("calc-frete").value = "";
+    document.getElementById("calc-imposto").value = "5";
+    document.getElementById("calc-markup").value = "80";
+    atualizarLabelCustoBase(); // reseta cálculos e label
+}

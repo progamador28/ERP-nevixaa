@@ -198,6 +198,12 @@
                             <span>Orçamentos</span>
                         </a>
                     </li>
+                    <li id="menu-item-precificacao">
+                        <a href="#" class="nav-link" data-tab="precificacao">
+                            <i class="fa-solid fa-calculator"></i>
+                            <span>Precificação</span>
+                        </a>
+                    </li>
                     <li id="menu-item-relatorios">
                         <a href="#" class="nav-link" data-tab="relatorios">
                             <i class="fa-solid fa-chart-line"></i>
@@ -1101,6 +1107,120 @@
                         </div>
                     </div>
                 </div>
+                </section>
+
+                <!-- ==========================================================================
+                   ABA: PRECIFICAÇÃO INTELIGENTE
+                   ========================================================================== -->
+                <section id="tab-precificacao" class="tab-pane">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="fa-solid fa-calculator text-primary"></i> Calculadora de Precificação</h2>
+                    </div>
+
+                    <div class="form-row">
+                        <!-- Lado Esquerdo: Entradas -->
+                        <div class="form-group col-7">
+                            <div class="card p-4 h-100">
+                                <h4 class="mb-4" style="color: var(--color-secondary);"><i class="fa-solid fa-list-check"></i> Parâmetros de Custo</h4>
+                                
+                                <div class="form-row">
+                                    <div class="form-group col-6">
+                                        <label>Tipo de Orçamento</label>
+                                        <select id="calc-tipo" class="form-control" onchange="atualizarLabelCustoBase()">
+                                            <option value="produto">Venda de Peça/Equipamento</option>
+                                            <option value="servico">Prestação de Serviço</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-6">
+                                        <label id="label-custo-base">Valor de Compra da Peça (R$)</label>
+                                        <input type="text" id="calc-custo-base" class="form-control" placeholder="0,00" oninput="mascaraMoeda(this); calcularPrecificacao()">
+                                    </div>
+                                </div>
+
+                                <hr style="border-color: var(--color-border); margin: 20px 0;">
+                                <h5 class="mb-3"><i class="fa-solid fa-truck-fast text-muted"></i> Despesas Logísticas (Opcional)</h5>
+                                
+                                <div class="form-row">
+                                    <div class="form-group col-6">
+                                        <label>Deslocamento / Combustível (R$)</label>
+                                        <input type="text" id="calc-combustivel" class="form-control" placeholder="0,00" oninput="mascaraMoeda(this); calcularPrecificacao()">
+                                    </div>
+                                    <div class="form-group col-6">
+                                        <label>Passagens (Aérea/Ônibus) (R$)</label>
+                                        <input type="text" id="calc-passagem" class="form-control" placeholder="0,00" oninput="mascaraMoeda(this); calcularPrecificacao()">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-6">
+                                        <label>Hospedagem & Alimentação (R$)</label>
+                                        <input type="text" id="calc-hospedagem" class="form-control" placeholder="0,00" oninput="mascaraMoeda(this); calcularPrecificacao()">
+                                    </div>
+                                    <div class="form-group col-6">
+                                        <label>Fretes e Tributos de Compra (R$)</label>
+                                        <input type="text" id="calc-frete" class="form-control" placeholder="0,00" oninput="mascaraMoeda(this); calcularPrecificacao()">
+                                    </div>
+                                </div>
+
+                                <hr style="border-color: var(--color-border); margin: 20px 0;">
+                                <h5 class="mb-3"><i class="fa-solid fa-percent text-muted"></i> Margens e Impostos</h5>
+
+                                <div class="form-row">
+                                    <div class="form-group col-6">
+                                        <label>Imposto sobre Venda (DAS %)</label>
+                                        <input type="number" id="calc-imposto" class="form-control" placeholder="Ex: 5" value="5" step="0.1" min="0" oninput="calcularPrecificacao()">
+                                    </div>
+                                    <div class="form-group col-6">
+                                        <label>Margem de Lucro Desejada (Markup %)</label>
+                                        <input type="number" id="calc-markup" class="form-control" placeholder="Ex: 80" value="80" step="1" min="0" oninput="calcularPrecificacao()">
+                                    </div>
+                                </div>
+                                
+                                <button type="button" class="btn btn-outline w-100 mt-2" onclick="limparCalculadora()">
+                                    <i class="fa-solid fa-eraser"></i> Limpar Calculadora
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Lado Direito: Resultados -->
+                        <div class="form-group col-5">
+                            <div class="card p-4 h-100" style="background: var(--color-bg-input); border: 1px solid var(--color-border);">
+                                <h4 class="mb-4 text-center" style="color: var(--color-success);"><i class="fa-solid fa-chart-pie"></i> Resultado da Precificação</h4>
+                                
+                                <div style="display: flex; flex-direction: column; gap: 20px;">
+                                    <div style="background: var(--color-surface); padding: 15px; border-radius: var(--radius-md); text-align: center;">
+                                        <span class="text-muted d-block" style="font-size: 0.9rem;">Custo Total da Operação (Custo + Despesas)</span>
+                                        <strong id="res-custo-total" style="font-size: 1.5rem; color: var(--color-text-main);">R$ 0,00</strong>
+                                    </div>
+
+                                    <div style="background: var(--color-surface); padding: 15px; border-radius: var(--radius-md); text-align: center; border: 2px solid var(--color-primary);">
+                                        <span class="text-primary d-block" style="font-size: 1.1rem; font-weight: bold;">Preço de Venda Sugerido</span>
+                                        <strong id="res-preco-sugerido" style="font-size: 2.2rem; color: var(--color-primary);">R$ 0,00</strong>
+                                    </div>
+                                    
+                                    <div style="background: var(--color-surface); padding: 15px; border-radius: var(--radius-md);">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-muted">(-) Valor do Imposto Retido:</span>
+                                            <span id="res-valor-imposto" class="text-danger" style="font-weight: bold;">R$ 0,00</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-muted">(-) Custo Total (Peça + Desp.):</span>
+                                            <span id="res-custo-resumo" class="text-danger" style="font-weight: bold;">R$ 0,00</span>
+                                        </div>
+                                        <hr style="border-color: var(--color-border); margin: 10px 0;">
+                                        <div class="d-flex justify-content-between">
+                                            <span style="font-weight: bold; color: var(--color-success); font-size: 1.1rem;">(=) Lucro Líquido Real:</span>
+                                            <span id="res-lucro-liquido" style="font-weight: bold; color: var(--color-success); font-size: 1.2rem;">R$ 0,00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4 text-center">
+                                    <small class="text-muted"><i class="fa-solid fa-circle-info"></i> O preço sugerido garante que após descontar o imposto e os custos totais, a margem de lucro líquido seja exatamente a porcentagem de Markup solicitada sobre o custo.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
                 <!-- ==========================================================================
                    ABA: DOCUMENTAÇÃO E CERTIDÕES
