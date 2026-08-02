@@ -5785,11 +5785,19 @@ function calcularPrecificacao() {
     const textoResumo = document.getElementById("res-texto-socio");
     
     if (precoSugerido > 0) {
-        const totalSocios = custoBase + lucroSocios;
+        const tipoOrcamento = document.getElementById("calc-tipo").value;
+        const isProduto = tipoOrcamento === 'produto';
         const totalTerceiros = terceiros + combustivel + passagem + hospedagem + frete;
         
-        textoResumo.innerHTML = `Fechando este serviço por <strong>${formatCurrency(precoSugerido)}</strong>, a empresa pagará <strong>${formatCurrency(totalTerceiros)}</strong> de despesas (terceirizados e logística) e <strong>${formatCurrency(valorImposto)}</strong> de imposto.<br><br>
-        O Caixa da empresa guardará <strong>${formatCurrency(valorReserva)}</strong> como fundo de reserva. E vocês (Sócios) sacarão juntos <strong>${formatCurrency(totalSocios)}</strong> limpos (Mão de Obra + Lucro).`;
+        if (isProduto) {
+            const caixaEmpresa = valorReserva + custoBase;
+            textoResumo.innerHTML = `Fechando esta venda por <strong>${formatCurrency(precoSugerido)}</strong>, a empresa pagará <strong>${formatCurrency(totalTerceiros)}</strong> de despesas operacionais e <strong>${formatCurrency(valorImposto)}</strong> de imposto.<br><br>
+            O Caixa da empresa reterá <strong>${formatCurrency(caixaEmpresa)}</strong> (Reposição da Peça + Fundo de Reserva). E vocês (Sócios) sacarão juntos apenas o Lucro Livre de <strong>${formatCurrency(lucroSocios)}</strong>.`;
+        } else {
+            const totalSocios = custoBase + lucroSocios;
+            textoResumo.innerHTML = `Fechando este serviço por <strong>${formatCurrency(precoSugerido)}</strong>, a empresa pagará <strong>${formatCurrency(totalTerceiros)}</strong> de despesas (terceirizados e logística) e <strong>${formatCurrency(valorImposto)}</strong> de imposto.<br><br>
+            O Caixa da empresa guardará <strong>${formatCurrency(valorReserva)}</strong> como fundo de reserva. E vocês (Sócios) sacarão juntos <strong>${formatCurrency(totalSocios)}</strong> limpos (Mão de Obra Técnica + Lucro).`;
+        }
         containerResumo.style.display = "block";
     } else {
         containerResumo.style.display = "none";
