@@ -1839,26 +1839,26 @@ window.aprovarCotacao = function(id) {
     const q = state.quotations.find(cot => cot.id === id);
     if (!q) return;
     
-    uiConfirm(`Aprovar a compra da peça "${q.peca}" no valor de ${formatCurrency(q.valor)}?`, () => {
+    uiConfirm(`Aprovar a cotação da peça "${q.peca}" no valor de ${formatCurrency(q.valor)}?`, () => {
         q.status = "Aprovado";
         
-        // Gera automaticamente um lançamento de despesa no Fluxo de Caixa (Saída)
-        const novaDespesa = {
+        // Gera automaticamente um faturamento (Entrada) a receber no Fluxo de Caixa
+        const novaReceita = {
             id: generateUUID(),
             data: new Date().toISOString().slice(0,10),
-            descricao: `Aprovação Compra Peça: ${q.peca}`,
-            tipo: "Saída",
+            descricao: `Faturamento de Peça: ${q.peca}`,
+            tipo: "Entrada",
             valor: q.valor,
             categoria: "Peças",
-            status: "Pendente", // Fica pendente de pagamento
-            notaFiscalId: "" // avulsa até vincularem
+            status: "Pendente", // Pendente de recebimento do cliente
+            notaFiscalId: ""
         };
-        state.transactions.push(novaDespesa);
+        state.transactions.push(novaReceita);
         
-        addAuditLog("Aprovação de Peça", `Compra aprovada: ${q.peca} - Valor: ${formatCurrency(q.valor)}`);
+        addAuditLog("Aprovação de Peça", `Orçamento aprovado: ${q.peca} - Valor a faturar: ${formatCurrency(q.valor)}`);
         saveStateToLocalStorage();
         renderApp();
-        uiAlert(`Sucesso! A cotação foi aprovada e um débito de ${formatCurrency(q.valor)} sob a categoria Peças foi criado no Fluxo de Caixa.`);
+        uiAlert(`Sucesso! A cotação foi aprovada e um Faturamento (ENTRADA) de ${formatCurrency(q.valor)} foi criado no Fluxo de Caixa aguardando pagamento.`);
     });
 };
 
