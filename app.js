@@ -5779,6 +5779,21 @@ function calcularPrecificacao() {
     document.getElementById("res-lucro-liquido").innerText = formatCurrency(lucroLiquido);
     document.getElementById("res-reserva-empresa").innerText = formatCurrency(valorReserva);
     document.getElementById("res-lucro-socios").innerText = formatCurrency(lucroSocios);
+    
+    // Gerar Resumo do Sócio
+    const containerResumo = document.getElementById("resumo-socio-container");
+    const textoResumo = document.getElementById("res-texto-socio");
+    
+    if (precoSugerido > 0) {
+        const totalSocios = custoBase + lucroSocios;
+        const totalTerceiros = terceiros + combustivel + passagem + hospedagem + frete;
+        
+        textoResumo.innerHTML = `Fechando este serviço por <strong>${formatCurrency(precoSugerido)}</strong>, a empresa pagará <strong>${formatCurrency(totalTerceiros)}</strong> de despesas (terceirizados e logística) e <strong>${formatCurrency(valorImposto)}</strong> de imposto.<br><br>
+        O Caixa da empresa guardará <strong>${formatCurrency(valorReserva)}</strong> como fundo de reserva. E vocês (Sócios) sacarão juntos <strong>${formatCurrency(totalSocios)}</strong> limpos (Mão de Obra + Lucro).`;
+        containerResumo.style.display = "block";
+    } else {
+        containerResumo.style.display = "none";
+    }
 }
 
 function limparCalculadora() {
@@ -5791,5 +5806,6 @@ function limparCalculadora() {
     document.getElementById("calc-markup").value = "80";
     document.getElementById("calc-reserva").value = "20";
     document.getElementById("calc-terceiros").value = "";
+    document.getElementById("resumo-socio-container").style.display = "none";
     atualizarLabelCustoBase(); // reseta cálculos e label
 }
