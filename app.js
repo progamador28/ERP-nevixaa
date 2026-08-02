@@ -2781,7 +2781,7 @@ if (btnExportContabil) {
         
         const contabilidade = state.transactions.filter(t => t.tipo === "Saída" && t.descricao && t.descricao.toLowerCase().includes("contabilidade")).reduce((sum, t) => sum + t.valor, 0);
         const socios = state.transactions.filter(t => t.tipo === "Saída" && t.categoria === "Salários").reduce((sum, t) => sum + t.valor, 0);
-        const despesasOperacionais = custosFixosGerais + custoFixoRateado;
+        const despesasOperacionais = custosFixosGerais;
         const despesasAdminExcel = custosFixosGerais - socios;
         
         const resultadoExercicio = margemBruta - despesasOperacionais;
@@ -2828,11 +2828,15 @@ if (btnExportContabil) {
                     </tr>
                     <tr>
                         <td class="linha-negativa">2. DEDUÇÕES DA RECEITA BRUTA</td>
-                        <td class="linha-negativa valor">-${formatExcel(totalImpostos)}</td>
+                        <td class="linha-negativa valor">-${formatExcel(totalImpostos + custoFixoRateado)}</td>
                     </tr>
                     <tr>
                         <td class="item">   (-) Impostos sobre Faturamento</td>
                         <td class="valor">-${formatExcel(totalImpostos)}</td>
+                    </tr>
+                    <tr>
+                        <td class="item">   (-) Rateio de Custo Fixo Corporativo</td>
+                        <td class="valor">-${formatExcel(custoFixoRateado)}</td>
                     </tr>
                     
                     <tr>
@@ -2867,12 +2871,8 @@ if (btnExportContabil) {
                         <td class="linha-negativa valor">-${formatExcel(despesasOperacionais)}</td>
                     </tr>
                     <tr>
-                        <td class="item">   (-) Rateio de Custo Fixo Corporativo</td>
-                        <td class="valor">-${formatExcel(custoFixoRateado)}</td>
-                    </tr>
-                    <tr>
                         <td class="item">   (-) Despesas Administrativas Fixas</td>
-                        <td class="valor">-${formatExcel(custosFixosGerais)}</td>
+                        <td class="valor">-${formatExcel(despesasAdminExcel)}</td>
                     </tr>
                     <tr>
                         <td class="item">       - Honorários de Contabilidade</td>
