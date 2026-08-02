@@ -1808,7 +1808,10 @@ function renderCotacoes() {
         
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td><strong>${q.peca}</strong></td>
+            <td>
+                <strong>${q.peca}</strong>
+                ${q.imagem ? `<br><a href="${q.imagem}" target="_blank" style="font-size: 0.75rem; color: #38bdf8; text-decoration: none; margin-top: 4px; display: inline-block;"><i class="fa-solid fa-image"></i> Ver Imagem</a>` : ''}
+            </td>
             <td>${q.equipamento}</td>
             <td>${q.solicitante}</td>
             <td class="text-muted">${q.fornecedor}</td>
@@ -4528,23 +4531,35 @@ function setupEventListeners() {
         const eq = state.equipments.find(item => item.id === eqId);
         const equipamentoNome = eq ? eq.nome : "Equipamento Desconhecido";
         
-        const novaCot = {
-            id: generateUUID(),
-            peca,
-            equipamento: equipamentoNome,
-            equipamentoId: eqId,
-            solicitante,
-            fornecedor,
-            valor,
-            status: "Pendente"
+        const processarESalvar = (imgData) => {
+            const novaCot = {
+                id: generateUUID(),
+                peca,
+                equipamento: equipamentoNome,
+                equipamentoId: eqId,
+                solicitante,
+                fornecedor,
+                valor,
+                status: "Pendente",
+                imagem: imgData || null
+            };
+            
+            state.quotations.push(novaCot);
+            addAuditLog("Cotação Requisitada", `Nova cotação de ${peca} solicitada para o fornecedor ${fornecedor}`);
+            
+            saveStateToLocalStorage();
+            closeModal("modal-cotacao");
+            renderApp();
         };
-        
-        state.quotations.push(novaCot);
-        addAuditLog("Cotação Requisitada", `Nova cotação de ${peca} solicitada para o fornecedor ${fornecedor}`);
-        
-        saveStateToLocalStorage();
-        closeModal("modal-cotacao");
-        renderApp();
+
+        const imgInput = document.getElementById("cot-form-imagem");
+        if (imgInput && imgInput.files && imgInput.files.length > 0) {
+            const reader = new FileReader();
+            reader.onload = (event) => processarESalvar(event.target.result);
+            reader.readAsDataURL(imgInput.files[0]);
+        } else {
+            processarESalvar(null);
+        }
     });
 
     safeAddEventListener("form-chamado", "submit", (e) => {
