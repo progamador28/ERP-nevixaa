@@ -1815,7 +1815,7 @@ function renderCotacoes() {
         row.innerHTML = `
             <td>
                 <strong>${q.peca}</strong>
-                ${q.imagem ? `<br><a href="${q.imagem}" target="_blank" style="font-size: 0.75rem; color: #38bdf8; text-decoration: none; margin-top: 4px; display: inline-block;"><i class="fa-solid fa-image"></i> Ver Imagem</a>` : ''}
+                <br><button class="btn btn-sm btn-outline mt-1" style="font-size: 0.7rem; padding: 2px 6px; background: rgba(56, 189, 248, 0.1); color: #38bdf8; border-color: rgba(56, 189, 248, 0.2);" onclick="verDetalhesCotacao('${q.id}')"><i class="fa-solid fa-eye"></i> Ver Detalhes</button>
             </td>
             <td>${q.equipamento}</td>
             <td>${q.solicitante}</td>
@@ -1873,6 +1873,30 @@ window.recusarCotacao = function(id) {
         renderApp();
         uiAlert(`Cotação recusada com sucesso.`);
     });
+};
+
+window.verDetalhesCotacao = function(id) {
+    const q = state.quotations.find(cot => cot.id === id);
+    if (!q) return;
+    
+    document.getElementById("det-cot-peca").innerText = q.peca;
+    document.getElementById("det-cot-equipamento").innerText = q.equipamento;
+    document.getElementById("det-cot-solicitante").innerText = q.solicitante;
+    document.getElementById("det-cot-fornecedor").innerText = q.fornecedor;
+    document.getElementById("det-cot-valor").innerText = formatCurrency(q.valor);
+    
+    const imgContainer = document.getElementById("det-cot-imagem-container");
+    const imgEl = document.getElementById("det-cot-imagem");
+    
+    if (q.imagem) {
+        imgEl.src = q.imagem;
+        imgContainer.style.display = "block";
+    } else {
+        imgEl.src = "";
+        imgContainer.style.display = "none";
+    }
+    
+    openModal("modal-detalhes-cotacao");
 };
 
 window.deleteCotacao = function(id) {

@@ -2365,6 +2365,47 @@
         </div>
     </div>
 
+    <!-- MODAL DETALHES COTAÇÃO -->
+    <div id="modal-detalhes-cotacao" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>Detalhes da Cotação</h3>
+                <button class="modal-close" data-close-modal="modal-detalhes-cotacao">&times;</button>
+            </div>
+            <div class="modal-body" style="color: var(--color-text);">
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <strong style="color: var(--color-primary); font-size: 1.1rem;" id="det-cot-peca"></strong>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <small class="text-muted d-block">Equipamento Vinculado</small>
+                        <span id="det-cot-equipamento"></span>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <small class="text-muted d-block">Engenheiro Solicitante</small>
+                        <span id="det-cot-solicitante"></span>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <small class="text-muted d-block">Fornecedor Cotado</small>
+                        <span id="det-cot-fornecedor"></span>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <small class="text-muted d-block">Valor Cotado</small>
+                        <strong style="color: #4ade80;" id="det-cot-valor"></strong>
+                    </div>
+                    
+                    <div class="col-12 mt-3" id="det-cot-imagem-container" style="display: none;">
+                        <small class="text-muted d-block mb-2">Imagem da Peça</small>
+                        <img id="det-cot-imagem" src="" alt="Imagem da Peça" style="max-width: 100%; border-radius: 8px; border: 1px solid var(--color-border);">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" data-close-modal="modal-detalhes-cotacao">Fechar Detalhes</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL 13: ABERTURA DE CHAMADO / OS COM SLA -->
     <div id="modal-chamado" class="modal-overlay">
         <div class="modal-content">
