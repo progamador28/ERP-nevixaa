@@ -250,6 +250,7 @@ const DEFAULT_TAX_CONFIG = {
 // ESTADO GLOBAL DA APLICAÇÃ
 // ==========================================================================
 const state = {
+    globalMonth: null,
     invoices: [],
     transactions: [],
     equipments: [],
@@ -2010,13 +2011,13 @@ window.deleteChamado = function(id) {
 function renderRelatorios() {
     // 1. Calcular Ponto de Equilíbrio
     // Custos fixos = Salários (independente de nota) + Contabilidade/Outros (independente de nota)
-    const custosFixosGerais = state.transactions
+    const custosFixosGerais = state.transactions.filter(t => matchesGlobalMonth(t.dataPagamento || t.data))
         .filter(t => t.tipo === "Saída" && t.status === "Pago" && (t.categoria === "Salários" || t.categoria === "Outros"))
         .reduce((sum, t) => sum + t.valor, 0);
 
     // Rateio geral (Melhoria 14)
     // Faturamento bruto atual (Notas Recebidas)
-    const faturamentoBruto = state.invoices
+    const faturamentoBruto = state.invoices.filter(i => matchesGlobalMonth(i.dataEmissao))
         .filter(inv => inv.status === "Recebido")
         .reduce((sum, inv) => sum + inv.valorTotal, 0);
 
@@ -2037,20 +2038,20 @@ function renderRelatorios() {
     document.getElementById("bi-break-even-label").innerText = `Faturado: ${formatCurrency(faturamentoBruto)} (${percProgressoMeta.toFixed(0)}% da Meta)`;
 
     // 2. Projeção de Caixa (30 dias)
-    const saldoAtual = state.transactions
+    const saldoAtual = state.transactions.filter(t => matchesGlobalMonth(t.dataPagamento || t.data))
         .filter(t => t.status === "Pago")
         .reduce((sum, t) => sum + (t.tipo === "Entrada" ? t.valor : -t.valor), 0) + 
-        state.invoices
+        state.invoices.filter(i => matchesGlobalMonth(i.dataEmissao))
         .filter(inv => inv.status === "Recebido")
         .reduce((sum, inv) => sum + inv.valorTotal, 0);
 
     // Contas a receber (Notas pendentes)
-    const aReceber = state.invoices
+    const aReceber = state.invoices.filter(i => matchesGlobalMonth(i.dataEmissao))
         .filter(inv => inv.status === "Pendente")
         .reduce((sum, inv) => sum + inv.valorTotal, 0);
 
     // Contas a pagar (Transações pendentes)
-    const aPagar = state.transactions
+    const aPagar = state.transactions.filter(t => matchesGlobalMonth(t.dataPagamento || t.data))
         .filter(t => t.status === "Pendente" && t.tipo === "Saída")
         .reduce((sum, t) => sum + t.valor, 0);
 
@@ -2081,18 +2082,18 @@ function renderDRETable(faturamentoBruto, custoFixoRateado, custosFixosGerais) {
     tbody.innerHTML = "";
     
     // Impostos Totais Retidos nas Notas Recebidas
-    const totalImpostos = state.transactions
+    const totalImpostos = state.transactions.filter(t => matchesGlobalMonth(t.dataPagamento || t.data))
         .filter(t => t.tipo === "Saída" && t.categoria === "Impostos")
         .reduce((sum, t) => sum + t.valor, 0);
 
     const receitaLiquida = faturamentoBruto - totalImpostos - custoFixoRateado;
 
     // Custos diretos (Peças, Deslocamentos de campo, Serviços diretos e Mão de Obra Timesheet das Notas recebidas)
-    const custosDiretosTrans = state.transactions
+    const custosDiretosTrans = state.transactions.filter(t => matchesGlobalMonth(t.dataPagamento || t.data))
         .filter(t => t.tipo === "Saída" && ["Peças", "Deslocamento", "Serviços"].includes(t.categoria))
         .reduce((sum, t) => sum + t.valor, 0);
 
-    const custosDiretosTS = state.timesheets.reduce((sum, ts) => sum + ts.custoTotal, 0);
+    const custosDiretosTS = state.timesheets.filter(t => matchesGlobalMonth(t.data)).reduce((sum, ts) => sum + ts.custoTotal, 0);
     const custoServicoPrestado = custosDiretosTrans + custosDiretosTS;
     
     const margemBruta = receitaLiquida - custoServicoPrestado;
@@ -2104,13 +2105,13 @@ function renderDRETable(faturamentoBruto, custoFixoRateado, custosFixosGerais) {
         { desc: "(-) Rateio de Custos Fixo Corporativo", valor: custoFixoRateado, classe: "dre-sub val-despesa" },
         { desc: "(=) RECEITA LÍQUIDA DE SERVIÇOS", valor: receitaLiquida, classe: "dre-total" },
         { desc: "(-) Custos dos Serviços Prestados (CSP)", valor: custoServicoPrestado, classe: "dre-sub val-despesa" },
-        { desc: "    ⚖️ Peças de Reposição & Materiais", valor: state.transactions.filter(t => t.categoria === "Peças").reduce((sum, t) => sum + t.valor, 0), classNested: true },
-        { desc: "    ⚖️ Deslocamento & Estadias", valor: state.transactions.filter(t => t.categoria === "Deslocamento").reduce((sum, t) => sum + t.valor, 0), classNested: true },
+        { desc: "    ⚖️ Peças de Reposição & Materiais", valor: state.transactions.filter(t => matchesGlobalMonth(t.dataPagamento || t.data)).filter(t => t.categoria === "Peças").reduce((sum, t) => sum + t.valor, 0), classNested: true },
+        { desc: "    ⚖️ Deslocamento & Estadias", valor: state.transactions.filter(t => matchesGlobalMonth(t.dataPagamento || t.data)).filter(t => t.categoria === "Deslocamento").reduce((sum, t) => sum + t.valor, 0), classNested: true },
         { desc: "    ⚖️ Mão de Obra Direta (Timesheet)", valor: custosDiretosTS, classNested: true },
         { desc: "(=) MARGEM BRUTA DE SERVIÇOS", valor: margemBruta, classe: "dre-total" },
         { desc: "(-) Despesas Administrativas / Fixas", valor: custosFixosGerais, classe: "dre-sub val-despesa" },
-        { desc: "    ⚖️ Honorários de Contabilidade", valor: state.transactions.filter(t => t.tipo === "Saída" && t.descricao && t.descricao.toLowerCase().includes("contabilidade")).reduce((sum, t) => sum + t.valor, 0), classNested: true },
-        { desc: "    ⚖️ Retiradas de Sócios (Salários)", valor: state.transactions.filter(t => t.tipo === "Saída" && t.categoria === "Salários").reduce((sum, t) => sum + t.valor, 0), classNested: true },
+        { desc: "    ⚖️ Honorários de Contabilidade", valor: state.transactions.filter(t => matchesGlobalMonth(t.dataPagamento || t.data)).filter(t => t.tipo === "Saída" && t.descricao && t.descricao.toLowerCase().includes("contabilidade")).reduce((sum, t) => sum + t.valor, 0), classNested: true },
+        { desc: "    ⚖️ Retiradas de Sócios (Salários)", valor: state.transactions.filter(t => matchesGlobalMonth(t.dataPagamento || t.data)).filter(t => t.tipo === "Saída" && t.categoria === "Salários").reduce((sum, t) => sum + t.valor, 0), classNested: true },
         { desc: "(=) RESULTADO LÍQUIDO DO EXERCÍCIO (LUCRO)", valor: resultadoExercicio, classe: "dre-net-profit" }
     ];
     
