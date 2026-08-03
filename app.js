@@ -363,6 +363,7 @@ async function initDatabase() {
             state.auditLogs = cloud.auditLogs || [];
             state.taxConfig = cloud.taxConfig || DEFAULT_TAX_CONFIG;
             state.rateioConfig = cloud.rateioConfig || 10;
+            state.userPermissions = cloud.userPermissions || {};
             
             // INTEGRIDADE DE DADOS: Limpa timesheets/transações órfãs cujas notas foram deletadas antes das atualizações de sistema
             const validInvoiceIds = new Set(state.invoices.map(inv => inv.id));
@@ -390,6 +391,7 @@ async function initDatabase() {
     const storedAuditLogs = localStorage.getItem("nevixa_audit_logs");
     const storedTaxConfig = localStorage.getItem("nevixa_tax_config");
     const storedRateio = localStorage.getItem("nevixa_rateio_perc");
+    const storedUserPermissions = localStorage.getItem("nevixa_user_permissions");
     
     // Configurações tributárias/rateios
     state.taxConfig = storedTaxConfig ? JSON.parse(storedTaxConfig) : DEFAULT_TAX_CONFIG;
@@ -397,6 +399,7 @@ async function initDatabase() {
         state.taxConfig.simplesAliquota = 5.0; // Atualiza defaults para base local também
     }
     state.rateioConfig = storedRateio ? parseFloat(storedRateio) : 10;
+    state.userPermissions = storedUserPermissions ? JSON.parse(storedUserPermissions) : {};
     
     const inputRateio = document.getElementById("input-bi-rateio-perc");
     if (inputRateio) inputRateio.value = state.rateioConfig;
@@ -443,7 +446,8 @@ async function saveStateToLocalStorage() {
         documents: state.documents,
         auditLogs: state.auditLogs,
         taxConfig: state.taxConfig,
-        rateioConfig: state.rateioConfig
+        rateioConfig: state.rateioConfig,
+        userPermissions: state.userPermissions
     };
     
     try {
@@ -469,6 +473,7 @@ function saveStateToLocalStorageOnly() {
     localStorage.setItem("nevixa_audit_logs", JSON.stringify(state.auditLogs));
     localStorage.setItem("nevixa_tax_config", JSON.stringify(state.taxConfig));
     localStorage.setItem("nevixa_rateio_perc", state.rateioConfig.toString());
+    localStorage.setItem("nevixa_user_permissions", JSON.stringify(state.userPermissions));
 }
 
 // Log de Auditoria do Sistema (Melhoria 18)
