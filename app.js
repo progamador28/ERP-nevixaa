@@ -266,6 +266,7 @@ const state = {
     currentUser: null,
     activeTab: "dashboard",
     activeSubTab: "equipamentos",
+    userPermissions: {}, // { "email@example.com": ["dashboard", "notas", ...] }
     isOffline: false, // Modo Offline Simulado (Melhoria 17)
     filters: {
         nota: { search: "", status: "Todos" },
@@ -521,32 +522,49 @@ function applyUserProfile(user) {
     else if (user.papel === "cliente") avatarIcon.classList.add("fa-hospital");
     else avatarIcon.classList.add("fa-user-helmet-safety");
     
-    // Controle de Menus (Desktop)
-    const menuAcessos = document.getElementById("menu-item-acessos");
-    const menuFluxo = document.getElementById("menu-item-fluxo");
-    const menuOp = document.getElementById("menu-item-operacoes");
-    const menuRelat = document.getElementById("menu-item-relatorios");
+    // Controle Granular de Permissões (Desktop)
+    if (!state.userPermissions) state.userPermissions = {};
+    
+    // Função helper local para permissões padrão se não houver
+    function getDefaultPerms(papel) {
+        if (papel === 'admin') return ['dashboard', 'notas', 'fluxo', 'operacoes', 'orcamentos', 'precificacao', 'relatorios', 'docs', 'acessos'];
+        if (papel === 'financeiro') return ['dashboard', 'notas', 'fluxo', 'operacoes', 'orcamentos', 'precificacao', 'relatorios', 'docs'];
+        if (papel === 'tecnico') return ['dashboard', 'operacoes', 'docs']; 
+        if (papel === 'cliente') return ['dashboard', 'operacoes', 'docs']; 
+        return ['dashboard'];
+    }
 
+    let userPerms = state.userPermissions[user.email];
+    if (!userPerms) {
+        userPerms = getDefaultPerms(user.papel);
+    }
+    
+    // Admin Master sempre vê Dashboard e Acessos
     if (user.papel === "admin") {
-        if (menuAcessos) menuAcessos.classList.remove("d-none");
-        if (menuFluxo) menuFluxo.classList.remove("d-none");
-        if (menuOp) menuOp.classList.remove("d-none");
-        if (menuRelat) menuRelat.classList.remove("d-none");
-    } else if (user.papel === "financeiro") {
-        if (menuAcessos) menuAcessos.classList.add("d-none");
-        if (menuFluxo) menuFluxo.classList.remove("d-none");
-        if (menuOp) menuOp.classList.remove("d-none");
-        if (menuRelat) menuRelat.classList.remove("d-none");
-    } else if (user.papel === "tecnico") {
-        if (menuAcessos) menuAcessos.classList.add("d-none");
-        if (menuFluxo) menuFluxo.classList.add("d-none");
-        if (menuOp) menuOp.classList.remove("d-none");
-        if (menuRelat) menuRelat.classList.add("d-none");
-    } else if (user.papel === "cliente") {
-        if (menuAcessos) menuAcessos.classList.add("d-none");
-        if (menuFluxo) menuFluxo.classList.add("d-none");
-        if (menuOp) menuOp.classList.remove("d-none"); // Cliente precisa ver seus equipamentos e chamados
-        if (menuRelat) menuRelat.classList.add("d-none");
+        if (!userPerms.includes('dashboard')) userPerms.push('dashboard');
+        if (!userPerms.includes('acessos')) userPerms.push('acessos');
+    }
+
+    const menus = {
+        'dashboard': document.getElementById('menu-item-dashboard'),
+        'notas': document.getElementById('menu-item-notas'),
+        'fluxo': document.getElementById('menu-item-fluxo'),
+        'operacoes': document.getElementById('menu-item-operacoes'),
+        'orcamentos': document.getElementById('menu-item-orcamentos'),
+        'precificacao': document.getElementById('menu-item-precificacao'),
+        'relatorios': document.getElementById('menu-item-relatorios'),
+        'docs': document.getElementById('menu-item-docs'),
+        'acessos': document.getElementById('menu-item-acessos')
+    };
+
+    for (const [key, element] of Object.entries(menus)) {
+        if (element) {
+            if (userPerms.includes(key)) {
+                element.classList.remove('d-none');
+            } else {
+                element.classList.add('d-none');
+            }
+        }
     }
 
     // Dashboard toggle
@@ -3880,8 +3898,9 @@ window.carregarUsuarios = async function() {
                     ${user.id !== state.currentUser.id ? `
                         ${user.status !== 'ativo' ? `<button class="btn btn-sm btn-outline" style="color: #4ade80; border-color: #4ade80; padding: 4px 8px; background: transparent;" onclick="alterarStatusUsuario('${user.id}', 'ativo')" title="Aprovar/Ativar"><i class="fa-solid fa-check"></i></button>` : ''}
                         ${user.status !== 'bloqueado' ? `<button class="btn btn-sm btn-outline" style="color: #facc15; border-color: #facc15; padding: 4px 8px; margin-left: 5px; background: transparent;" onclick="alterarStatusUsuario('${user.id}', 'bloqueado')" title="Bloquear"><i class="fa-solid fa-ban"></i></button>` : ''}
+                        <button class="btn btn-sm btn-outline" style="color: #60a5fa; border-color: #60a5fa; padding: 4px 8px; margin-left: 5px; background: transparent;" onclick="abrirModalPermissoes('${user.email}', '${user.nome || 'Usuário'}', '${user.papel}')" title="Gerenciar Permissões de Abas"><i class="fa-solid fa-key"></i></button>
                         <button class="btn btn-sm btn-outline" style="color: #f87171; border-color: #f87171; padding: 4px 8px; margin-left: 5px; background: transparent;" onclick="excluirUsuario('${user.id}')" title="Excluir Usuário permanentemente"><i class="fa-solid fa-trash"></i></button>
-                    ` : '<span class="text-muted small">Você</span>'}
+                    ` : '<button class="btn btn-sm btn-outline" style="color: #60a5fa; border-color: #60a5fa; padding: 4px 8px; background: transparent;" onclick="abrirModalPermissoes(\''+user.email+'\', \'Você ('+(user.nome||'Admin')+')\', \''+user.papel+'\')" title="Suas Permissões"><i class="fa-solid fa-key"></i></button>'}
                 </td>
             `;
             tbody.appendChild(tr);
@@ -3906,6 +3925,57 @@ window.alterarStatusUsuario = function(id, novoStatus) {
         }
     });
 };
+
+window.abrirModalPermissoes = function(email, nome, papel) {
+    document.getElementById("perm-user-email").value = email;
+    document.getElementById("perm-user-nome").textContent = nome;
+
+    if (!state.userPermissions) state.userPermissions = {};
+    
+    // Obter permissões atuais ou padrão
+    let currentPerms = state.userPermissions[email];
+    if (!currentPerms) {
+        if (papel === 'admin') currentPerms = ['dashboard', 'notas', 'fluxo', 'operacoes', 'orcamentos', 'precificacao', 'relatorios', 'docs', 'acessos'];
+        else if (papel === 'financeiro') currentPerms = ['dashboard', 'notas', 'fluxo', 'operacoes', 'orcamentos', 'precificacao', 'relatorios', 'docs'];
+        else if (papel === 'tecnico' || papel === 'cliente') currentPerms = ['dashboard', 'operacoes', 'docs'];
+        else currentPerms = ['dashboard'];
+    }
+
+    // Desmarcar todos primeiro
+    const allChecks = document.querySelectorAll("#modal-permissoes-usuario input[type='checkbox']");
+    allChecks.forEach(chk => chk.checked = false);
+
+    // Marcar os que estão no array
+    currentPerms.forEach(perm => {
+        const chk = document.getElementById(`perm-${perm}`);
+        if (chk) chk.checked = true;
+    });
+
+    window.openModal('modal-permissoes-usuario');
+};
+
+safeAddEventListener('form-permissoes-usuario', 'submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("perm-user-email").value;
+    
+    const allChecks = document.querySelectorAll("#modal-permissoes-usuario input[type='checkbox']");
+    const newPerms = [];
+    allChecks.forEach(chk => {
+        if (chk.checked) newPerms.push(chk.value);
+    });
+
+    if (!state.userPermissions) state.userPermissions = {};
+    state.userPermissions[email] = newPerms;
+    
+    await saveStateToLocalStorage();
+    uiAlert("Permissões atualizadas com sucesso!");
+    window.closeModal('modal-permissoes-usuario');
+    
+    // Se estiver atualizando as próprias permissões, recarregar a interface
+    if (state.currentUser && state.currentUser.email === email) {
+        checkAuth();
+    }
+});
 
 window.excluirUsuario = function(id) {
     uiConfirm("Tem certeza que deseja excluir permanentemente este usuário? Esta ação não pode ser desfeita.", async () => {

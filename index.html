@@ -2436,6 +2436,66 @@
         </div>
     </div>
 
+    <!-- MODAL PERMISSÕES DE USUÁRIO -->
+    <div id="modal-permissoes-usuario" class="modal-overlay">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3>Permissões de Acesso</h3>
+                <button class="modal-close" data-close-modal="modal-permissoes-usuario">&times;</button>
+            </div>
+            <form id="form-permissoes-usuario">
+                <input type="hidden" id="perm-user-email">
+                <div class="modal-body">
+                    <p class="mb-3 text-muted">Selecione quais abas estarão disponíveis para <strong id="perm-user-nome" style="color: var(--color-primary);"></strong>.</p>
+                    
+                    <div class="d-flex flex-column gap-2" style="background: rgba(15, 23, 42, 0.4); padding: 15px; border-radius: 8px; border: 1px solid var(--color-border);">
+                        <label class="d-flex align-items-center gap-2 cursor-pointer" style="margin-bottom: 5px;">
+                            <input type="checkbox" id="perm-dashboard" value="dashboard">
+                            <span><i class="fa-solid fa-chart-pie" style="width: 20px; color: var(--color-primary);"></i> Dashboard</span>
+                        </label>
+                        <label class="d-flex align-items-center gap-2 cursor-pointer" style="margin-bottom: 5px;">
+                            <input type="checkbox" id="perm-notas" value="notas">
+                            <span><i class="fa-solid fa-file-invoice-dollar" style="width: 20px; color: var(--color-primary);"></i> Notas Fiscais</span>
+                        </label>
+                        <label class="d-flex align-items-center gap-2 cursor-pointer" style="margin-bottom: 5px;">
+                            <input type="checkbox" id="perm-fluxo" value="fluxo">
+                            <span><i class="fa-solid fa-money-bill-transfer" style="width: 20px; color: var(--color-primary);"></i> Fluxo de Caixa</span>
+                        </label>
+                        <label class="d-flex align-items-center gap-2 cursor-pointer" style="margin-bottom: 5px;">
+                            <input type="checkbox" id="perm-operacoes" value="operacoes">
+                            <span><i class="fa-solid fa-helmet-safety" style="width: 20px; color: var(--color-primary);"></i> Op. Técnicas</span>
+                        </label>
+                        <label class="d-flex align-items-center gap-2 cursor-pointer" style="margin-bottom: 5px;">
+                            <input type="checkbox" id="perm-orcamentos" value="orcamentos">
+                            <span><i class="fa-solid fa-file-pdf" style="width: 20px; color: var(--color-primary);"></i> Orçamentos</span>
+                        </label>
+                        <label class="d-flex align-items-center gap-2 cursor-pointer" style="margin-bottom: 5px;">
+                            <input type="checkbox" id="perm-precificacao" value="precificacao">
+                            <span><i class="fa-solid fa-calculator" style="width: 20px; color: var(--color-primary);"></i> Precificação</span>
+                        </label>
+                        <label class="d-flex align-items-center gap-2 cursor-pointer" style="margin-bottom: 5px;">
+                            <input type="checkbox" id="perm-relatorios" value="relatorios">
+                            <span><i class="fa-solid fa-chart-line" style="width: 20px; color: var(--color-primary);"></i> BI & Relatórios</span>
+                        </label>
+                        <label class="d-flex align-items-center gap-2 cursor-pointer" style="margin-bottom: 5px;">
+                            <input type="checkbox" id="perm-docs" value="docs">
+                            <span><i class="fa-solid fa-file-contract" style="width: 20px; color: var(--color-primary);"></i> Documentação</span>
+                        </label>
+                        <hr style="border-color: rgba(255,255,255,0.1); margin: 5px 0;">
+                        <label class="d-flex align-items-center gap-2 cursor-pointer" style="margin-bottom: 5px;">
+                            <input type="checkbox" id="perm-acessos" value="acessos">
+                            <span><i class="fa-solid fa-users-gear" style="width: 20px; color: var(--color-primary);"></i> Acessos & Permissões</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close-modal="modal-permissoes-usuario">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Permissões</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL 13: ABERTURA DE CHAMADO / OS COM SLA -->
     <div id="modal-chamado" class="modal-overlay">
         <div class="modal-content">
