@@ -726,8 +726,23 @@ function updateMobileMenuACL() {
 
 function switchTab(tabName) {
     if (!state.currentUser) return;
-    if (state.currentUser.papel === "tecnico" && tabName !== "notas" && tabName !== "operacoes") return;
-    if (state.currentUser.papel === "cliente" && tabName !== "dashboard" && tabName !== "notas" && tabName !== "operacoes") return;
+    
+    // Controle Granular de Permissões
+    if (!state.userPermissions) state.userPermissions = {};
+    let userPerms = state.userPermissions[state.currentUser.email];
+    if (!userPerms) {
+        if (state.currentUser.papel === 'admin') userPerms = ['dashboard', 'notas', 'fluxo', 'operacoes', 'orcamentos', 'precificacao', 'relatorios', 'docs', 'acessos'];
+        else if (state.currentUser.papel === 'financeiro') userPerms = ['dashboard', 'notas', 'fluxo', 'operacoes', 'orcamentos', 'precificacao', 'relatorios', 'docs'];
+        else if (state.currentUser.papel === 'tecnico' || state.currentUser.papel === 'cliente') userPerms = ['dashboard', 'operacoes', 'docs'];
+        else userPerms = ['dashboard'];
+    }
+    
+    if (state.currentUser.papel === "admin") {
+        if (!userPerms.includes('dashboard')) userPerms.push('dashboard');
+        if (!userPerms.includes('acessos')) userPerms.push('acessos');
+    }
+
+    if (!userPerms.includes(tabName)) return;
     
     state.activeTab = tabName;
     
