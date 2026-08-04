@@ -428,7 +428,10 @@ async function initDatabase() {
         state.documents = [];
         state.auditLogs = [];
     }
-    saveStateToLocalStorage();
+    
+    // IMPORTANTE: NÃO chamar saveStateToLocalStorage() aqui! 
+    // Se a nuvem falhou e o cache local estiver vazio, chamar o save 
+    // vai sobrescrever o banco de dados na nuvem com arrays vazios, apagando tudo!
 }
 
 // Salva dados no LocalStorage e no Servidor Supabase
