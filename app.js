@@ -1939,9 +1939,11 @@ window.verDetalhesCotacao = function(id) {
     
     if (q.imagem) {
         imgEl.src = q.imagem;
+        document.getElementById("det-cot-imagem-link").href = q.imagem;
         imgContainer.style.display = "block";
     } else {
         imgEl.src = "";
+        document.getElementById("det-cot-imagem-link").href = "#";
         imgContainer.style.display = "none";
     }
     
