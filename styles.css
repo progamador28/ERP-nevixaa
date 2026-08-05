@@ -1092,8 +1092,8 @@ hr.divider {
    DETAILS DRAWER/MODAL UNIQUE STYLES
    ========================================================================== */
 .detalhes-nota-resumo-container {
-    display: grid;
-    grid-template-columns: 1.2fr 2fr;
+    display: flex;
+    flex-direction: column;
     gap: 24px;
     background-color: rgba(2, 6, 12, 0.3);
     padding: 20px;
@@ -1108,8 +1108,9 @@ hr.divider {
 }
 
 .detalhes-meta p {
-    font-size: 0.9rem;
-    line-height: 1.4;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 8px;
 }
 
 .detalhes-meta strong {
@@ -2062,9 +2063,15 @@ body.light-mode .desgaste-tubo-box {
         border: 1px solid #cbd5e1 !important;
         padding: 15px !important;
         background: #f8fafc !important;
-        grid-template-columns: 1fr 1fr !important;
-        display: grid !important;
+        display: flex !important;
+        flex-direction: column !important;
         gap: 15px !important;
+    }
+    
+    body.print-mode-rat .detalhes-valores-gauge,
+    body.print-mode-rat .detalhes-custos-secao,
+    body.print-mode-rat #billing-reminders-box {
+        display: none !important;
     }
     
     body.print-mode-rat .table-custom {
