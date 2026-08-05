@@ -2023,7 +2023,9 @@ body.light-mode .desgaste-tubo-box {
     /* 1. SE ESTIVERMOS NO MODO DE IMPRESSÃO DO RAT */
     body.print-mode-rat #modal-detalhes-nota {
         display: block !important;
-        position: static !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
         width: 100% !important;
         height: auto !important;
         background: white !important;
