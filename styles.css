@@ -2069,8 +2069,16 @@ body.light-mode .desgaste-tubo-box {
     }
     
     body.print-mode-rat .detalhes-valores-gauge,
-    body.print-mode-rat .detalhes-custos-secao,
     body.print-mode-rat #billing-reminders-box {
+        display: none !important;
+    }
+    
+    body.print-mode-rat .detalhes-custos-secao .d-flex.gap-2 {
+        display: none !important;
+    }
+
+    body.print-mode-rat .detalhes-custos-secao th:nth-child(7),
+    body.print-mode-rat .detalhes-custos-secao td:nth-child(7) {
         display: none !important;
     }
     
