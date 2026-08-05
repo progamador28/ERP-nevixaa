@@ -2085,17 +2085,29 @@ body.light-mode .desgaste-tubo-box {
     body.print-mode-rat .table-custom {
         border: 1px solid #cbd5e1 !important;
         width: 100% !important;
+        font-size: 0.7rem !important;
+        table-layout: fixed !important;
     }
+    
+    body.print-mode-rat .detalhes-custos-secao th:nth-child(1) { width: 10% !important; }
+    body.print-mode-rat .detalhes-custos-secao th:nth-child(2) { width: 45% !important; }
+    body.print-mode-rat .detalhes-custos-secao th:nth-child(3) { width: 12% !important; }
+    body.print-mode-rat .detalhes-custos-secao th:nth-child(4) { width: 13% !important; }
+    body.print-mode-rat .detalhes-custos-secao th:nth-child(5) { width: 5% !important; }
+    body.print-mode-rat .detalhes-custos-secao th:nth-child(6) { width: 15% !important; }
     
     body.print-mode-rat .table-custom th {
         background-color: #f1f5f9 !important;
         color: #0f172a !important;
         border-bottom: 2px solid #cbd5e1 !important;
+        padding: 6px !important;
     }
     
     body.print-mode-rat .table-custom td {
         border-bottom: 1px solid #cbd5e1 !important;
         color: #334155 !important;
+        padding: 6px !important;
+        word-wrap: break-word !important;
     }
     
     body.print-mode-rat #signature-pad-container {
