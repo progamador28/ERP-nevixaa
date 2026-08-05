@@ -969,8 +969,10 @@ hr.divider {
     backdrop-filter: blur(8px);
     z-index: 10000;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    padding: 40px 0;
+    overflow-y: auto;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
@@ -987,8 +989,8 @@ hr.divider {
     border-radius: var(--radius-lg);
     width: 90%;
     max-width: 520px;
-    max-height: 90vh;
-    overflow-y: auto;
+    max-height: none;
+    margin: auto;
     box-shadow: var(--shadow-lg);
     transform: translateY(-20px);
     transition: transform 0.3s ease;
