@@ -6046,7 +6046,7 @@ function atualizarPreviewEtiqueta() {
     
     // Gerar QR Code Dinâmico apontando para o site atual com parametro
     const baseUrl = window.location.origin + window.location.pathname;
-    const publicUrl = `${baseUrl}?public_equip=${eq.id}`;
+    const publicUrl = `${baseUrl}?public_equip=${eq.id}&tipo=${tipo}`;
     
     const qrCodeImg = document.getElementById("et-qrcode");
     qrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(publicUrl)}`;
@@ -6097,6 +6097,36 @@ async function initPublicView(equipId) {
             return;
         }
         
+        const urlParams = new URLSearchParams(window.location.search);
+        const tipoUrl = urlParams.get('tipo') || 'preventiva';
+        
+        let headerTitle = "Equipamento Seguro";
+        let colorClass = "text-success";
+        
+        if (tipoUrl === "preventiva") {
+            headerTitle = "Manutenção Preventiva";
+            colorClass = "text-primary";
+        } else if (tipoUrl === "corretiva") {
+            headerTitle = "Manutenção Corretiva";
+            colorClass = "text-warning";
+        } else if (tipoUrl === "calibracao") {
+            headerTitle = "Calibração Válida";
+            colorClass = "text-success";
+        } else if (tipoUrl === "seguranca") {
+            headerTitle = "Teste de Segurança";
+            colorClass = "text-secondary";
+        }
+
+        const headerH3 = document.querySelector(".public-validation-card h3");
+        if(headerH3) {
+            headerH3.className = `mt-3 ${colorClass}`;
+            headerH3.innerText = headerTitle;
+        }
+        const iconElement = document.querySelector(".public-validation-card i.fa-circle-check");
+        if(iconElement) {
+            iconElement.className = `fa-solid fa-circle-check ${colorClass}`;
+        }
+        
         document.getElementById("pub-eq-nome").innerText = eq.nome;
         document.getElementById("pub-eq-tag").innerText = eq.tag || "-";
         document.getElementById("pub-eq-serial").innerText = eq.serial || "-";
@@ -6105,11 +6135,18 @@ async function initPublicView(equipId) {
         if (dataExecucao) {
             document.getElementById("pub-eq-ultima").innerText = formatDate(dataExecucao);
             
-            const mesesCiclo = eq.periodicidade || 3;
-            
-            const proxima = new Date(dataExecucao);
-            proxima.setMonth(proxima.getMonth() + mesesCiclo);
-            document.getElementById("pub-eq-proxima").innerText = formatDate(proxima.toISOString().split("T")[0]);
+            if (tipoUrl === "preventiva" || tipoUrl === "calibracao" || tipoUrl === "seguranca") {
+                let mesesCiclo = eq.periodicidade || 3;
+                if (tipoUrl === "preventiva") mesesCiclo = 3;
+                else if (tipoUrl === "calibracao") mesesCiclo = 12;
+                else if (tipoUrl === "seguranca") mesesCiclo = 12;
+                
+                const proxima = new Date(dataExecucao);
+                proxima.setMonth(proxima.getMonth() + mesesCiclo);
+                document.getElementById("pub-eq-proxima").innerText = formatDate(proxima.toISOString().split("T")[0]);
+            } else {
+                document.getElementById("pub-eq-proxima").innerText = "-";
+            }
         } else {
             document.getElementById("pub-eq-ultima").innerText = "-";
             document.getElementById("pub-eq-proxima").innerText = "-";
