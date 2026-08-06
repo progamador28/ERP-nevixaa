@@ -4955,7 +4955,7 @@ window.openNovoCalibrador = function() {
 window.openNovaCotacao = function() {
     const select = document.getElementById("cot-form-equipamento");
     if (!select) return;
-    select.innerHTML = '<option value="" disabled selected>Selecione o Equipamento...</option>';
+    select.innerHTML = '<option value="" selected>Nenhum / Uso Geral</option>';
     
     state.equipments.forEach(eq => {
         const opt = document.createElement("option");
