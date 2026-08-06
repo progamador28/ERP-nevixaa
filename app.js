@@ -465,18 +465,22 @@ async function saveStateToLocalStorage() {
 }
 
 function saveStateToLocalStorageOnly() {
-    localStorage.setItem("nevixa_invoices", JSON.stringify(state.invoices));
-    localStorage.setItem("nevixa_transactions", JSON.stringify(state.transactions));
-    localStorage.setItem("nevixa_equipments", JSON.stringify(state.equipments));
-    localStorage.setItem("nevixa_calibrators", JSON.stringify(state.calibrators));
-    localStorage.setItem("nevixa_quotations", JSON.stringify(state.quotations));
-    localStorage.setItem("nevixa_tickets", JSON.stringify(state.tickets));
-    localStorage.setItem("nevixa_timesheets", JSON.stringify(state.timesheets));
-    localStorage.setItem("nevixa_documents", JSON.stringify(state.documents));
-    localStorage.setItem("nevixa_audit_logs", JSON.stringify(state.auditLogs));
-    localStorage.setItem("nevixa_tax_config", JSON.stringify(state.taxConfig));
-    localStorage.setItem("nevixa_rateio_perc", state.rateioConfig.toString());
-    localStorage.setItem("nevixa_user_permissions", JSON.stringify(state.userPermissions));
+    try {
+        localStorage.setItem("nevixa_invoices", JSON.stringify(state.invoices));
+        localStorage.setItem("nevixa_transactions", JSON.stringify(state.transactions));
+        localStorage.setItem("nevixa_equipments", JSON.stringify(state.equipments));
+        localStorage.setItem("nevixa_calibrators", JSON.stringify(state.calibrators));
+        localStorage.setItem("nevixa_quotations", JSON.stringify(state.quotations));
+        localStorage.setItem("nevixa_tickets", JSON.stringify(state.tickets));
+        localStorage.setItem("nevixa_timesheets", JSON.stringify(state.timesheets));
+        localStorage.setItem("nevixa_documents", JSON.stringify(state.documents));
+        localStorage.setItem("nevixa_audit_logs", JSON.stringify(state.auditLogs));
+        localStorage.setItem("nevixa_tax_config", JSON.stringify(state.taxConfig));
+        localStorage.setItem("nevixa_rateio_perc", state.rateioConfig.toString());
+        localStorage.setItem("nevixa_user_permissions", JSON.stringify(state.userPermissions));
+    } catch (err) {
+        console.warn("Aviso: Limite de armazenamento local excedido. Os dados estão sendo salvos apenas na nuvem (Supabase).", err);
+    }
 }
 
 // Log de Auditoria do Sistema (Melhoria 18)
@@ -959,7 +963,7 @@ function renderDashboard() {
         let countAtrasadas = 0;
         const now = new Date();
         state.tickets.forEach(tk => {
-            if (tk.status !== "Concluído" && tk.status !== "Cancelado") {
+            if (tk.status !== "Concluído" && tk.status !== "Encerrado" && tk.status !== "Cancelado") {
                 countAbertas++;
                 if (tk.slaVencimento && new Date(tk.slaVencimento) < now) {
                     countAtrasadas++;
@@ -2147,8 +2151,9 @@ window.abrirExecucaoChamado = function(id) {
 };
 
 function eqMatch(str1, str2) {
-    const s1 = str1.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const s2 = str2.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (!str1 || !str2) return false;
+    const s1 = String(str1).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const s2 = String(str2).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     return s1.includes(s2) || s2.includes(s1);
 }
 
