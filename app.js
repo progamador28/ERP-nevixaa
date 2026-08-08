@@ -5752,12 +5752,16 @@ document.addEventListener("DOMContentLoaded", () => {
             
             // 5. Gerar o PDF usando html2pdf
             const element = document.getElementById('pdf-template');
+            const originalParent = element.parentNode;
             
             // Salvar estilos originais
             const originalPosition = element.style.position;
             const originalTop = element.style.top;
             const originalLeft = element.style.left;
             const originalZIndex = element.style.zIndex;
+            
+            // Anexar temporariamente ao body para evitar que posição de containers (relative) estrague a captura
+            document.body.appendChild(element);
             
             // Colocar no topo absoluto temporariamente
             element.style.display = 'block';
@@ -5794,7 +5798,8 @@ document.addEventListener("DOMContentLoaded", () => {
             // Timeout necessário para o iOS Safari renderizar o elemento recém exibido antes de capturar
             setTimeout(() => {
                 html2pdf().set(opt).from(element).save().then(() => {
-                    // Restaurar estilos originais
+                    // Restaurar estilos originais e parent
+                    originalParent.appendChild(element);
                     element.style.display = 'none';
                     element.style.position = originalPosition;
                     element.style.top = originalTop;
