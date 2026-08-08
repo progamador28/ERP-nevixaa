@@ -5752,23 +5752,17 @@ document.addEventListener("DOMContentLoaded", () => {
             
             // 5. Gerar o PDF usando html2pdf
             const element = document.getElementById('pdf-template');
-            const originalParent = element.parentNode;
             
-            // Salvar estilos originais
-            const originalPosition = element.style.position;
-            const originalTop = element.style.top;
-            const originalLeft = element.style.left;
-            const originalZIndex = element.style.zIndex;
+            // Memorizar o scroll atual
+            const currentScrollX = window.scrollX;
+            const currentScrollY = window.scrollY;
             
-            // Anexar temporariamente ao body para evitar que posição de containers (relative) estrague a captura
-            document.body.appendChild(element);
+            // Rolar para o topo absoluto para evitar o bug de corte e página em branco do html2canvas
+            window.scrollTo(0, 0);
             
-            // Colocar no topo absoluto temporariamente
+            // Tornar o elemento visível para capturar o layout corretamente
+            const originalDisplay = element.style.display;
             element.style.display = 'block';
-            element.style.position = 'absolute';
-            element.style.top = '0';
-            element.style.left = '0';
-            element.style.zIndex = '99999';
             
             // Injetar logo em base64 vindo do arquivo logo_b64.js carregado no HTML
             try {
@@ -5786,7 +5780,7 @@ document.addEventListener("DOMContentLoaded", () => {
               filename:     `Orcamento_${cliente.replace(/\s+/g, '_')}_${propStr.replace('/','-')}.pdf`,
               image:        { type: 'jpeg', quality: 0.98 },
               pagebreak:    { mode: ['css', 'legacy'] },
-              html2canvas:  { scale: 2, useCORS: true, scrollY: 0, windowWidth: 1200 },
+              html2canvas:  { scale: 2, useCORS: true },
               jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
             
@@ -5795,16 +5789,12 @@ document.addEventListener("DOMContentLoaded", () => {
             btnGerarPdf.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GERANDO PDF...';
             btnGerarPdf.disabled = true;
 
-            // Timeout necessário para o iOS Safari renderizar o elemento recém exibido antes de capturar
+            // Timeout necessário para renderizar o elemento visível antes de capturar
             setTimeout(() => {
                 html2pdf().set(opt).from(element).save().then(() => {
-                    // Restaurar estilos originais e parent
-                    originalParent.appendChild(element);
-                    element.style.display = 'none';
-                    element.style.position = originalPosition;
-                    element.style.top = originalTop;
-                    element.style.left = originalLeft;
-                    element.style.zIndex = originalZIndex;
+                    // Restaurar display e scroll originais
+                    element.style.display = originalDisplay;
+                    window.scrollTo(currentScrollX, currentScrollY);
                     
                     btnGerarPdf.innerHTML = btnOriginalText;
                     btnGerarPdf.disabled = false;
