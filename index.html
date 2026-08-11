@@ -1332,8 +1332,12 @@
                 <div class="signature-box" style="margin-bottom: 20px;">
                     <label>Sua Assinatura Padrão</label>
                     <canvas id="sig-canvas-perfil" width="400" height="150" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm); background: var(--color-bg-input);"></canvas>
-                    <div class="signature-actions">
-                        <button type="button" class="btn btn-sm btn-outline" id="btn-clear-sig-perfil">Limpar</button>
+                    <div class="signature-actions" style="display: flex; gap: 10px; margin-top: 10px; align-items: center;">
+                        <button type="button" class="btn btn-sm btn-outline" id="btn-clear-sig-perfil">Limpar Desenho</button>
+                        <label class="btn btn-sm btn-secondary" style="margin: 0; cursor: pointer;">
+                            <i class="fa-solid fa-upload"></i> Importar Imagem
+                            <input type="file" id="import-sig-perfil" accept="image/*" style="display: none;">
+                        </label>
                     </div>
                 </div>
             </div>
@@ -2164,11 +2168,11 @@
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <label for="eq-form-tag">Código / TAG Patrimonial</label>
-                            <input type="text" id="eq-form-tag" required placeholder="Ex: EQ-RM-001">
+                            <input type="text" id="eq-form-tag" placeholder="Ex: EQ-RM-001">
                         </div>
                         <div class="form-group col-md-6">
                             <label for="eq-form-serial">Número de Série (S/N)</label>
-                            <input type="text" id="eq-form-serial" required placeholder="Ex: S/N: RM987654">
+                            <input type="text" id="eq-form-serial" placeholder="Ex: S/N: RM987654">
                         </div>
                     </div>
                     <div class="form-group">
@@ -2192,7 +2196,7 @@
                         </div>
                         <div class="form-group col-md-4">
                             <label for="eq-form-preventiva">Última Preventiva</label>
-                            <input type="date" id="eq-form-preventiva" required>
+                            <input type="date" id="eq-form-preventiva">
                         </div>
                         <div class="form-group col-md-4">
                             <label for="eq-form-periodicidade">Periodicidade (Meses)</label>

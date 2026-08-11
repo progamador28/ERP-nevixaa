@@ -1459,9 +1459,9 @@ function renderEquipamentos() {
     const filteredEquips = state.equipments.filter(eq => {
         if (isCliente && eq.cliente !== nomeCliente) return false;
 
-        const matchesSearch = eq.tag.toLowerCase().includes(query) || 
-                              eq.nome.toLowerCase().includes(query) || 
-                              eq.serial.toLowerCase().includes(query);
+        const matchesSearch = (eq.tag || "").toLowerCase().includes(query) || 
+                              (eq.nome || "").toLowerCase().includes(query) || 
+                              (eq.serial || "").toLowerCase().includes(query);
         const matchesCliente = filterCliente === "Todos" || eq.cliente === filterCliente;
         return matchesSearch && matchesCliente;
     });
@@ -3850,7 +3850,7 @@ function closeModal(modalId) {
             document.getElementById("form-transacao").reset();
             document.getElementById("form-transacao-id").value = "";
             document.getElementById("modal-transacao-title").innerText = "Lançar Movimentação Financeira";
-            document.getElementById("trans-data").valueAsDate = new Date();
+            document.getElementById("trans-data").value = new Date().toLocaleDateString('en-CA');
             
             // Ocultar campos estendidos por padrão
             document.getElementById("group-km-deslocamento").style.display = "none";
@@ -4234,26 +4234,26 @@ function setupEventListeners() {
     
     // 4. Botões de Abertura Rápidos de Lançamentos
     safeAddEventListener("btn-quick-invoice", "click", () => {
-        document.getElementById("nota-data").valueAsDate = new Date();
+        document.getElementById("nota-data").value = new Date().toLocaleDateString('en-CA');
         popularEquipamentosDropdown();
         openModal("modal-nota");
     });
     
     safeAddEventListener("btn-quick-transaction", "click", () => {
         updateInvoicesDropdown();
-        document.getElementById("trans-data").valueAsDate = new Date();
+        document.getElementById("trans-data").value = new Date().toLocaleDateString('en-CA');
         openModal("modal-transacao");
     });
     
     safeAddEventListener("btn-add-nota", "click", () => {
-        document.getElementById("nota-data").valueAsDate = new Date();
+        document.getElementById("nota-data").value = new Date().toLocaleDateString('en-CA');
         popularEquipamentosDropdown();
         openModal("modal-nota");
     });
     
     safeAddEventListener("btn-add-transacao", "click", () => {
         updateInvoicesDropdown();
-        document.getElementById("trans-data").valueAsDate = new Date();
+        document.getElementById("trans-data").value = new Date().toLocaleDateString('en-CA');
         openModal("modal-transacao");
     });
     
@@ -4270,7 +4270,7 @@ function setupEventListeners() {
         updateInvoicesDropdown();
         document.getElementById("trans-nota").value = activeInvoiceId;
         document.getElementById("trans-tipo").value = "Saída";
-        document.getElementById("trans-data").valueAsDate = new Date();
+        document.getElementById("trans-data").value = new Date().toLocaleDateString('en-CA');
         
         openModal("modal-transacao");
     });
@@ -5084,7 +5084,7 @@ function setupCanvasEvents(canvasId) {
     if (!ctx) return;
     
     let drawing = false;
-    ctx.strokeStyle = "#2563eb"; // Azul de destaque
+    ctx.strokeStyle = "#000000"; // Preto para ficar visível no documento
     ctx.lineWidth = 3;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
@@ -5154,6 +5154,33 @@ function clearSignatureCanvas(canvasId) {
 window.initPerfilSignature = function() {
     setupCanvasEvents("sig-canvas-perfil");
     clearSignatureCanvas("sig-canvas-perfil");
+    
+    // Upload de Imagem de Assinatura
+    const importSigPerfil = document.getElementById("import-sig-perfil");
+    if (importSigPerfil) {
+        importSigPerfil.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.getElementById("sig-canvas-perfil");
+                        const ctx = canvas.getContext("2d");
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        
+                        // Desenhar imagem redimensionada proporcionalmente no centro
+                        const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+                        const x = (canvas.width / 2) - (img.width / 2) * scale;
+                        const y = (canvas.height / 2) - (img.height / 2) * scale;
+                        ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
     
     // Se já tiver uma assinatura salva, carregar no canvas
     const savedSig = localStorage.getItem("nevixa_assinatura_" + state.currentUser.id);
