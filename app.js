@@ -5171,9 +5171,38 @@ window.initPerfilSignature = function() {
                         
                         // Desenhar imagem redimensionada proporcionalmente no centro
                         const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
-                        const x = (canvas.width / 2) - (img.width / 2) * scale;
-                        const y = (canvas.height / 2) - (img.height / 2) * scale;
-                        ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+                        const drawW = img.width * scale;
+                        const drawH = img.height * scale;
+                        const x = (canvas.width / 2) - (drawW / 2);
+                        const y = (canvas.height / 2) - (drawH / 2);
+                        ctx.drawImage(img, x, y, drawW, drawH);
+                        
+                        // Processar a imagem para remover o fundo branco/cinza da foto
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const data = imageData.data;
+                        for (let i = 0; i < data.length; i += 4) {
+                            const r = data[i];
+                            const g = data[i + 1];
+                            const b = data[i + 2];
+                            const a = data[i + 3];
+                            
+                            if (a === 0) continue; // já transparente
+                            
+                            // Calcula brilho
+                            const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+                            
+                            // Se for claro (fundo de papel), deixar transparente
+                            if (brightness > 150) {
+                                data[i + 3] = 0;
+                            } else {
+                                // Se for escuro (tinta), escurecer para azul-escuro/preto
+                                data[i] = 10;     // R
+                                data[i + 1] = 20; // G
+                                data[i + 2] = 60; // B
+                                data[i + 3] = 255;
+                            }
+                        }
+                        ctx.putImageData(imageData, 0, 0);
                     };
                     img.src = event.target.result;
                 };
