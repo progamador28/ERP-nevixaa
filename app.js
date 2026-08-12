@@ -3223,26 +3223,48 @@ if (formNota) {
             arquivoUrl = urlData.publicUrl;
         }
         
-        if (id) {
-            const index = state.invoices.findIndex(n => n.id === id);
-            if (index !== -1) {
-                state.invoices[index] = { 
-                    ...state.invoices[index], 
-                    numeroNota, dataEmissao, equipamentoId, cliente, descricao, valorTotal, status, calcularImpostos,
-                    isMisto, valorPecas, valorServicos, arquivoUrl
-                };
-            }
-            addAuditLog("Nota Fiscal Editada", `Atualização dos dados da nota ${numeroNota} - Valor: ${formatCurrency(valorTotal)}`);
-        } else {
-            const novaNota = { 
-                id: notaId, numeroNota, dataEmissao, equipamentoId, cliente, descricao, valorTotal, status, calcularImpostos,
-                isMisto, valorPecas, valorServicos, arquivoUrl
-            };
-            state.invoices.push(novaNota);
-            addAuditLog("Nota Fiscal Cadastrada", `Emissão de nota ${numeroNota} para ${cliente} - Valor: ${formatCurrency(valorTotal)}`);
-        }
+        const parcelamentoSelect = document.getElementById("nota-condicao-pagamento");
+        const parcelas = (!id && parcelamentoSelect) ? parseInt(parcelamentoSelect.value) || 1 : 1;
         
-        sincronizarImpostosNota(notaId, numeroNota, dataEmissao, valorTotal, calcularImpostos);
+        const baseValorTotal = valorTotal / parcelas;
+        const baseValorPecas = valorPecas / parcelas;
+        const baseValorServicos = valorServicos / parcelas;
+        
+        for (let i = 0; i < parcelas; i++) {
+            let currNotaId = (id && parcelas === 1) ? id : generateUUID();
+            let currNumeroNota = numeroNota;
+            if (parcelas > 1) {
+                currNumeroNota = `${numeroNota} (${i + 1}/${parcelas})`;
+            }
+            
+            let currDataEmissao = dataEmissao;
+            if (i > 0) {
+                const d = new Date(dataEmissao + "T12:00:00");
+                d.setMonth(d.getMonth() + i);
+                currDataEmissao = d.toISOString().split("T")[0];
+            }
+            
+            if (id && parcelas === 1) {
+                const index = state.invoices.findIndex(n => n.id === id);
+                if (index !== -1) {
+                    state.invoices[index] = { 
+                        ...state.invoices[index], 
+                        numeroNota: currNumeroNota, dataEmissao: currDataEmissao, equipamentoId, cliente, descricao, valorTotal: baseValorTotal, status, calcularImpostos,
+                        isMisto, valorPecas: baseValorPecas, valorServicos: baseValorServicos, arquivoUrl
+                    };
+                }
+                addAuditLog("Nota Fiscal Editada", `Atualização dos dados da nota ${currNumeroNota} - Valor: ${formatCurrency(baseValorTotal)}`);
+            } else {
+                const novaNota = { 
+                    id: currNotaId, numeroNota: currNumeroNota, dataEmissao: currDataEmissao, equipamentoId, cliente, descricao, valorTotal: baseValorTotal, status: (i === 0 ? status : "Pendente"), calcularImpostos,
+                    isMisto, valorPecas: baseValorPecas, valorServicos: baseValorServicos, arquivoUrl
+                };
+                state.invoices.push(novaNota);
+                addAuditLog("Nota Fiscal Cadastrada", `Emissão de parcela ${currNumeroNota} para ${cliente} - Valor: ${formatCurrency(baseValorTotal)}`);
+            }
+            
+            sincronizarImpostosNota(currNotaId, currNumeroNota, currDataEmissao, baseValorTotal, calcularImpostos);
+        }
         
         saveStateToLocalStorage();
         closeModal("modal-nota");
@@ -3400,6 +3422,9 @@ function editInvoice(id) {
     document.getElementById("row-split-faturamento").style.display = inv.isMisto ? "flex" : "none";
     document.getElementById("nota-valor-pecas").value = inv.valorPecas ? formatInputCurrency(inv.valorPecas) : "";
     document.getElementById("nota-valor-servicos").value = inv.valorServicos ? formatInputCurrency(inv.valorServicos) : "";
+    
+    const rowParc = document.getElementById("row-parcelamento");
+    if (rowParc) rowParc.style.display = "none";
     
     openModal("modal-nota");
 }
@@ -3895,6 +3920,11 @@ function closeModal(modalId) {
             document.getElementById("form-nota").reset();
             document.getElementById("form-nota-id").value = "";
             document.getElementById("modal-nota-title").innerText = "Nova Nota Fiscal / Centro de Custo";
+            
+            const rowParc = document.getElementById("row-parcelamento");
+            if (rowParc) rowParc.style.display = "flex";
+            const selParc = document.getElementById("nota-condicao-pagamento");
+            if (selParc) selParc.value = "1";
         } else if (modalId === "modal-transacao") {
             document.getElementById("form-transacao").reset();
             document.getElementById("form-transacao-id").value = "";

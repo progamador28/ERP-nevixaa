@@ -1442,6 +1442,21 @@
                         </div>
                     </div>
 
+                    <div class="form-row" id="row-parcelamento">
+                        <div class="form-group col-12">
+                            <label for="nota-condicao-pagamento">Condição de Pagamento (Faturamento)</label>
+                            <select id="nota-condicao-pagamento">
+                                <option value="1">À Vista / Parcela Única (1x)</option>
+                                <option value="2">Parcelado em 2x (30 / 60 dias)</option>
+                                <option value="3">Parcelado em 3x (30 / 60 / 90 dias)</option>
+                                <option value="4">Parcelado em 4x (30 / 60 / 90 / 120 dias)</option>
+                                <option value="5">Parcelado em 5x (30 a 150 dias)</option>
+                                <option value="6">Parcelado em 6x (30 a 180 dias)</option>
+                            </select>
+                            <span style="font-size:0.7rem; color:var(--color-text-muted)">Se parcelado, o sistema dividirá os valores e gerará múltiplos títulos desdobrados para os meses seguintes.</span>
+                        </div>
+                    </div>
+
                     <div class="form-row">
                         <div class="form-group col-6">
                             <label for="nota-valor">Valor Total da Nota (R$) *</label>
