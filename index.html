@@ -27,7 +27,7 @@
     <!-- html2pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <!-- Folha de estilos customizada -->
-    <link rel="stylesheet" href="styles.css?v=2.2">
+    <link rel="stylesheet" href="styles.css?v=2.3">
     <script src="logo_b64.js"></script>
 </head>
 <body>
@@ -1708,7 +1708,7 @@
                     <h4><i class="fa-solid fa-signature"></i> Assinatura do Relatório de Atendimento Técnico (RAT)</h4>
                     <p class="text-muted" style="font-size:0.775rem;">Assine abaixo para validar e autorizar o faturamento deste atendimento técnico.</p>
                     <div class="signature-canvas-container mt-2">
-                        <canvas id="signature-pad" width="450" height="150"></canvas>
+                        <canvas id="signature-pad" width="450" height="150" style="background:#ffffff; border-radius:4px;"></canvas>
                         <div class="signature-actions">
                             <button id="btn-clear-signature" class="btn btn-outline btn-sm"><i class="fa-solid fa-eraser"></i> Limpar Canvas</button>
                             <button id="btn-save-signature" class="btn btn-secondary btn-sm"><i class="fa-solid fa-circle-check"></i> Salvar Assinatura RAT</button>
@@ -2596,7 +2596,7 @@
                     <div class="form-group">
                         <label>Assinatura Eletrônica do Técnico (Desenhe abaixo)</label>
                         <div style="position:relative; width:100%; border:2px dashed var(--color-border); border-radius:var(--radius-sm); background:#0c111d; overflow:hidden;">
-                            <canvas id="rat-tecnico-signature-canvas" width="460" height="150" style="cursor:crosshair; width:100%; height:150px; display:block;"></canvas>
+                            <canvas id="rat-tecnico-signature-canvas" width="460" height="150" style="cursor:crosshair; width:100%; height:150px; display:block; background:#ffffff; border-radius:4px;"></canvas>
                         </div>
                         <div class="d-flex gap-2 mt-1 align-items-center">
                             <button type="button" class="btn btn-outline btn-sm" id="btn-clear-rat-tecnico-signature"><i class="fa-solid fa-eraser"></i> Limpar Assinatura</button>
@@ -2624,7 +2624,7 @@
                     <div class="form-group">
                         <label>Assinatura Eletrônica do Responsável (Desenhe abaixo)</label>
                         <div style="position:relative; width:100%; border:2px dashed var(--color-border); border-radius:var(--radius-sm); background:#0c111d; overflow:hidden;">
-                            <canvas id="rat-signature-canvas" width="460" height="150" style="cursor:crosshair; width:100%; height:150px; display:block;"></canvas>
+                            <canvas id="rat-signature-canvas" width="460" height="150" style="cursor:crosshair; width:100%; height:150px; display:block; background:#ffffff; border-radius:4px;"></canvas>
                         </div>
                         <div class="d-flex gap-2 mt-1 align-items-center">
                             <button type="button" class="btn btn-outline btn-sm" id="btn-clear-rat-signature"><i class="fa-solid fa-eraser"></i> Limpar Assinatura</button>
@@ -2904,6 +2904,6 @@
        })();
     </script>
     <!-- Script principal de lógica do aplicativo -->
-    <script src="app.js?v=2"></script>
+    <script src="app.js?v=2.3"></script>
 </body>
 </html>

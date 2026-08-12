@@ -5313,49 +5313,59 @@ document.addEventListener("change", (e) => {
 document.addEventListener("submit", (e) => {
     if (e.target && e.target.id === "form-executar-chamado") {
         e.preventDefault();
-        const id = document.getElementById("rat-exec-id").value;
-        const tk = state.tickets.find(t => t.id === id);
-        if (!tk) return;
+        const btn = e.target.querySelector('button[type="submit"]');
+        if (btn) btn.disabled = true;
         
-        const servico = document.getElementById("rat-exec-servico").value.trim();
-        const respNome = document.getElementById("rat-exec-resp-nome").value.trim();
-        const respCargo = document.getElementById("rat-exec-resp-cargo").value.trim();
-        
-        // Obter assinatura do canvas (Cliente)
-        const canvas = document.getElementById("rat-signature-canvas");
-        const assinaturaData = canvas ? canvas.toDataURL() : "";
-        
-        // Obter assinatura do canvas (Técnico)
-        const tecnicoCanvas = document.getElementById("rat-tecnico-signature-canvas");
-        const assinaturaTecnicoData = tecnicoCanvas ? tecnicoCanvas.toDataURL() : "";
-        
-        // Obter fotos
-        const preview = document.getElementById("rat-photos-preview");
-        const fotosJson = preview && preview.dataset.photosJson ? JSON.parse(preview.dataset.photosJson) : [];
-        
-        // Salvar dados no ticket
-        tk.status = "Encerrado";
-        tk.dataFimAtendimento = new Date().toISOString();
-        tk.descricaoServico = servico;
-        tk.clienteNome = respNome;
-        tk.clienteCargo = respCargo;
-        tk.clienteAssinatura = assinaturaData;
-        tk.tecnicoAssinatura = assinaturaTecnicoData;
-        tk.fotos = fotosJson;
-        
-        // Integrar: Encontrar o equipamento associado (por nome) e restaurar seu status técnico para Operacional
-        const eq = state.equipments.find(item => eqMatch(item.nome, tk.equipamento) || eqMatch(item.tag, tk.equipamento));
-        if (eq) {
-            eq.status = "Operacional";
-            eq.ultimaPreventiva = new Date().toISOString().slice(0, 10);
-            addAuditLog("Equipamento Restaurado", `Ativo ${eq.tag} voltou para Operacional após conclusão e assinatura de RAT da OS ${tk.numero}`);
+        try {
+            const id = document.getElementById("rat-exec-id").value;
+            const tk = state.tickets.find(t => t.id === id);
+            if (!tk) {
+                if (btn) btn.disabled = false;
+                return;
+            }
+            
+            const servico = document.getElementById("rat-exec-servico").value.trim();
+            const respNome = document.getElementById("rat-exec-resp-nome").value.trim();
+            const respCargo = document.getElementById("rat-exec-resp-cargo").value.trim();
+            
+            // Obter assinatura do canvas (Cliente)
+            const canvas = document.getElementById("rat-signature-canvas");
+            const assinaturaData = canvas ? canvas.toDataURL() : "";
+            
+            // Obter assinatura do canvas (Técnico)
+            const tecnicoCanvas = document.getElementById("rat-tecnico-signature-canvas");
+            const assinaturaTecnicoData = tecnicoCanvas ? tecnicoCanvas.toDataURL() : "";
+            
+            // Obter fotos
+            const preview = document.getElementById("rat-photos-preview");
+            const fotosJson = preview && preview.dataset.photosJson ? JSON.parse(preview.dataset.photosJson) : [];
+            
+            // Salvar dados no ticket
+            tk.status = "Encerrado";
+            tk.dataFimAtendimento = new Date().toISOString();
+            tk.descricaoServico = servico;
+            tk.clienteNome = respNome;
+            tk.clienteCargo = respCargo;
+            tk.clienteAssinatura = assinaturaData;
+            tk.tecnicoAssinatura = assinaturaTecnicoData;
+            tk.fotos = fotosJson;
+            
+            // Integrar: Encontrar o equipamento associado (por nome) e restaurar seu status técnico para Operacional
+            const eq = state.equipments.find(item => eqMatch(item.nome, tk.equipamento) || eqMatch(item.tag, tk.equipamento));
+            if (eq) {
+                eq.status = "Operacional";
+                eq.ultimaPreventiva = new Date().toISOString().slice(0, 10);
+                addAuditLog("Equipamento Restaurado", `Ativo ${eq.tag} voltou para Operacional após conclusão e assinatura de RAT da OS ${tk.numero}`);
+            }
+            
+            addAuditLog("Chamado Concluído", `OS ${tk.numero} finalizada e RAT assinado por ${respNome} (${respCargo})`);
+            saveStateToLocalStorage();
+            closeModal("modal-executar-chamado");
+            renderApp();
+            uiAlert(`OS ${tk.numero} concluída com sucesso! Laudo RAT emitido e assinado digitalmente.`);
+        } finally {
+            if (btn) setTimeout(() => { btn.disabled = false; }, 1000);
         }
-        
-        addAuditLog("Chamado Concluído", `OS ${tk.numero} finalizada e RAT assinado por ${respNome} (${respCargo})`);
-        saveStateToLocalStorage();
-        closeModal("modal-executar-chamado");
-        renderApp();
-        uiAlert(`OS ${tk.numero} concluída com sucesso! Laudo RAT emitido e assinado digitalmente.`);
     }
 });
 
@@ -6297,30 +6307,39 @@ function setupSignatureImageImport(inputId, canvasId) {
                     const y = (canvas.height / 2) - (drawH / 2);
                     ctx.drawImage(img, x, y, drawW, drawH);
                     
-                    // Processar a imagem para remover o fundo branco/cinza da foto
+                    // Processar a imagem
                     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                     const data = imageData.data;
+                    
+                    let minB = 255, maxB = 0;
                     for (let i = 0; i < data.length; i += 4) {
-                        const r = data[i];
-                        const g = data[i + 1];
-                        const b = data[i + 2];
-                        const a = data[i + 3];
-                        
-                        if (a === 0) continue;
-                        
-                        // Calcula brilho
-                        const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
-                        
-                        if (brightness > 130) {
-                            data[i + 3] = 0; // Transparente
+                        if (data[i+3] === 0) continue;
+                        const b = data[i]*0.299 + data[i+1]*0.587 + data[i+2]*0.114;
+                        if (b < minB) minB = b;
+                        if (b > maxB) maxB = b;
+                    }
+                    
+                    let threshold = minB + ((maxB - minB) * 0.6);
+                    if (maxB - minB < 30) threshold = 130;
+                    
+                    for (let i = 0; i < data.length; i += 4) {
+                        if (data[i+3] === 0) continue;
+                        const brightness = (data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114);
+                        if (brightness > threshold) {
+                            data[i+3] = 0;
                         } else {
-                            data[i] = 10;     // R
-                            data[i + 1] = 20; // G
-                            data[i + 2] = 60; // B
-                            data[i + 3] = 255; // Sólido
+                            let alpha = 255;
+                            if (maxB - minB >= 30) {
+                                alpha = 255 - Math.pow((brightness - minB) / (threshold - minB), 2) * 255;
+                            }
+                            data[i] = 10;
+                            data[i+1] = 20;
+                            data[i+2] = 60;
+                            data[i+3] = alpha > 255 ? 255 : (alpha < 0 ? 0 : alpha);
                         }
                     }
                     ctx.putImageData(imageData, 0, 0);
+                    e.target.value = "";
                 };
                 img.src = event.target.result;
             };
