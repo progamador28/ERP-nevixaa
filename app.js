@@ -3092,6 +3092,15 @@ if (formNota) {
         const numeroNota = document.getElementById("nota-numero").value.trim();
         const dataEmissao = document.getElementById("nota-data").value;
         
+        const ratDataInput = document.getElementById("rat-data-exec");
+        if (ratDataInput && !ratDataInput.value) {
+            ratDataInput.valueAsDate = new Date();
+        }
+        
+        // Upload de imagens no modal RAT
+        setupSignatureImageImport("import-sig-tecnico", "rat-tecnico-signature-canvas");
+        setupSignatureImageImport("import-sig-cliente", "rat-signature-canvas");
+
         const equipamentoNome = document.getElementById("nota-equipamento-nome").value.trim();
         let equipamentoId = document.getElementById("nota-equipamento-id").value;
         const eqByNome = state.equipments.find(item => `${item.tag} - ${item.nome} (${item.cliente})` === equipamentoNome);
@@ -5153,63 +5162,11 @@ function clearSignatureCanvas(canvasId) {
 // LÓGICA DE ASSINATURA PADRÃO DO PERFIL
 window.initPerfilSignature = function() {
     setupCanvasEvents("sig-canvas-perfil");
+    setupCanvasEvents("sig-canvas-perfil");
     clearSignatureCanvas("sig-canvas-perfil");
     
     // Upload de Imagem de Assinatura
-    const importSigPerfil = document.getElementById("import-sig-perfil");
-    if (importSigPerfil) {
-        importSigPerfil.addEventListener("change", (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.getElementById("sig-canvas-perfil");
-                        const ctx = canvas.getContext("2d");
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        
-                        // Desenhar imagem redimensionada proporcionalmente no centro
-                        const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
-                        const drawW = img.width * scale;
-                        const drawH = img.height * scale;
-                        const x = (canvas.width / 2) - (drawW / 2);
-                        const y = (canvas.height / 2) - (drawH / 2);
-                        ctx.drawImage(img, x, y, drawW, drawH);
-                        
-                        // Processar a imagem para remover o fundo branco/cinza da foto
-                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                        const data = imageData.data;
-                        for (let i = 0; i < data.length; i += 4) {
-                            const r = data[i];
-                            const g = data[i + 1];
-                            const b = data[i + 2];
-                            const a = data[i + 3];
-                            
-                            if (a === 0) continue; // já transparente
-                            
-                            // Calcula brilho
-                            const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
-                            
-                            // Se for claro (fundo de papel), deixar transparente
-                            if (brightness > 150) {
-                                data[i + 3] = 0;
-                            } else {
-                                // Se for escuro (tinta), escurecer para azul-escuro/preto
-                                data[i] = 10;     // R
-                                data[i + 1] = 20; // G
-                                data[i + 2] = 60; // B
-                                data[i + 3] = 255;
-                            }
-                        }
-                        ctx.putImageData(imageData, 0, 0);
-                    };
-                    img.src = event.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
+    setupSignatureImageImport("import-sig-perfil", "sig-canvas-perfil");
     
     // Se já tiver uma assinatura salva, carregar no canvas
     const savedSig = localStorage.getItem("nevixa_assinatura_" + state.currentUser.id);
@@ -6310,4 +6267,64 @@ function limparCalculadora() {
     document.getElementById("calc-terceiros").value = "";
     document.getElementById("resumo-socio-container").style.display = "none";
     atualizarLabelCustoBase(); // reseta cálculos e label
+}
+
+function setupSignatureImageImport(inputId, canvasId) {
+    const inputEl = document.getElementById(inputId);
+    if (!inputEl) return;
+    
+    // Remove listeners antigos
+    const newEl = inputEl.cloneNode(true);
+    inputEl.parentNode.replaceChild(newEl, inputEl);
+    
+    newEl.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.getElementById(canvasId);
+                    if (!canvas) return;
+                    const ctx = canvas.getContext("2d");
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Desenhar imagem redimensionada proporcionalmente no centro
+                    const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+                    const drawW = img.width * scale;
+                    const drawH = img.height * scale;
+                    const x = (canvas.width / 2) - (drawW / 2);
+                    const y = (canvas.height / 2) - (drawH / 2);
+                    ctx.drawImage(img, x, y, drawW, drawH);
+                    
+                    // Processar a imagem para remover o fundo branco/cinza da foto
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
+                    for (let i = 0; i < data.length; i += 4) {
+                        const r = data[i];
+                        const g = data[i + 1];
+                        const b = data[i + 2];
+                        const a = data[i + 3];
+                        
+                        if (a === 0) continue;
+                        
+                        // Calcula brilho
+                        const brightness = (r * 0.299 + g * 0.587 + b * 0.114);
+                        
+                        if (brightness > 130) {
+                            data[i + 3] = 0; // Transparente
+                        } else {
+                            data[i] = 10;     // R
+                            data[i + 1] = 20; // G
+                            data[i + 2] = 60; // B
+                            data[i + 3] = 255; // Sólido
+                        }
+                    }
+                    ctx.putImageData(imageData, 0, 0);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 }
