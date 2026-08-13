@@ -5754,7 +5754,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const btnGerarLink = document.getElementById("btn-gerar-link-orcamento");
     if (btnGerarLink) {
-        btnGerarLink.addEventListener("click", () => {
+        btnGerarLink.addEventListener("click", async () => {
             const cliente = document.getElementById("orc-cliente").value || "NÃO INFORMADO";
             const equipamento = document.getElementById("orc-equipamento").value || "EQUIPAMENTO NÃO ESPECIFICADO";
             const tbodyOrcItems = document.getElementById("table-orc-items").querySelector("tbody");
@@ -5810,16 +5810,16 @@ document.addEventListener("DOMContentLoaded", () => {
             if(!state.quotations) state.quotations = [];
             state.quotations.push(novoOrcamento);
             
-            saveStateToLocalStorage();
+            // Aguarda o salvamento completo no Supabase para garantir que o cliente consegue ver
+            await saveStateToLocalStorage();
             
-            setTimeout(() => {
-                btnGerarLink.innerHTML = btnOriginal;
-                btnGerarLink.disabled = false;
-                if (window.copiarLinkProposta) {
-                    window.copiarLinkProposta(novoOrcamento.id);
-                }
-                renderCotacoes();
-            }, 1000);
+            btnGerarLink.innerHTML = btnOriginal;
+            btnGerarLink.disabled = false;
+            
+            if (window.copiarLinkProposta) {
+                window.copiarLinkProposta(novoOrcamento.id);
+            }
+            renderCotacoes();
         });
     }
 
