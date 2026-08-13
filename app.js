@@ -6211,12 +6211,32 @@ function renderOrcamentosList() {
 }
 
 async function deleteOrcamento(id) {
-    if (confirm("Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.")) {
-        state.quotations = state.quotations.filter(q => q.id !== id);
-        await saveStateToLocalStorage();
-        renderOrcamentosList();
-        uiAlert("Orçamento excluído com sucesso.");
-    }
+    Swal.fire({
+        title: 'Tem certeza?',
+        text: "Esta ação não pode ser desfeita e o orçamento será excluído!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#3b82f6',
+        confirmButtonText: 'Sim, excluir!',
+        cancelButtonText: 'Cancelar',
+        background: '#1e293b',
+        color: '#fff'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            state.quotations = state.quotations.filter(q => q.id !== id);
+            await saveStateToLocalStorage();
+            renderOrcamentosList();
+            Swal.fire({
+                title: 'Excluído!',
+                text: 'O orçamento foi excluído com sucesso.',
+                icon: 'success',
+                background: '#1e293b',
+                color: '#fff',
+                confirmButtonColor: '#3b82f6'
+            });
+        }
+    });
 }
 
 // ==========================================================================
