@@ -10,11 +10,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="logo_b64.js"></script>
     <style>
         :root {
-            --primary-color: #0d9488;
-            --primary-dark: #0f766e;
-            --text-main: #1f2937;
+            --primary-color: #06b6d4;
+            --primary-dark: #0891b2;
+            --text-main: #334155;
             --text-light: #4b5563;
             --border-color: #e5e7eb;
             --bg-color: #f3f4f6;
@@ -185,20 +186,16 @@
             color: var(--text-light);
         }
 
-        /* Floating Action Bar */
+        /* Action Bar */
         .action-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: #ffffff;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
-            padding: 15px 20px;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
             display: flex;
             justify-content: center;
             gap: 20px;
-            z-index: 1000;
-            border-top: 1px solid var(--border-color);
         }
 
         .btn {
@@ -290,7 +287,7 @@
                 <p>E-mail: nevixaengenharia@gmail.com</p>
             </div>
             <div class="logo-container">
-                <img src="logo.svg" alt="Nevixa Engenharia">
+                <img id="img-logo" src="" alt="Nevixa Engenharia">
             </div>
         </div>
 
@@ -364,16 +361,15 @@
                 <span>Aprovador Responsável</span>
             </div>
         </div>
-    </div>
 
-    <!-- Barra de ações que fica fixa em baixo -->
-    <div class="action-bar" id="action-bar" style="display: none;">
-        <button class="btn btn-reject" onclick="responderProposta('Recusado')">
-            <i class="fa-solid fa-xmark"></i> Reprovar Proposta
-        </button>
-        <button class="btn btn-approve" onclick="responderProposta('Aprovado')">
-            <i class="fa-solid fa-check"></i> Aprovar Proposta
-        </button>
+        <div class="action-bar" id="action-bar" style="display: none;">
+            <button class="btn btn-reject" onclick="responderProposta('Recusado')">
+                <i class="fa-solid fa-xmark"></i> Reprovar Proposta
+            </button>
+            <button class="btn btn-approve" onclick="responderProposta('Aprovado')">
+                <i class="fa-solid fa-check"></i> Aprovar Proposta
+            </button>
+        </div>
     </div>
 
     <script>
@@ -401,6 +397,11 @@
         }
 
         async function init() {
+            // Injetar logo base64 se disponível
+            if (typeof LOGO_BASE64 !== 'undefined') {
+                document.getElementById('img-logo').src = LOGO_BASE64;
+            }
+
             const urlParams = new URLSearchParams(window.location.search);
             idOrcamento = urlParams.get('id');
 
