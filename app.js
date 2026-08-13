@@ -6162,6 +6162,9 @@ function checkDocsExpiration() {
     } else {
         alertContainer.innerHTML = "";
         alertContainer.classList.add("d-none");
+    }
+}
+
 // ==========================================================================
 // RENDERIZAÇÃO DA LISTA DE ORÇAMENTOS
 // ==========================================================================
