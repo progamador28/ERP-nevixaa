@@ -1853,6 +1853,16 @@ window.deleteCalibrador = function(id) {
     });
 };
 
+window.copiarLinkProposta = function(id) {
+    const link = window.location.origin + '/proposta.html?id=' + id;
+    navigator.clipboard.writeText(link).then(() => {
+        uiAlert("Link da Proposta Comercial copiado com sucesso! Agora é só colar no WhatsApp do cliente.");
+    }).catch(err => {
+        console.error('Erro ao copiar', err);
+        prompt("Copie o link abaixo:", link);
+    });
+};
+
 function renderCotacoes() {
     const tbody = document.getElementById("table-cotacoes-body");
     if (!tbody) return;
@@ -1910,6 +1920,9 @@ function renderCotacoes() {
             <td>
                 <div class="d-flex gap-2">
                     ${actionBtn}
+                    <button class="btn btn-outline btn-sm" style="color: #6366f1; border-color: #6366f1; background: transparent; padding: 4px 8px;" onclick="copiarLinkProposta('${q.id}')" title="Copiar Link Público">
+                        <i class="fa-solid fa-link"></i>
+                    </button>
                     <button class="btn btn-outline btn-sm text-danger" onclick="deleteCotacao('${q.id}')" title="Excluir Cotação">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
@@ -5737,6 +5750,77 @@ document.addEventListener("DOMContentLoaded", () => {
         if (elValorFinal) {
             elValorFinal.innerText = finalTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
+    }
+
+    const btnGerarLink = document.getElementById("btn-gerar-link-orcamento");
+    if (btnGerarLink) {
+        btnGerarLink.addEventListener("click", () => {
+            const cliente = document.getElementById("orc-cliente").value || "NÃO INFORMADO";
+            const equipamento = document.getElementById("orc-equipamento").value || "EQUIPAMENTO NÃO ESPECIFICADO";
+            const tbodyOrcItems = document.getElementById("table-orc-items").querySelector("tbody");
+            
+            let sumQtd = 0;
+            let sumTotal = 0;
+            let sumPecas = 0;
+            let sumServicos = 0;
+            let descricoes = [];
+            
+            tbodyOrcItems.querySelectorAll("tr").forEach(row => {
+                const desc = row.querySelector(".orc-desc").value || "";
+                const qtd = parseFloat(row.querySelector(".orc-qtd").value) || 0;
+                const tipo = (row.querySelector(".orc-tipo").value || "").toUpperCase();
+                const unit = parseFloat(row.querySelector(".orc-unit").value) || 0;
+                const total = qtd * unit;
+                
+                sumTotal += total;
+                if (desc) descricoes.push(desc);
+                
+                if (tipo.includes("PECA") || tipo.includes("PEÇA") || tipo.includes("MAT")) {
+                    sumPecas += total;
+                } else {
+                    sumServicos += total;
+                }
+            });
+            
+            if (sumTotal === 0) {
+                uiAlert("Adicione pelo menos um item com valor ao orçamento.");
+                return;
+            }
+            
+            const btnOriginal = btnGerarLink.innerHTML;
+            btnGerarLink.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> SALVANDO...';
+            btnGerarLink.disabled = true;
+            
+            const novoOrcamento = {
+                id: generateUUID(),
+                peca: descricoes.join(" / ") || "Diversos",
+                equipamento: equipamento,
+                cliente: cliente,
+                solicitante: document.getElementById("orc-contato").value || state.currentUser.nome,
+                fornecedor: "Nevixa Engenharia",
+                valor: sumTotal,
+                valorPecas: sumPecas,
+                valorServicos: sumServicos,
+                valorTotal: sumTotal,
+                status: "Pendente",
+                data: new Date().toISOString().split('T')[0],
+                observacoes: "Orçamento Expresso gerado via sistema."
+            };
+            
+            if(!state.quotations) state.quotations = [];
+            state.quotations.push(novoOrcamento);
+            
+            saveStateToLocalStorage();
+            
+            setTimeout(() => {
+                btnGerarLink.innerHTML = btnOriginal;
+                btnGerarLink.disabled = false;
+                if (window.copiarLinkProposta) {
+                    window.copiarLinkProposta(novoOrcamento.id);
+                }
+                renderCotacoes();
+            }, 1000);
+        });
     }
 
     const btnGerarPdf = document.getElementById("btn-gerar-pdf-orcamento");

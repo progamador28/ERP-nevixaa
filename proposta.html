@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proposta Comercial - Nevixa Engenharia</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary-color: #0d9488;
+            --primary-dark: #0f766e;
+            --text-main: #1f2937;
+            --text-light: #4b5563;
+            --border-color: #e5e7eb;
+            --bg-color: #f3f4f6;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .document-container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 900px;
+            min-height: 1122px; /* A4 aspect ratio height approx */
+            margin: 40px auto 100px auto;
+            padding: 60px 80px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* Top Bar for Mobile/Desktop padding */
+        @media (max-width: 768px) {
+            .document-container {
+                margin: 0;
+                padding: 30px 20px;
+                min-height: 100vh;
+            }
+            body {
+                background-color: #ffffff;
+            }
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 50px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 20px;
+        }
+
+        .company-info {
+            flex: 1;
+        }
+
+        .company-info h1 {
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+        }
+
+        .company-info p {
+            margin: 3px 0;
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .logo-container img {
+            max-height: 80px;
+            max-width: 200px;
+        }
+
+        /* Sections */
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-top: 40px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .info-table td {
+            width: 50%;
+        }
+
+        .info-table strong {
+            color: var(--text-light);
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        /* Items Table */
+        .items-table th.col-qty, .items-table td.col-qty { width: 10%; text-align: center; }
+        .items-table th.col-desc, .items-table td.col-desc { width: 50%; }
+        .items-table th.col-price, .items-table td.col-price { width: 20%; text-align: right; }
+        .items-table th.col-total, .items-table td.col-total { width: 20%; text-align: right; }
+
+        .total-row td {
+            font-weight: 700;
+            font-size: 1.1rem;
+            background-color: #f9fafb;
+            color: var(--primary-dark);
+        }
+
+        /* Terms */
+        .terms-container {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+
+        .terms-container h4 {
+            margin: 15px 0 5px 0;
+            color: var(--text-main);
+        }
+        
+        .terms-container ul {
+            margin-top: 5px;
+            padding-left: 20px;
+        }
+
+        /* Signatures */
+        .signature-section {
+            margin-top: 80px;
+            display: flex;
+            justify-content: space-between;
+            gap: 40px;
+        }
+
+        .signature-box {
+            flex: 1;
+            text-align: center;
+            border-top: 1px solid var(--text-main);
+            padding-top: 10px;
+        }
+
+        .signature-box p {
+            margin: 0;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .signature-box span {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        /* Floating Action Bar */
+        .action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #ffffff;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 1000;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-approve {
+            background-color: #10b981;
+            color: white;
+        }
+        .btn-approve:hover { background-color: #059669; }
+
+        .btn-reject {
+            background-color: #ef4444;
+            color: white;
+        }
+        .btn-reject:hover { background-color: #dc2626; }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            position: absolute;
+            top: 20px;
+            right: -30px;
+            background: #10b981;
+            color: white;
+            padding: 8px 40px;
+            font-weight: bold;
+            transform: rotate(45deg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .status-badge.reprovado {
+            background: #ef4444;
+        }
+
+        /* Loading Overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <h3 style="color: var(--primary-dark); margin-top: 20px;">Carregando Proposta...</h3>
+    </div>
+
+    <div class="document-container" id="doc-container" style="display: none; overflow: hidden;">
+        <div id="status-ribbon" class="status-badge">APROVADO</div>
+
+        <div class="header">
+            <div class="company-info">
+                <h1 id="prop-numero">PROPOSTA COMERCIAL NÚM. ----</h1>
+                <p><strong>NEVIXA ENGENHARIA COMERCIO & SERVICOS LTDA</strong></p>
+                <p>CNPJ: 63.591.634/0001-86</p>
+                <p>Rodovia Duca Serra, 385 - Central, Santana - AP</p>
+                <p>Telefone: +55 (98) 98403-425</p>
+                <p>E-mail: nevixaengenharia@gmail.com</p>
+            </div>
+            <div class="logo-container">
+                <img src="logo.svg" alt="Nevixa Engenharia">
+            </div>
+        </div>
+
+        <div class="section-title">I. DADOS DO CLIENTE</div>
+        <table class="info-table">
+            <tr>
+                <td colspan="2"><strong>Cliente / Razão Social:</strong> <span id="cli-nome">Carregando...</span></td>
+            </tr>
+            <tr>
+                <td><strong>Data de Emissão:</strong> <span id="prop-data">--/--/----</span></td>
+                <td><strong>Validade da Proposta:</strong> <span id="prop-validade">--/--/----</span></td>
+            </tr>
+            <tr>
+                <td colspan="2"><strong>Equipamento Vinculado:</strong> <span id="prop-equip">Nenhum</span></td>
+            </tr>
+        </table>
+
+        <div class="section-title">II. SERVIÇOS E PRODUTOS</div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th class="col-qty">Qtd</th>
+                    <th class="col-desc">Descrição do Item / Serviço</th>
+                    <th class="col-price">Vlr. Unitário</th>
+                    <th class="col-total">Vlr. Total</th>
+                </tr>
+            </thead>
+            <tbody id="items-tbody">
+                <!-- Preenchido via JS -->
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="3" style="text-align: right;">TOTAL DA PROPOSTA:</td>
+                    <td style="text-align: right;" id="prop-total">R$ 0,00</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="section-title">III. CONDIÇÕES GERAIS E OBSERVAÇÕES</div>
+        <div class="terms-container">
+            <h4>Observações Adicionais:</h4>
+            <p id="prop-obs" style="background: #f9fafb; padding: 10px; border-radius: 4px; border: 1px solid #e5e7eb; min-height: 40px; margin-top: 5px;">
+                Nenhuma observação informada.
+            </p>
+
+            <h4>1. Condições de Fornecimento:</h4>
+            <ul>
+                <li>O fornecimento dos serviços ou peças se dará mediante aprovação desta proposta comercial.</li>
+                <li>Os impostos e taxas correspondentes à prestação do serviço já estão inclusos no preço final apresentado, salvo especificação contrária nas observações.</li>
+                <li>O cliente deve preparar o local e infraestrutura necessária seguindo as orientações da Nevixa Engenharia, quando aplicável.</li>
+            </ul>
+
+            <h4>2. Instalação e Garantia:</h4>
+            <ul>
+                <li><strong>Garantia de Serviços:</strong> 90 dias a contar da data de finalização, aplicável exclusivamente à mão de obra prestada e ao problema específico relatado.</li>
+                <li><strong>Garantia de Peças:</strong> Os equipamentos e peças adquiridos possuem garantia estabelecida pelo fabricante (mínimo de 3 meses), contra defeitos de fabricação.</li>
+                <li>Não estão cobertos pela garantia defeitos causados por mau uso, operação indevida, picos de energia, descargas atmosféricas ou intervenção de terceiros não autorizados.</li>
+            </ul>
+
+            <h4>3. Anuência Eletrônica:</h4>
+            <p>O aceite desta proposta por meio do botão "Aprovar Proposta" caracteriza assinatura eletrônica e concordância expressa com todos os valores e termos acima descritos, autorizando o início imediato dos trabalhos e posterior faturamento.</p>
+        </div>
+
+        <div class="signature-section">
+            <div class="signature-box">
+                <p>Nevixa Engenharia</p>
+                <span>Responsável Técnico / Comercial</span>
+            </div>
+            <div class="signature-box">
+                <p id="assinatura-cliente">Nome do Cliente</p>
+                <span>Aprovador Responsável</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de ações que fica fixa em baixo -->
+    <div class="action-bar" id="action-bar" style="display: none;">
+        <button class="btn btn-reject" onclick="responderProposta('Recusado')">
+            <i class="fa-solid fa-xmark"></i> Reprovar Proposta
+        </button>
+        <button class="btn btn-approve" onclick="responderProposta('Aprovado')">
+            <i class="fa-solid fa-check"></i> Aprovar Proposta
+        </button>
+    </div>
+
+    <script>
+        // CONFIGURAÇÃO SUPABASE
+        const SUPABASE_URL = "https://lwfjnmudtlybnnfgtgag.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZmpubXVkdGx5Ym5uZmd0Z2FnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5NTAzNTIsImV4cCI6MjA5ODUyNjM1Mn0.plYp6N1-gQDk3O8mY6IbGcyVyCby0oCg9rGtodD6WK4";
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let dadosSistemaGlobal = null;
+        let idOrcamento = null;
+        let orcamentoGlobal = null;
+
+        const PHONE_NUMBER = "559898403425"; // Telefone para envio do WhatsApp
+
+        // Função de formatação monetária
+        function formatCurrency(val) {
+            return Number(val).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        // Função para formatar data (YYYY-MM-DD para DD/MM/YYYY)
+        function formatDateBR(dateStr) {
+            if (!dateStr) return "--/--/----";
+            const [y, m, d] = dateStr.split('-');
+            return `${d}/${m}/${y}`;
+        }
+
+        async function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            idOrcamento = urlParams.get('id');
+
+            if (!idOrcamento) {
+                alert("Link de proposta inválido (ID ausente).");
+                return;
+            }
+
+            try {
+                // 1. Busca os dados_sistema de forma anônima
+                const { data, error } = await supabaseClient
+                    .from('dados_sistema')
+                    .select('dados')
+                    .eq('id', 1)
+                    .single();
+
+                if (error) throw error;
+                
+                dadosSistemaGlobal = data.dados;
+                const cotacoes = dadosSistemaGlobal.quotations || [];
+                
+                // 2. Encontra a cotação
+                orcamentoGlobal = cotacoes.find(q => q.id === idOrcamento);
+
+                if (!orcamentoGlobal) {
+                    alert("Proposta não encontrada ou removida do sistema.");
+                    return;
+                }
+
+                // 3. Renderiza a tela
+                renderizarProposta();
+
+                // 4. Esconde loading
+                document.getElementById('loading-overlay').style.display = 'none';
+                document.getElementById('doc-container').style.display = 'block';
+
+            } catch (err) {
+                console.error("Erro ao carregar proposta:", err);
+                alert("Erro ao tentar carregar a proposta comercial. Tente novamente mais tarde.");
+            }
+        }
+
+        function renderizarProposta() {
+            const q = orcamentoGlobal;
+
+            // Header info
+            document.getElementById('prop-numero').innerText = `PROPOSTA COMERCIAL NÚM. ${q.id.substring(0,6).toUpperCase()}`;
+            document.getElementById('cli-nome').innerText = q.cliente || "Não informado";
+            document.getElementById('prop-data').innerText = formatDateBR(q.data);
+            
+            // Validade: +15 dias da data de criação
+            let dataCriacao = new Date(q.data);
+            dataCriacao.setDate(dataCriacao.getDate() + 15);
+            document.getElementById('prop-validade').innerText = dataCriacao.toLocaleDateString('pt-BR');
+            
+            document.getElementById('prop-equip').innerText = q.equipamento || "Avulso / Nenhum";
+            document.getElementById('assinatura-cliente').innerText = q.cliente || "Cliente";
+            
+            if (q.observacoes && q.observacoes.trim() !== "") {
+                document.getElementById('prop-obs').innerText = q.observacoes;
+            }
+
+            // Tabela de itens
+            const tbody = document.getElementById('items-tbody');
+            tbody.innerHTML = "";
+            let temItem = false;
+
+            if (q.valorPecas > 0) {
+                temItem = true;
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="col-qty">1</td>
+                        <td class="col-desc">Fornecimento de Peças / Materiais</td>
+                        <td class="col-price">${formatCurrency(q.valorPecas)}</td>
+                        <td class="col-total">${formatCurrency(q.valorPecas)}</td>
+                    </tr>
+                `;
+            }
+            if (q.valorServicos > 0) {
+                temItem = true;
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="col-qty">1</td>
+                        <td class="col-desc">Mão de Obra / Serviços de Engenharia Clínica</td>
+                        <td class="col-price">${formatCurrency(q.valorServicos)}</td>
+                        <td class="col-total">${formatCurrency(q.valorServicos)}</td>
+                    </tr>
+                `;
+            }
+
+            if (!temItem && q.valorTotal > 0) {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="col-qty">1</td>
+                        <td class="col-desc">Serviços Gerais / Orçamento Base</td>
+                        <td class="col-price">${formatCurrency(q.valorTotal)}</td>
+                        <td class="col-total">${formatCurrency(q.valorTotal)}</td>
+                    </tr>
+                `;
+            }
+
+            document.getElementById('prop-total').innerText = formatCurrency(q.valorTotal);
+
+            // Controle de Status e Action Bar
+            const actionBar = document.getElementById('action-bar');
+            const ribbon = document.getElementById('status-ribbon');
+
+            if (q.status === 'Aprovado' || q.status === 'Recebido') {
+                ribbon.innerText = 'APROVADO';
+                ribbon.className = 'status-badge'; // verde
+                ribbon.style.display = 'block';
+                actionBar.style.display = 'none';
+            } else if (q.status === 'Recusado') {
+                ribbon.innerText = 'REPROVADO';
+                ribbon.className = 'status-badge reprovado'; // vermelho
+                ribbon.style.display = 'block';
+                actionBar.style.display = 'none';
+            } else {
+                // Pendente
+                ribbon.style.display = 'none';
+                actionBar.style.display = 'flex';
+            }
+        }
+
+        async function responderProposta(resposta) {
+            if (!confirm(`Tem certeza que deseja ${resposta.toUpperCase()} esta proposta comercial?`)) return;
+
+            // Desabilita botões para evitar duplo clique
+            const botoes = document.querySelectorAll('.action-bar .btn');
+            botoes.forEach(b => b.disabled = true);
+            botoes.forEach(b => b.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...');
+
+            try {
+                // 1. Precisamos baixar novamente o estado global fresquinho para evitar sobrescrever dados recentes
+                const { data, error } = await supabaseClient
+                    .from('dados_sistema')
+                    .select('dados')
+                    .eq('id', 1)
+                    .single();
+
+                if (error) throw error;
+                
+                const cloudData = data.dados;
+                
+                // 2. Modifica a cotação no array
+                const index = cloudData.quotations.findIndex(q => q.id === idOrcamento);
+                if (index === -1) throw new Error("Cotação não encontrada no servidor.");
+                
+                cloudData.quotations[index].status = resposta;
+
+                // 3. Salva de volta
+                const { error: updateError } = await supabaseClient
+                    .from('dados_sistema')
+                    .update({ dados: cloudData })
+                    .eq('id', 1);
+
+                if (updateError) throw updateError;
+
+                // Sucesso
+                orcamentoGlobal.status = resposta;
+                renderizarProposta();
+                
+                // Redireciona para o WhatsApp
+                let msg = "";
+                if (resposta === "Aprovado") {
+                    msg = `Olá! Estou entrando em contato para informar que APROVEI a proposta comercial *Nº ${idOrcamento.substring(0,6).toUpperCase()}* no valor de *${formatCurrency(orcamentoGlobal.valorTotal)}*. Podemos seguir com o serviço!`;
+                } else {
+                    msg = `Olá. Infelizmente REPROVEI a proposta comercial *Nº ${idOrcamento.substring(0,6).toUpperCase()}*. Gostaria de renegociar ou tirar dúvidas.`;
+                }
+                
+                const zapUrl = `https://api.whatsapp.com/send?phone=${PHONE_NUMBER}&text=${encodeURIComponent(msg)}`;
+                window.open(zapUrl, "_blank");
+
+            } catch (err) {
+                console.error(err);
+                alert("Ocorreu um erro ao enviar sua resposta. Por favor, tente novamente ou entre em contato pelo telefone.");
+                // Restaura botões
+                renderizarProposta(); 
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
