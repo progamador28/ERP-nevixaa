@@ -986,9 +986,11 @@ function init() {
     renderDashboard();
     checkDocsExpiration();
     checkApprovedQuotes();
+    renderOrcamentosList();
 }
 
 function renderDashboard() {
+    renderOrcamentosList();
     if (state.currentUser && state.currentUser.papel === "cliente") {
         renderDashboardCliente();
         return;
@@ -6205,6 +6207,50 @@ function checkApprovedQuotes() {
         alertContainer.innerHTML = "";
         alertContainer.classList.add("d-none");
     }
+}
+
+// ==========================================================================
+// RENDERIZAÇÃO DA LISTA DE ORÇAMENTOS
+// ==========================================================================
+function renderOrcamentosList() {
+    const tbody = document.getElementById("tbody-orcamentos-list");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    if (!state.cotacoes || state.cotacoes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center">Nenhum orçamento gerado ainda.</td></tr>`;
+        return;
+    }
+
+    // Sort descending by date
+    const sorted = [...state.cotacoes].sort((a,b) => new Date(b.data) - new Date(a.data));
+
+    sorted.forEach(q => {
+        let statusBadge = '';
+        if (q.status === 'Aprovado') {
+            statusBadge = '<span class="badge" style="background: #dcfce7; color: #166534;"><i class="fa-solid fa-check"></i> Aprovado</span>';
+        } else if (q.status === 'Recusado') {
+            statusBadge = '<span class="badge" style="background: #fee2e2; color: #991b1b;"><i class="fa-solid fa-xmark"></i> Recusado</span>';
+        } else {
+            statusBadge = '<span class="badge" style="background: #fef3c7; color: #92400e;"><i class="fa-solid fa-clock"></i> Pendente</span>';
+        }
+
+        const link = `proposta.html?id=${q.id}`;
+        
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${formatDate(q.data)}</td>
+            <td><strong>${q.cliente || '-'}</strong></td>
+            <td>${q.equipamento || 'Expresso'}</td>
+            <td><strong>R$ ${Number(q.totalGeral).toFixed(2).replace('.', ',')}</strong></td>
+            <td>${statusBadge}</td>
+            <td class="text-center">
+                <a href="${link}" target="_blank" class="btn btn-sm btn-outline text-primary" title="Abrir Link" style="border-color:transparent"><i class="fa-solid fa-external-link"></i></a>
+                <button class="btn btn-sm btn-outline text-success" onclick="navigator.clipboard.writeText(window.location.origin + window.location.pathname.replace('index.html','') + '${link}'); alert('Link copiado!');" title="Copiar Link" style="border-color:transparent"><i class="fa-solid fa-copy"></i></button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
 
 // ==========================================================================
