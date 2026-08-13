@@ -386,6 +386,62 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .document-container {
+                padding: 20px;
+                margin: 10px;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            }
+            .header {
+                flex-direction: column-reverse;
+                align-items: center;
+                text-align: center;
+                gap: 20px;
+                margin-top: 20px;
+            }
+            .company-info h1 {
+                font-size: 1.2rem;
+            }
+            .status-badge {
+                right: -45px;
+                top: 15px;
+                font-size: 0.8rem;
+                padding: 5px 45px;
+            }
+            .logo-container img {
+                max-width: 200px;
+            }
+            .sig-body {
+                flex-direction: column;
+            }
+            .sig-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e5e7eb;
+                padding: 15px 20px;
+            }
+            .sig-content {
+                padding: 20px;
+            }
+            .info-table td {
+                display: block;
+                width: 100%;
+                border-bottom: none;
+            }
+            .info-table tr {
+                border-bottom: 1px solid var(--border-color);
+            }
+            .action-bar {
+                flex-direction: column;
+                padding: 15px;
+            }
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
