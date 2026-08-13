@@ -442,6 +442,49 @@
                 justify-content: center;
             }
         }
+
+        /* Expired Screen */
+        .expired-container {
+            display: none;
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            font-family: 'Inter', sans-serif;
+            border-top: 5px solid #111827; /* Dark top bar */
+        }
+        .expired-logo {
+            text-align: left;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 15px;
+        }
+        .expired-logo img {
+            max-height: 50px;
+        }
+        .expired-title {
+            font-size: 2rem;
+            font-weight: 300;
+            color: #111827;
+            line-height: 1.2;
+            margin-bottom: 40px;
+        }
+        .expired-title strong {
+            font-weight: 700;
+        }
+        .expired-details p {
+            font-size: 0.95rem;
+            color: #111827;
+            margin-bottom: 10px;
+        }
+        .expired-details strong {
+            font-weight: 600;
+        }
+        .expired-details a {
+            color: #111827;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -449,6 +492,19 @@
     <div id="loading-overlay">
         <div class="spinner"></div>
         <h3 style="color: var(--primary-dark); margin-top: 20px;">Carregando Proposta...</h3>
+    </div>
+
+    <div class="expired-container" id="expired-container">
+        <div class="expired-logo">
+            <img src="logo-oficial-nevixa-v3.png" alt="Nevixa Engenharia">
+        </div>
+        <h2 class="expired-title">Essa proposta está:<br><strong>expirada</strong>. Contate o<br>usuário e veja como<br>solucionar o problema.</h2>
+        
+        <div class="expired-details">
+            <p><strong>Empresa:</strong> Nevixa Engenharia Comércio & Serviços</p>
+            <p><strong>Contato:</strong> +55 (96) 98403-4257</p>
+            <p><strong>Email:</strong> <a href="mailto:nevixaengenharia@gmail.com">nevixaengenharia@gmail.com</a></p>
+        </div>
     </div>
 
     <div class="document-container" id="doc-container" style="display: none; overflow: hidden;">
@@ -600,6 +656,19 @@
 
                 if (!orcamentoGlobal) {
                     alert("Proposta não encontrada ou removida do sistema.");
+                    return;
+                }
+
+                // Verifica expiração (Validade de 15 dias)
+                const dataCriacao = new Date(orcamentoGlobal.data);
+                const dataValidade = new Date(dataCriacao);
+                dataValidade.setDate(dataValidade.getDate() + 15);
+                
+                const agora = new Date();
+                // Expira se passou da validade E o status ainda for Pendente ou similar (não aprovado nem recusado)
+                if (agora > dataValidade && orcamentoGlobal.status !== 'Aprovado' && orcamentoGlobal.status !== 'Recebido') {
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    document.getElementById('expired-container').style.display = 'block';
                     return;
                 }
 
