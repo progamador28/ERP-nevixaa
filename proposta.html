@@ -499,27 +499,43 @@
             tbody.innerHTML = "";
             let temItem = false;
 
-            if (q.valorPecas > 0) {
-                temItem = true;
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="col-qty">1</td>
-                        <td class="col-desc">Fornecimento de Peças / Materiais</td>
-                        <td class="col-price">${formatCurrency(q.valorPecas)}</td>
-                        <td class="col-total">${formatCurrency(q.valorPecas)}</td>
-                    </tr>
-                `;
-            }
-            if (q.valorServicos > 0) {
-                temItem = true;
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="col-qty">1</td>
-                        <td class="col-desc">Mão de Obra / Serviços de Engenharia Clínica</td>
-                        <td class="col-price">${formatCurrency(q.valorServicos)}</td>
-                        <td class="col-total">${formatCurrency(q.valorServicos)}</td>
-                    </tr>
-                `;
+            if (q.items && q.items.length > 0) {
+                // Nova versão com itens exatos
+                q.items.forEach(item => {
+                    temItem = true;
+                    tbody.innerHTML += \`
+                        <tr>
+                            <td class="col-qty">\${item.qtd}</td>
+                            <td class="col-desc">\${item.desc}</td>
+                            <td class="col-price">\${formatCurrency(item.unit)}</td>
+                            <td class="col-total">\${formatCurrency(item.total)}</td>
+                        </tr>
+                    \`;
+                });
+            } else {
+                // Versão antiga de fallback para propostas antigas
+                if (q.valorPecas > 0) {
+                    temItem = true;
+                    tbody.innerHTML += \`
+                        <tr>
+                            <td class="col-qty">1</td>
+                            <td class="col-desc">Fornecimento de Peças / Materiais</td>
+                            <td class="col-price">\${formatCurrency(q.valorPecas)}</td>
+                            <td class="col-total">\${formatCurrency(q.valorPecas)}</td>
+                        </tr>
+                    \`;
+                }
+                if (q.valorServicos > 0) {
+                    temItem = true;
+                    tbody.innerHTML += \`
+                        <tr>
+                            <td class="col-qty">1</td>
+                            <td class="col-desc">Mão de Obra / Serviços de Engenharia Clínica</td>
+                            <td class="col-price">\${formatCurrency(q.valorServicos)}</td>
+                            <td class="col-total">\${formatCurrency(q.valorServicos)}</td>
+                        </tr>
+                    \`;
+                }
             }
 
             if (!temItem && q.valorTotal > 0) {

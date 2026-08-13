@@ -5764,6 +5764,7 @@ document.addEventListener("DOMContentLoaded", () => {
             let sumPecas = 0;
             let sumServicos = 0;
             let descricoes = [];
+            let itemsArray = [];
             
             tbodyOrcItems.querySelectorAll("tr").forEach(row => {
                 const desc = row.querySelector(".orc-desc").value || "";
@@ -5773,7 +5774,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 const total = qtd * unit;
                 
                 sumTotal += total;
-                if (desc) descricoes.push(desc);
+                if (desc) {
+                    descricoes.push(desc);
+                    itemsArray.push({ desc, qtd, unit, total, tipo });
+                }
                 
                 if (tipo.includes("PECA") || tipo.includes("PEÇA") || tipo.includes("MAT")) {
                     sumPecas += total;
@@ -5804,7 +5808,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 valorTotal: sumTotal,
                 status: "Pendente",
                 data: new Date().toISOString().split('T')[0],
-                observacoes: "Orçamento Expresso gerado via sistema."
+                observacoes: "Orçamento Expresso gerado via sistema.",
+                items: itemsArray
             };
             
             if(!state.quotations) state.quotations = [];
