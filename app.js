@@ -985,7 +985,6 @@ function init() {
     initGlobalMonthFilter();
     renderDashboard();
     checkDocsExpiration();
-    checkApprovedQuotes();
     renderOrcamentosList();
 }
 
@@ -997,7 +996,6 @@ function renderDashboard() {
     }
 
     checkDocsExpiration(); // Verifica documentos a vencer/vencidos
-    checkApprovedQuotes(); // Verifica orçamentos aprovados recentemente
 
     // ==== DASHBOARD GERAL (ENGENHARIA/ADMIN) ====
     const elAb = document.getElementById("dash-geral-os-abertas");
@@ -6164,51 +6162,6 @@ function checkDocsExpiration() {
     } else {
         alertContainer.innerHTML = "";
         alertContainer.classList.add("d-none");
-    }
-}
-
-function checkApprovedQuotes() {
-    const alertContainer = document.getElementById("quotes-alerts-container");
-    if(!alertContainer) return;
-    
-    if(!state.quotations || state.quotations.length === 0) {
-        alertContainer.classList.add("d-none");
-        return;
-    }
-    
-    const alertas = [];
-    const hoje = new Date();
-    
-    state.quotations.forEach(q => {
-        if (q.status === 'Aprovado') {
-            const dataCriacao = new Date(q.data);
-            const diffTime = Math.abs(hoje - dataCriacao);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            // Show alert if it was approved in the last 15 days
-            if (diffDays <= 15) {
-                alertas.push(`<div class="alert" style="background-color: #dcfce7; color: #166534; padding: 15px; border-radius: 8px; border-left: 5px solid #22c55e; margin-bottom: 15px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" onclick="changeTab('tab-orcamentos')">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <i class="fa-solid fa-circle-check" style="font-size: 1.5rem;"></i>
-                        <div>
-                            <strong>ORÇAMENTO APROVADO!</strong><br>
-                            O orçamento de <strong>${q.cliente}</strong> (${q.equipamento || 'Expresso'}) no valor de <strong>R$ ${Number(q.totalGeral).toFixed(2).replace('.',',')}</strong> foi aprovado. Clique para ver.
-                        </div>
-                    </div>
-                </div>`);
-            }
-        }
-    });
-    
-    if(alertas.length > 0) {
-        alertContainer.innerHTML = alertas.join("");
-        alertContainer.classList.remove("d-none");
-    } else {
-        alertContainer.innerHTML = "";
-        alertContainer.classList.add("d-none");
-    }
-}
-
 // ==========================================================================
 // RENDERIZAÇÃO DA LISTA DE ORÇAMENTOS
 // ==========================================================================
@@ -6242,15 +6195,25 @@ function renderOrcamentosList() {
             <td>${formatDate(q.data)}</td>
             <td><strong>${q.cliente || '-'}</strong></td>
             <td>${q.equipamento || 'Expresso'}</td>
-            <td><strong>R$ ${Number(q.totalGeral).toFixed(2).replace('.', ',')}</strong></td>
+            <td><strong>R$ ${Number(q.valorTotal || 0).toFixed(2).replace('.', ',')}</strong></td>
             <td>${statusBadge}</td>
             <td class="text-center">
                 <a href="${link}" target="_blank" class="btn btn-sm btn-outline text-primary" title="Abrir Link" style="border-color:transparent"><i class="fa-solid fa-external-link"></i></a>
                 <button class="btn btn-sm btn-outline text-success" onclick="navigator.clipboard.writeText(window.location.origin + window.location.pathname.replace('index.html','') + '${link}'); alert('Link copiado!');" title="Copiar Link" style="border-color:transparent"><i class="fa-solid fa-copy"></i></button>
+                <button class="btn btn-sm btn-outline text-danger" onclick="deleteOrcamento('${q.id}')" title="Excluir Orçamento" style="border-color:transparent"><i class="fa-solid fa-trash"></i></button>
             </td>
         `;
         tbody.appendChild(tr);
     });
+}
+
+async function deleteOrcamento(id) {
+    if (confirm("Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.")) {
+        state.quotations = state.quotations.filter(q => q.id !== id);
+        await saveStateToLocalStorage();
+        renderOrcamentosList();
+        uiAlert("Orçamento excluído com sucesso.");
+    }
 }
 
 // ==========================================================================
