@@ -984,6 +984,8 @@ function initGlobalMonthFilter() {
 function init() {
     initGlobalMonthFilter();
     renderDashboard();
+    checkDocsExpiration();
+    checkApprovedQuotes();
 }
 
 function renderDashboard() {
@@ -993,6 +995,7 @@ function renderDashboard() {
     }
 
     checkDocsExpiration(); // Verifica documentos a vencer/vencidos
+    checkApprovedQuotes(); // Verifica orçamentos aprovados recentemente
 
     // ==== DASHBOARD GERAL (ENGENHARIA/ADMIN) ====
     const elAb = document.getElementById("dash-geral-os-abertas");
@@ -6150,6 +6153,48 @@ function checkDocsExpiration() {
             alertas.push(`<div class="alert" style="background-color: #fee2e2; color: #991b1b; padding: 10px; border-radius: 4px; border-left: 4px solid #ef4444; margin-bottom: 10px;"><i class="fa-solid fa-circle-exclamation"></i> O documento <strong>${doc.nome}</strong> venceu no dia ${formatDate(doc.validade)}. É necessário atualizá-lo!</div>`);
         } else if (status.statusClass === "badge-docs-warning") {
             alertas.push(`<div class="alert" style="background-color: #fef3c7; color: #92400e; padding: 10px; border-radius: 4px; border-left: 4px solid #f59e0b; margin-bottom: 10px;"><i class="fa-solid fa-triangle-exclamation"></i> O documento <strong>${doc.nome}</strong> ${status.statusText.toLowerCase()} (${formatDate(doc.validade)}).</div>`);
+        }
+    });
+    
+    if(alertas.length > 0) {
+        alertContainer.innerHTML = alertas.join("");
+        alertContainer.classList.remove("d-none");
+    } else {
+        alertContainer.innerHTML = "";
+        alertContainer.classList.add("d-none");
+    }
+}
+
+function checkApprovedQuotes() {
+    const alertContainer = document.getElementById("quotes-alerts-container");
+    if(!alertContainer) return;
+    
+    if(!state.cotacoes || state.cotacoes.length === 0) {
+        alertContainer.classList.add("d-none");
+        return;
+    }
+    
+    const alertas = [];
+    const hoje = new Date();
+    
+    state.cotacoes.forEach(q => {
+        if (q.status === 'Aprovado') {
+            const dataCriacao = new Date(q.data);
+            const diffTime = Math.abs(hoje - dataCriacao);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            // Show alert if it was approved in the last 15 days
+            if (diffDays <= 15) {
+                alertas.push(`<div class="alert" style="background-color: #dcfce7; color: #166534; padding: 15px; border-radius: 8px; border-left: 5px solid #22c55e; margin-bottom: 15px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" onclick="changeTab('tab-orcamentos')">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="fa-solid fa-circle-check" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <strong>ORÇAMENTO APROVADO!</strong><br>
+                            O orçamento de <strong>${q.cliente}</strong> (${q.equipamento || 'Expresso'}) no valor de <strong>R$ ${Number(q.totalGeral).toFixed(2).replace('.',',')}</strong> foi aprovado. Clique para ver.
+                        </div>
+                    </div>
+                </div>`);
+            }
         }
     });
     
