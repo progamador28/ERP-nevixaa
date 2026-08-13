@@ -6178,6 +6178,18 @@ function renderOrcamentosList() {
         return;
     }
 
+    // Ensure all quotes have an ID
+    let needsSave = false;
+    state.quotations.forEach(q => {
+        if (!q.id || q.id === 'undefined') {
+            q.id = generateUUID();
+            needsSave = true;
+        }
+    });
+    if (needsSave) {
+        saveStateToLocalStorageOnly();
+    }
+
     // Sort descending by date
     const sorted = [...state.quotations].sort((a,b) => new Date(b.data) - new Date(a.data));
 
@@ -6224,9 +6236,17 @@ async function deleteOrcamento(id) {
         color: '#fff'
     }).then(async (result) => {
         if (result.isConfirmed) {
-            state.quotations = state.quotations.filter(q => q.id !== id);
+            // Remove from array
+            const initialLength = state.quotations.length;
+            state.quotations = state.quotations.filter(q => String(q.id) !== String(id));
+            
+            if (state.quotations.length === initialLength) {
+                console.warn("Item not found or ID mismatch! ID requested:", id);
+            }
+
             await saveStateToLocalStorage();
             renderOrcamentosList();
+            
             Swal.fire({
                 title: 'Excluído!',
                 text: 'O orçamento foi excluído com sucesso.',
