@@ -6171,7 +6171,7 @@ function checkApprovedQuotes() {
     const alertContainer = document.getElementById("quotes-alerts-container");
     if(!alertContainer) return;
     
-    if(!state.cotacoes || state.cotacoes.length === 0) {
+    if(!state.quotations || state.quotations.length === 0) {
         alertContainer.classList.add("d-none");
         return;
     }
@@ -6179,7 +6179,7 @@ function checkApprovedQuotes() {
     const alertas = [];
     const hoje = new Date();
     
-    state.cotacoes.forEach(q => {
+    state.quotations.forEach(q => {
         if (q.status === 'Aprovado') {
             const dataCriacao = new Date(q.data);
             const diffTime = Math.abs(hoje - dataCriacao);
@@ -6217,13 +6217,13 @@ function renderOrcamentosList() {
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    if (!state.cotacoes || state.cotacoes.length === 0) {
+    if (!state.quotations || state.quotations.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" class="text-center">Nenhum orçamento gerado ainda.</td></tr>`;
         return;
     }
 
     // Sort descending by date
-    const sorted = [...state.cotacoes].sort((a,b) => new Date(b.data) - new Date(a.data));
+    const sorted = [...state.quotations].sort((a,b) => new Date(b.data) - new Date(a.data));
 
     sorted.forEach(q => {
         let statusBadge = '';
