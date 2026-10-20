@@ -1023,11 +1023,11 @@
                 <div id="pdf-template" style="display: none;">
                     <div class="pdf-page" style="position: relative;">
                         <div class="watermark-bg">
-                            <img src="logo.png" class="pdf-logo" style="width: 80%; max-width: 600px; height: auto; opacity: 0.1;" alt="Watermark">
+                            <img src="logo-oficial-nevixa-v3.png" class="pdf-logo" style="width: 80%; max-width: 600px; height: auto; opacity: 0.1;" alt="Watermark">
                         </div>
                         <div class="pdf-header">
                             <div class="pdf-logo-area">
-                                <img src="logo.png" alt="Nevixa" class="pdf-logo" style="width: 200px; height: auto;">
+                                <img src="logo-oficial-nevixa-v3.png" alt="Nevixa" class="pdf-logo" style="width: 200px; height: auto;">
                             </div>
                             <div class="pdf-title-area">
                                 <h2>NEVIXA ENGENHARIA COMÉRCIO & SERVIÇOS</h2>
@@ -1039,7 +1039,7 @@
                         </div>
                         
                         <div class="pdf-subtitle">
-                            <span>PROPOSTA Nº - <span id="pdf-prop-num">000</span> – DATA: <span id="pdf-date">00/00/0000</span> – P.<span id="pdf-prop-num2">000</span></span>
+                            <span>PROPOSTA Nº - <span id="pdf-prop-num">000</span> – DATA: <span id="pdf-date">00/00/0000</span> – P.<span id="pdf-prop-num2">000</span> <span id="pdf-status-badge"></span></span>
                         </div>
 
                         <div class="pdf-section-title">1. DADOS DO SOLICITANTE / CLIENTE / FORNECEDOR:</div>
@@ -1059,6 +1059,10 @@
                             <tr>
                                 <td class="pdf-td-label">FONE/E-MAIL</td>
                                 <td class="pdf-td-value" id="pdf-cliente-email"></td>
+                            </tr>
+                            <tr>
+                                <td class="pdf-td-label">EQUIPAMENTO</td>
+                                <td class="pdf-td-value" id="pdf-cliente-equipamento"></td>
                             </tr>
                         </table>
 
@@ -1103,6 +1107,10 @@
                             </tfoot>
                         </table>
 
+                        <div id="pdf-obs-section" style="display: none; page-break-inside: avoid; margin-top: 15px;">
+                            <div class="pdf-section-title">OBSERVAÇÕES:</div>
+                            <p id="pdf-obs-text" style="font-size: 11px; margin: 2px 0;"></p>
+                        </div>
                         <div class="pdf-bank-info" style="page-break-inside: avoid;">
                             <div class="pdf-section-title" style="margin-top: 30px;">3. DADOS BANCÁRIOS E CONDIÇÕES DE PAGAMENTO:</div>
                             <p><strong>&#9632; DADOS BANCÁRIOS - CONTA EMPRESARIAL</strong></p>

@@ -1923,6 +1923,9 @@ function renderCotacoes() {
             <td>
                 <div class="d-flex gap-2">
                     ${actionBtn}
+                    <button class="btn btn-outline btn-sm" style="color: #ef4444; border-color: #ef4444; background: transparent; padding: 4px 8px;" onclick="baixarPdfOrcamento('${q.id}')" title="Baixar em PDF">
+                        <i class="fa-solid fa-file-pdf"></i>
+                    </button>
                     <button class="btn btn-outline btn-sm" style="color: #6366f1; border-color: #6366f1; background: transparent; padding: 4px 8px;" onclick="copiarLinkProposta('${q.id}')" title="Copiar Link Público">
                         <i class="fa-solid fa-link"></i>
                     </button>
@@ -5803,7 +5806,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 peca: descricoes.join(" / ") || "Diversos",
                 equipamento: equipamento,
                 cliente: cliente,
-                solicitante: document.getElementById("orc-contato").value || state.currentUser.nome,
+                endereco: document.getElementById("orc-endereco").value || "-",
+                contato: document.getElementById("orc-contato").value || "-",
+                email: document.getElementById("orc-email").value || "-",
+                solicitante: document.getElementById("orc-contato").value || (state.currentUser ? state.currentUser.nome : "Nevixa"),
                 fornecedor: "Nevixa Engenharia",
                 valor: sumTotal,
                 valorPecas: sumPecas,
@@ -5828,6 +5834,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.copiarLinkProposta(novoOrcamento.id);
             }
             renderCotacoes();
+            renderOrcamentosList();
         });
     }
 
@@ -5845,169 +5852,96 @@ document.addEventListener("DOMContentLoaded", () => {
             const contato = document.getElementById("orc-contato").value || "-";
             const email = document.getElementById("orc-email").value || "-";
             const equipamento = document.getElementById("orc-equipamento").value || "EQUIPAMENTO NÃO ESPECIFICADO";
-            
-            // 2. Preencher template PDF
-            document.getElementById("pdf-cliente-nome").innerText = cliente;
-            document.getElementById("pdf-cliente-endereco").innerText = endereco;
-            document.getElementById("pdf-cliente-contato").innerText = contato;
-            document.getElementById("pdf-cliente-email").innerText = email;
-            
-            if (state.currentUser && state.currentUser.nome) {
-                document.getElementById("pdf-funcionario-nome").innerText = state.currentUser.nome;
-                document.getElementById("pdf-signature-name").innerText = state.currentUser.nome;
-            } else {
-                document.getElementById("pdf-funcionario-nome").innerText = "Nevixa Engenharia";
-                document.getElementById("pdf-signature-name").innerText = "Representante";
-            }
-            
-            // Datas e números
-            const hoje = new Date();
-            const dataStr = hoje.toLocaleDateString("pt-BR");
-            document.getElementById("pdf-date").innerText = dataStr;
-            
-            // Gerar número de proposta (Ex: 145/2026)
-            const propNum = Math.floor(Math.random() * 900) + 100;
-            const propAno = hoje.getFullYear();
-            const propStr = `${propNum}/${propAno}`;
-            document.getElementById("pdf-number").innerText = `P.${propStr}`;
-            document.getElementById("pdf-prop-num").innerText = propStr;
-            document.getElementById("pdf-prop-num2").innerText = propNum;
-            
-            // 3. Preencher tabela do PDF
-            const tbodyPdf = document.getElementById("pdf-items-body");
-            tbodyPdf.innerHTML = "";
+            const tbodyOrcItems = document.getElementById("table-orc-items").querySelector("tbody");
+
             let sumQtd = 0;
             let sumTotal = 0;
-            let tiposUnicos = new Set();
-            
-            let itemCounter = 1;
+            let sumPecas = 0;
+            let sumServicos = 0;
+            let descricoes = [];
+            let itemsArray = [];
+
             tbodyOrcItems.querySelectorAll("tr").forEach(row => {
                 const desc = row.querySelector(".orc-desc").value || "";
                 const qtd = parseFloat(row.querySelector(".orc-qtd").value) || 0;
-                const tipo = row.querySelector(".orc-tipo").value || "";
+                const tipo = (row.querySelector(".orc-tipo").value || "").toUpperCase();
                 const unit = parseFloat(row.querySelector(".orc-unit").value) || 0;
                 const total = qtd * unit;
-                
-                sumQtd += qtd;
+
                 sumTotal += total;
-                if (tipo) tiposUnicos.add(tipo);
-                
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${String(itemCounter).padStart(2, '0')}</td>
-                    <td style="text-align: left;">${desc}</td>
-                    <td>${String(qtd).padStart(2, '0')}</td>
-                    <td>${tipo}</td>
-                    <td>${unit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                    <td>${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                `;
-                tbodyPdf.appendChild(tr);
-                itemCounter++;
+                if (desc) {
+                    descricoes.push(desc);
+                    itemsArray.push({ desc, qtd, unit, total, tipo });
+                }
+
+                if (tipo.includes("PECA") || tipo.includes("PEÇA") || tipo.includes("MAT")) {
+                    sumPecas += total;
+                } else {
+                    sumServicos += total;
+                }
             });
-            
-            // Totais
-            document.getElementById("pdf-total-qtd").innerText = String(sumQtd).padStart(2, '0');
-            document.getElementById("pdf-total-valor").innerText = sumTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            
-            let footerTipo = "DIVERSOS";
-            if (tiposUnicos.size > 0) {
-                footerTipo = Array.from(tiposUnicos).join(" / ").toUpperCase();
+
+            if (sumTotal === 0) {
+                uiAlert("Adicione pelo menos um item com valor ao orçamento.");
+                return;
             }
-            document.getElementById("pdf-total-tipo").innerText = footerTipo;
-            
-            // 4. Cadastrar no sistema (Opcional)
-            const chkCadastrar = document.getElementById("orc-cadastrar-cliente");
-            let cadastrado = false;
-            if (chkCadastrar && chkCadastrar.checked) {
-                if (cliente && cliente !== "NÃO INFORMADO") {
-                    const novoEq = {
-                        id: generateUUID(),
-                        tag: "N/A",
-                        serial: "N/A",
-                        nome: equipamento,
-                        cliente: cliente,
-                        status: "Ativo",
-                        ultimaPreventiva: "",
-                        periodicidade: "12"
-                    };
-                    if(!state.equipments) state.equipments = [];
-                    state.equipments.push(novoEq);
-                    saveStateToLocalStorage();
-                    addAuditLog("Cliente Avulso", `Cliente ${cliente} cadastrado via Orçamento Expresso`);
-                    cadastrado = true;
-                }
-            }
-            
-            // 5. Gerar o PDF usando html2pdf
-            const element = document.getElementById('pdf-template');
-            
-            // Memorizar o scroll atual
-            const currentScrollX = window.scrollX;
-            const currentScrollY = window.scrollY;
-            
-            // Rolar para o topo absoluto para evitar o bug de corte e página em branco do html2canvas
-            window.scrollTo(0, 0);
-            
-            // Tornar o elemento visível para capturar o layout corretamente
-            const originalDisplay = element.style.display;
-            element.style.display = 'block';
-            
-            // Injetar logo em base64 vindo do arquivo logo_b64.js carregado no HTML
-            try {
-                if (typeof LOGO_BASE64 !== 'undefined') {
-                    document.querySelectorAll('.pdf-logo').forEach(img => {
-                        img.src = LOGO_BASE64;
-                    });
-                }
-            } catch (e) {
-                console.error("Erro ao carregar logo:", e);
-            }
-            
-            const opt = {
-              margin:       0,
-              filename:     `Orcamento_${cliente.replace(/\s+/g, '_')}_${propStr.replace('/','-')}.pdf`,
-              image:        { type: 'jpeg', quality: 0.98 },
-              pagebreak:    { mode: ['css', 'legacy'] },
-              html2canvas:  { scale: 2, useCORS: true },
-              jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-            
-            // Mostrar estado de carregamento no botão
+
             const btnOriginalText = btnGerarPdf.innerHTML;
-            btnGerarPdf.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GERANDO PDF...';
+            btnGerarPdf.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> SALVANDO E GERANDO...';
             btnGerarPdf.disabled = true;
 
-            // Timeout necessário para renderizar o elemento visível antes de capturar
-            setTimeout(() => {
-                html2pdf().set(opt).from(element).save().then(() => {
-                    // Restaurar display e scroll originais
-                    element.style.display = originalDisplay;
-                    window.scrollTo(currentScrollX, currentScrollY);
-                    
-                    btnGerarPdf.innerHTML = btnOriginalText;
-                    btnGerarPdf.disabled = false;
-                    
-                    if (cadastrado) {
-                        showToast("Sucesso", "PDF Gerado e Cliente Cadastrado!", "success");
-                    } else {
-                        showToast("Sucesso", "Orçamento PDF gerado com sucesso!", "success");
-                    }
-                }).catch(err => {
-                    console.error("Erro ao gerar PDF:", err);
-                    element.style.display = 'none';
-                    element.style.position = originalPosition;
-                    element.style.top = originalTop;
-                    element.style.left = originalLeft;
-                    element.style.zIndex = originalZIndex;
-                    btnGerarPdf.innerHTML = btnOriginalText;
-                    btnGerarPdf.disabled = false;
-                    showToast("Erro", "Falha ao gerar PDF.", "error");
-                });
-            }, 250);
+            // Cadastrar cliente/equipamento no sistema se marcado
+            const chkCadastrar = document.getElementById("orc-cadastrar-cliente");
+            if (chkCadastrar && chkCadastrar.checked && cliente && cliente !== "NÃO INFORMADO") {
+                const novoEq = {
+                    id: generateUUID(),
+                    tag: "N/A",
+                    serial: "N/A",
+                    nome: equipamento,
+                    cliente: cliente,
+                    status: "Ativo",
+                    ultimaPreventiva: "",
+                    periodicidade: "12"
+                };
+                if (!state.equipments) state.equipments = [];
+                state.equipments.push(novoEq);
+                addAuditLog("Cliente Avulso", `Cliente ${cliente} cadastrado via Orçamento Expresso`);
+            }
+
+            const novoOrcamento = {
+                id: generateUUID(),
+                peca: descricoes.join(" / ") || "Diversos",
+                equipamento: equipamento,
+                cliente: cliente,
+                endereco: endereco,
+                contato: contato,
+                email: email,
+                solicitante: contato || (state.currentUser ? state.currentUser.nome : "Nevixa"),
+                fornecedor: "Nevixa Engenharia",
+                valor: sumTotal,
+                valorPecas: sumPecas,
+                valorServicos: sumServicos,
+                valorTotal: sumTotal,
+                status: "Pendente",
+                data: new Date().toISOString().split('T')[0],
+                observacoes: "Orçamento Expresso gerado via sistema.",
+                items: itemsArray
+            };
+
+            if (!state.quotations) state.quotations = [];
+            state.quotations.push(novoOrcamento);
+            await saveStateToLocalStorage();
+            renderOrcamentosList();
+            renderCotacoes();
+
+            // Baixar o PDF usando o novo motor unificado
+            await baixarPdfOrcamento(novoOrcamento.id);
+
+            btnGerarPdf.innerHTML = btnOriginalText;
+            btnGerarPdf.disabled = false;
         });
     }
 });
-
 
 // ==========================================================================
 // MÓDULO DE DOCUMENTAÇÃO E CERTIDÕES
@@ -6212,9 +6146,10 @@ function renderOrcamentosList() {
             <td>${q.equipamento || 'Expresso'}</td>
             <td><strong>R$ ${Number(q.valorTotal || 0).toFixed(2).replace('.', ',')}</strong></td>
             <td>${statusBadge}</td>
-            <td class="text-center">
-                <a href="${link}" target="_blank" class="btn btn-sm btn-outline text-primary" title="Abrir Link" style="border-color:transparent"><i class="fa-solid fa-external-link"></i></a>
-                <button class="btn btn-sm btn-outline text-success" onclick="navigator.clipboard.writeText(window.location.origin + window.location.pathname.replace('index.html','') + '${link}'); alert('Link copiado!');" title="Copiar Link" style="border-color:transparent"><i class="fa-solid fa-copy"></i></button>
+            <td class="text-center" style="white-space: nowrap;">
+                <button class="btn btn-sm btn-outline text-danger" onclick="baixarPdfOrcamento('${q.id}')" title="Baixar em PDF" style="border-color:transparent; font-size: 15px;"><i class="fa-solid fa-file-pdf"></i></button>
+                <a href="${link}" target="_blank" class="btn btn-sm btn-outline text-primary" title="Abrir Proposta Online" style="border-color:transparent"><i class="fa-solid fa-external-link"></i></a>
+                <button class="btn btn-sm btn-outline text-success" onclick="copiarLinkOrcamento('${q.id}')" title="Copiar Link" style="border-color:transparent"><i class="fa-solid fa-copy"></i></button>
                 <button class="btn btn-sm btn-outline text-danger" onclick="deleteOrcamento('${q.id}')" title="Excluir Orçamento" style="border-color:transparent"><i class="fa-solid fa-trash"></i></button>
             </td>
         `;
@@ -6258,6 +6193,313 @@ async function deleteOrcamento(id) {
         }
     });
 }
+
+// ==========================================================================
+// FUNÇÕES DE EXPORTAÇÃO E DOWNLOAD DE PDF DE ORÇAMENTOS
+// ==========================================================================
+
+window.copiarLinkOrcamento = function(id) {
+    const link = `proposta.html?id=${id}`;
+    const fullUrl = window.location.origin + window.location.pathname.replace('index.html', '') + link;
+    navigator.clipboard.writeText(fullUrl).then(() => {
+        Swal.fire({
+            title: 'Link Copiado!',
+            text: 'O link da proposta comercial foi copiado com sucesso.',
+            icon: 'success',
+            timer: 1800,
+            showConfirmButton: false,
+            background: '#1e293b',
+            color: '#fff'
+        });
+    }).catch(err => {
+        prompt("Copie o link abaixo:", fullUrl);
+    });
+};
+
+window.baixarPdfOrcamento = async function(id) {
+    if (!state.quotations || state.quotations.length === 0) {
+        Swal.fire({
+            title: 'Erro',
+            text: 'Nenhum orçamento encontrado.',
+            icon: 'error',
+            background: '#1e293b',
+            color: '#fff'
+        });
+        return;
+    }
+
+    const q = state.quotations.find(item => String(item.id) === String(id));
+    if (!q) {
+        Swal.fire({
+            title: 'Erro',
+            text: 'Orçamento não encontrado no sistema.',
+            icon: 'error',
+            background: '#1e293b',
+            color: '#fff'
+        });
+        return;
+    }
+
+    if (typeof html2pdf === 'undefined') {
+        Swal.fire({
+            title: 'Erro',
+            text: 'Biblioteca de geração de PDF não carregada. Atualize a página.',
+            icon: 'error',
+            background: '#1e293b',
+            color: '#fff'
+        });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Gerando PDF...',
+        text: 'Formatando o documento para download.',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        },
+        background: '#1e293b',
+        color: '#fff'
+    });
+
+    try {
+        const cliente = q.cliente || "NÃO INFORMADO";
+        const endereco = q.endereco || "Conforme cadastro";
+        const contato = q.contato || q.solicitante || "-";
+        const email = q.email || "-";
+        const equipamento = q.equipamento || "EQUIPAMENTO NÃO ESPECIFICADO";
+
+        document.getElementById("pdf-cliente-nome").innerText = cliente;
+        document.getElementById("pdf-cliente-endereco").innerText = endereco;
+        document.getElementById("pdf-cliente-contato").innerText = contato;
+        document.getElementById("pdf-cliente-email").innerText = email;
+        const elPdfEq = document.getElementById("pdf-cliente-equipamento");
+        if (elPdfEq) elPdfEq.innerText = equipamento;
+
+        // Funcionário / Representante
+        if (state.currentUser && state.currentUser.nome) {
+            document.getElementById("pdf-funcionario-nome").innerText = state.currentUser.nome;
+            document.getElementById("pdf-signature-name").innerText = state.currentUser.nome;
+        } else {
+            document.getElementById("pdf-funcionario-nome").innerText = "Joabe Lima Mendes";
+            document.getElementById("pdf-signature-name").innerText = "Joabe Lima Mendes";
+        }
+
+        // Data da proposta
+        let dataStr = "--/--/----";
+        let anoStr = new Date().getFullYear();
+        if (q.data) {
+            const partes = q.data.split('-');
+            if (partes.length === 3) {
+                dataStr = `${partes[2]}/${partes[1]}/${partes[0]}`;
+                anoStr = partes[0];
+            } else {
+                const d = new Date(q.data);
+                dataStr = d.toLocaleDateString("pt-BR");
+                anoStr = d.getFullYear();
+            }
+        }
+        document.getElementById("pdf-date").innerText = dataStr;
+
+        // Número da proposta
+        const propCode = q.id ? q.id.replace(/[^a-zA-Z0-9]/g, '').substring(0, 4).toUpperCase() : Math.floor(Math.random() * 900 + 100);
+        const propStr = `${propCode}/${anoStr}`;
+        document.getElementById("pdf-number").innerText = `P.${propStr}`;
+        document.getElementById("pdf-prop-num").innerText = propStr;
+        document.getElementById("pdf-prop-num2").innerText = propCode;
+
+        // Badge de Status no Subtítulo
+        const elStatusBadge = document.getElementById("pdf-status-badge");
+        if (elStatusBadge) {
+            if (q.status === 'Aprovado') {
+                elStatusBadge.innerHTML = ' • <span style="color: #166534; font-weight: bold;">[ STATUS: APROVADO ]</span>';
+            } else if (q.status === 'Recusado') {
+                elStatusBadge.innerHTML = ' • <span style="color: #991b1b; font-weight: bold;">[ STATUS: RECUSADO ]</span>';
+            } else {
+                elStatusBadge.innerHTML = ' • <span style="color: #92400e; font-weight: bold;">[ STATUS: PENDENTE ]</span>';
+            }
+        }
+
+        // Observações
+        const elObsSec = document.getElementById("pdf-obs-section");
+        const elObsTxt = document.getElementById("pdf-obs-text");
+        if (elObsSec && elObsTxt) {
+            if (q.observacoes && q.observacoes.trim() !== "") {
+                elObsSec.style.display = "block";
+                elObsTxt.innerText = q.observacoes;
+            } else {
+                elObsSec.style.display = "none";
+            }
+        }
+
+        // Tabela de itens
+        const tbodyPdf = document.getElementById("pdf-items-body");
+        tbodyPdf.innerHTML = "";
+        let sumQtd = 0;
+        let sumTotal = 0;
+        let tiposUnicos = new Set();
+        let itemCounter = 1;
+
+        if (q.items && Array.isArray(q.items) && q.items.length > 0) {
+            q.items.forEach(it => {
+                const desc = it.desc || "";
+                const qtd = parseFloat(it.qtd) || 1;
+                const tipo = (it.tipo || "SERVIÇO").toUpperCase();
+                const unit = parseFloat(it.unit) || 0;
+                const total = parseFloat(it.total) || (qtd * unit);
+
+                sumQtd += qtd;
+                sumTotal += total;
+                if (tipo) tiposUnicos.add(tipo);
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${String(itemCounter).padStart(2, '0')}</td>
+                    <td style="text-align: left;">${desc}</td>
+                    <td>${String(qtd).padStart(2, '0')}</td>
+                    <td>${tipo}</td>
+                    <td>${unit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                    <td>${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                `;
+                tbodyPdf.appendChild(tr);
+                itemCounter++;
+            });
+        } else {
+            // Fallback para orçamentos antigos
+            if (q.valorPecas && Number(q.valorPecas) > 0) {
+                const vPecas = Number(q.valorPecas);
+                sumQtd += 1;
+                sumTotal += vPecas;
+                tiposUnicos.add("PEÇAS");
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>01</td>
+                    <td style="text-align: left;">Fornecimento de Peças / Materiais</td>
+                    <td>01</td>
+                    <td>PEÇAS</td>
+                    <td>${vPecas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                    <td>${vPecas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                `;
+                tbodyPdf.appendChild(tr);
+                itemCounter++;
+            }
+            if (q.valorServicos && Number(q.valorServicos) > 0) {
+                const vServ = Number(q.valorServicos);
+                sumQtd += 1;
+                sumTotal += vServ;
+                tiposUnicos.add("SERVIÇO");
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${String(itemCounter).padStart(2, '0')}</td>
+                    <td style="text-align: left;">${q.peca && q.peca !== 'Diversos' ? q.peca : "Mão de Obra / Serviços Especializados"}</td>
+                    <td>01</td>
+                    <td>SERVIÇO</td>
+                    <td>${vServ.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                    <td>${vServ.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                `;
+                tbodyPdf.appendChild(tr);
+                itemCounter++;
+            }
+            if (tbodyPdf.children.length === 0) {
+                const vTotal = Number(q.valorTotal || q.valor || 0);
+                sumQtd = 1;
+                sumTotal = vTotal;
+                tiposUnicos.add("SERVIÇO");
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>01</td>
+                    <td style="text-align: left;">${q.peca || q.equipamento || "Serviços Gerais / Orçamento de Engenharia Clínica"}</td>
+                    <td>01</td>
+                    <td>SERVIÇO</td>
+                    <td>${vTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                    <td>${vTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+                `;
+                tbodyPdf.appendChild(tr);
+            }
+        }
+
+        const finalTotal = Number(q.valorTotal || sumTotal || 0);
+        document.getElementById("pdf-total-qtd").innerText = String(sumQtd).padStart(2, '0');
+        document.getElementById("pdf-total-valor").innerText = finalTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        let footerTipo = "DIVERSOS";
+        if (tiposUnicos.size > 0) {
+            footerTipo = Array.from(tiposUnicos).join(" / ").toUpperCase();
+        }
+        document.getElementById("pdf-total-tipo").innerText = footerTipo;
+
+        // Elemento e Scroll
+        const element = document.getElementById('pdf-template');
+        const currentScrollX = window.scrollX;
+        const currentScrollY = window.scrollY;
+        window.scrollTo(0, 0);
+
+        const originalDisplay = element.style.display;
+        element.style.display = 'block';
+
+        try {
+            if (typeof LOGO_BASE64 !== 'undefined') {
+                document.querySelectorAll('.pdf-logo').forEach(img => {
+                    img.src = LOGO_BASE64;
+                });
+            }
+        } catch (e) {
+            console.error("Erro ao carregar logo:", e);
+        }
+
+        const safeCliente = (q.cliente || 'Cliente').replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚãõÃÕâêîôûÂÊÎÔÛçÇ_-]/g, '_');
+        const opt = {
+          margin:       0,
+          filename:     `Orcamento_${safeCliente}_${propStr.replace('/','-')}.pdf`,
+          image:        { type: 'jpeg', quality: 0.98 },
+          pagebreak:    { mode: ['css', 'legacy'] },
+          html2canvas:  { scale: 2, useCORS: true, logging: false },
+          jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+
+        setTimeout(() => {
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.style.display = originalDisplay;
+                window.scrollTo(currentScrollX, currentScrollY);
+                Swal.close();
+                Swal.fire({
+                    title: 'PDF Baixado!',
+                    text: `O orçamento de ${q.cliente} foi baixado com sucesso.`,
+                    icon: 'success',
+                    timer: 2200,
+                    showConfirmButton: false,
+                    background: '#1e293b',
+                    color: '#fff'
+                });
+            }).catch(err => {
+                console.error("Erro ao gerar PDF:", err);
+                element.style.display = originalDisplay;
+                window.scrollTo(currentScrollX, currentScrollY);
+                Swal.close();
+                Swal.fire({
+                    title: 'Erro',
+                    text: 'Falha ao processar o PDF. Tente novamente.',
+                    icon: 'error',
+                    background: '#1e293b',
+                    color: '#fff'
+                });
+            });
+        }, 300);
+
+    } catch (err) {
+        console.error("Erro geral na geração do PDF:", err);
+        Swal.close();
+        Swal.fire({
+            title: 'Erro',
+            text: 'Erro ao formatar PDF: ' + err.message,
+            icon: 'error',
+            background: '#1e293b',
+            color: '#fff'
+        });
+    }
+};
+
+
 
 // ==========================================================================
 // ETIQUETAS INTELIGENTES (QR CODE)

@@ -485,6 +485,46 @@
             color: #111827;
             text-decoration: underline;
         }
+
+        @media print {
+            body {
+                background-color: #ffffff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            #loading-overlay, #action-bar, #top-bar-acoes, .modal-overlay, #expired-container {
+                display: none !important;
+            }
+            .document-container {
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 20px 30px !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                min-height: auto !important;
+            }
+            .status-badge {
+                position: absolute;
+                top: 15px;
+                right: 20px;
+                transform: none;
+                border: 2px solid #10b981;
+                background: transparent !important;
+                color: #10b981 !important;
+                box-shadow: none !important;
+                padding: 4px 15px;
+            }
+            .status-badge.reprovado {
+                border-color: #ef4444;
+                color: #ef4444 !important;
+            }
+            .table-responsive {
+                overflow: visible !important;
+            }
+            .signature-section {
+                page-break-inside: avoid;
+            }
+        }
     </style>
 </head>
 <body>
@@ -505,6 +545,12 @@
             <p><strong>Contato:</strong> +55 (96) 98403-4257</p>
             <p><strong>Email:</strong> <a href="mailto:nevixaengenharia@gmail.com">nevixaengenharia@gmail.com</a></p>
         </div>
+    </div>
+
+    <div id="top-bar-acoes" style="display: none; width: 100%; max-width: 900px; margin: 20px auto -15px auto; padding: 0 15px; box-sizing: border-box; justify-content: flex-end; gap: 10px;">
+        <button onclick="window.print()" class="btn" style="background: #0891b2; color: white; padding: 8px 18px; font-size: 0.9rem; border-radius: 6px; cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.12);">
+            <i class="fa-solid fa-file-pdf"></i> Baixar / Imprimir PDF
+        </button>
     </div>
 
     <div class="document-container" id="doc-container" style="display: none; overflow: hidden;">
@@ -678,6 +724,8 @@
                 // 4. Esconde loading
                 document.getElementById('loading-overlay').style.display = 'none';
                 document.getElementById('doc-container').style.display = 'block';
+                const elTopBar = document.getElementById('top-bar-acoes');
+                if (elTopBar) elTopBar.style.display = 'flex';
 
             } catch (err) {
                 console.error("Erro ao carregar proposta:", err);
