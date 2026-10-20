@@ -6253,7 +6253,7 @@ window.baixarPdfOrcamento = async function(id) {
 
     Swal.fire({
         title: 'Gerando PDF...',
-        text: 'Formatando o documento para download.',
+        text: 'Formatando documento oficial da Nevixa...',
         allowOutsideClick: false,
         didOpen: () => {
             Swal.showLoading();
@@ -6263,172 +6263,138 @@ window.baixarPdfOrcamento = async function(id) {
     });
 
     try {
-        const cliente = q.cliente || "NÃO INFORMADO";
-        const endereco = q.endereco || "Conforme cadastro";
-        const contato = q.contato || q.solicitante || "-";
-        const email = q.email || "-";
-        const equipamento = q.equipamento || "EQUIPAMENTO NÃO ESPECIFICADO";
+        const propCode = q.id ? q.id.replace(/[^a-zA-Z0-9]/g, '').substring(0, 6).toUpperCase() : '------';
+        document.getElementById('pdf-prop-numero').innerText = `PROPOSTA COMERCIAL NÚM. ${propCode}`;
 
-        document.getElementById("pdf-cliente-nome").innerText = cliente;
-        document.getElementById("pdf-cliente-endereco").innerText = endereco;
-        document.getElementById("pdf-cliente-contato").innerText = contato;
-        document.getElementById("pdf-cliente-email").innerText = email;
-        const elPdfEq = document.getElementById("pdf-cliente-equipamento");
-        if (elPdfEq) elPdfEq.innerText = equipamento;
+        // 1. Dados do cliente
+        document.getElementById('pdf-cli-nome').innerText = q.cliente || "Não informado";
 
-        // Funcionário / Representante
-        if (state.currentUser && state.currentUser.nome) {
-            document.getElementById("pdf-funcionario-nome").innerText = state.currentUser.nome;
-            document.getElementById("pdf-signature-name").innerText = state.currentUser.nome;
-        } else {
-            document.getElementById("pdf-funcionario-nome").innerText = "Joabe Lima Mendes";
-            document.getElementById("pdf-signature-name").innerText = "Joabe Lima Mendes";
-        }
-
-        // Data da proposta
+        // Datas
         let dataStr = "--/--/----";
-        let anoStr = new Date().getFullYear();
+        let validadeStr = "--/--/----";
         if (q.data) {
             const partes = q.data.split('-');
+            let dtObj;
             if (partes.length === 3) {
                 dataStr = `${partes[2]}/${partes[1]}/${partes[0]}`;
-                anoStr = partes[0];
+                dtObj = new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
             } else {
-                const d = new Date(q.data);
-                dataStr = d.toLocaleDateString("pt-BR");
-                anoStr = d.getFullYear();
+                dtObj = new Date(q.data);
+                dataStr = dtObj.toLocaleDateString('pt-BR');
+            }
+            if (!isNaN(dtObj.getTime())) {
+                const dtValidade = new Date(dtObj);
+                dtValidade.setDate(dtValidade.getDate() + 15);
+                validadeStr = dtValidade.toLocaleDateString('pt-BR');
             }
         }
-        document.getElementById("pdf-date").innerText = dataStr;
-
-        // Número da proposta
-        const propCode = q.id ? q.id.replace(/[^a-zA-Z0-9]/g, '').substring(0, 4).toUpperCase() : Math.floor(Math.random() * 900 + 100);
-        const propStr = `${propCode}/${anoStr}`;
-        document.getElementById("pdf-number").innerText = `P.${propStr}`;
-        document.getElementById("pdf-prop-num").innerText = propStr;
-        document.getElementById("pdf-prop-num2").innerText = propCode;
-
-        // Badge de Status no Subtítulo
-        const elStatusBadge = document.getElementById("pdf-status-badge");
-        if (elStatusBadge) {
-            if (q.status === 'Aprovado') {
-                elStatusBadge.innerHTML = ' • <span style="color: #166534; font-weight: bold;">[ STATUS: APROVADO ]</span>';
-            } else if (q.status === 'Recusado') {
-                elStatusBadge.innerHTML = ' • <span style="color: #991b1b; font-weight: bold;">[ STATUS: RECUSADO ]</span>';
-            } else {
-                elStatusBadge.innerHTML = ' • <span style="color: #92400e; font-weight: bold;">[ STATUS: PENDENTE ]</span>';
-            }
-        }
+        document.getElementById('pdf-prop-data').innerText = dataStr;
+        document.getElementById('pdf-prop-validade').innerText = validadeStr;
+        document.getElementById('pdf-prop-equip').innerText = q.equipamento || "Avulso / Nenhum";
+        document.getElementById('pdf-assinatura-cliente').innerText = q.cliente || "Cliente";
 
         // Observações
-        const elObsSec = document.getElementById("pdf-obs-section");
-        const elObsTxt = document.getElementById("pdf-obs-text");
-        if (elObsSec && elObsTxt) {
-            if (q.observacoes && q.observacoes.trim() !== "") {
-                elObsSec.style.display = "block";
-                elObsTxt.innerText = q.observacoes;
+        const elObs = document.getElementById('pdf-prop-obs');
+        if (elObs) {
+            elObs.innerText = (q.observacoes && q.observacoes.trim() !== "") ? q.observacoes : "Orçamento Expresso gerado via sistema.";
+        }
+
+        // Ribbon de Status Aprovado
+        const ribbon = document.getElementById('pdf-status-ribbon');
+        if (ribbon) {
+            if (q.status === 'Aprovado') {
+                ribbon.style.display = 'block';
+                ribbon.style.background = '#10b981';
+                ribbon.innerText = 'APROVADO';
+            } else if (q.status === 'Recusado') {
+                ribbon.style.display = 'block';
+                ribbon.style.background = '#ef4444';
+                ribbon.innerText = 'RECUSADO';
             } else {
-                elObsSec.style.display = "none";
+                ribbon.style.display = 'none';
             }
         }
 
-        // Tabela de itens
-        const tbodyPdf = document.getElementById("pdf-items-body");
-        tbodyPdf.innerHTML = "";
-        let sumQtd = 0;
+        // 2. Tabela de Itens (idêntico a proposta.html)
+        const tbody = document.getElementById('pdf-items-tbody');
+        tbody.innerHTML = "";
+        let temItem = false;
         let sumTotal = 0;
-        let tiposUnicos = new Set();
-        let itemCounter = 1;
+
+        const formatCurrency = (val) => Number(val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
         if (q.items && Array.isArray(q.items) && q.items.length > 0) {
-            q.items.forEach(it => {
-                const desc = it.desc || "";
-                const qtd = parseFloat(it.qtd) || 1;
-                const tipo = (it.tipo || "SERVIÇO").toUpperCase();
-                const unit = parseFloat(it.unit) || 0;
-                const total = parseFloat(it.total) || (qtd * unit);
-
-                sumQtd += qtd;
-                sumTotal += total;
-                if (tipo) tiposUnicos.add(tipo);
-
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${String(itemCounter).padStart(2, '0')}</td>
-                    <td style="text-align: left;">${desc}</td>
-                    <td>${String(qtd).padStart(2, '0')}</td>
-                    <td>${tipo}</td>
-                    <td>${unit.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                    <td>${total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+            q.items.forEach(item => {
+                temItem = true;
+                const totalItem = parseFloat(item.total) || (parseFloat(item.qtd || 1) * parseFloat(item.unit || 0));
+                sumTotal += totalItem;
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="text-align: center; border: 1px solid #e5e7eb; padding: 8px 10px;">${item.qtd || 1}</td>
+                        <td style="text-align: left; border: 1px solid #e5e7eb; padding: 8px 10px;">${item.desc || ''}</td>
+                        <td style="text-align: right; border: 1px solid #e5e7eb; padding: 8px 10px;">${formatCurrency(item.unit)}</td>
+                        <td style="text-align: right; border: 1px solid #e5e7eb; padding: 8px 10px;">${formatCurrency(totalItem)}</td>
+                    </tr>
                 `;
-                tbodyPdf.appendChild(tr);
-                itemCounter++;
             });
         } else {
-            // Fallback para orçamentos antigos
-            if (q.valorPecas && Number(q.valorPecas) > 0) {
-                const vPecas = Number(q.valorPecas);
-                sumQtd += 1;
-                sumTotal += vPecas;
-                tiposUnicos.add("PEÇAS");
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>01</td>
-                    <td style="text-align: left;">Fornecimento de Peças / Materiais</td>
-                    <td>01</td>
-                    <td>PEÇAS</td>
-                    <td>${vPecas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                    <td>${vPecas.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+            // Fallback para propostas antigas
+            if (q.valorPecas > 0) {
+                temItem = true;
+                sumTotal += Number(q.valorPecas);
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="text-align: center; border: 1px solid #e5e7eb; padding: 8px 10px;">1</td>
+                        <td style="text-align: left; border: 1px solid #e5e7eb; padding: 8px 10px;">Fornecimento de Peças / Materiais</td>
+                        <td style="text-align: right; border: 1px solid #e5e7eb; padding: 8px 10px;">${formatCurrency(q.valorPecas)}</td>
+                        <td style="text-align: right; border: 1px solid #e5e7eb; padding: 8px 10px;">${formatCurrency(q.valorPecas)}</td>
+                    </tr>
                 `;
-                tbodyPdf.appendChild(tr);
-                itemCounter++;
             }
-            if (q.valorServicos && Number(q.valorServicos) > 0) {
-                const vServ = Number(q.valorServicos);
-                sumQtd += 1;
-                sumTotal += vServ;
-                tiposUnicos.add("SERVIÇO");
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${String(itemCounter).padStart(2, '0')}</td>
-                    <td style="text-align: left;">${q.peca && q.peca !== 'Diversos' ? q.peca : "Mão de Obra / Serviços Especializados"}</td>
-                    <td>01</td>
-                    <td>SERVIÇO</td>
-                    <td>${vServ.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                    <td>${vServ.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
+            if (q.valorServicos > 0) {
+                temItem = true;
+                sumTotal += Number(q.valorServicos);
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="text-align: center; border: 1px solid #e5e7eb; padding: 8px 10px;">1</td>
+                        <td style="text-align: left; border: 1px solid #e5e7eb; padding: 8px 10px;">${q.peca && q.peca !== 'Diversos' ? q.peca : "Mão de Obra / Serviços de Engenharia Clínica"}</td>
+                        <td style="text-align: right; border: 1px solid #e5e7eb; padding: 8px 10px;">${formatCurrency(q.valorServicos)}</td>
+                        <td style="text-align: right; border: 1px solid #e5e7eb; padding: 8px 10px;">${formatCurrency(q.valorServicos)}</td>
+                    </tr>
                 `;
-                tbodyPdf.appendChild(tr);
-                itemCounter++;
-            }
-            if (tbodyPdf.children.length === 0) {
-                const vTotal = Number(q.valorTotal || q.valor || 0);
-                sumQtd = 1;
-                sumTotal = vTotal;
-                tiposUnicos.add("SERVIÇO");
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>01</td>
-                    <td style="text-align: left;">${q.peca || q.equipamento || "Serviços Gerais / Orçamento de Engenharia Clínica"}</td>
-                    <td>01</td>
-                    <td>SERVIÇO</td>
-                    <td>${vTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                    <td>${vTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
-                `;
-                tbodyPdf.appendChild(tr);
             }
         }
 
-        const finalTotal = Number(q.valorTotal || sumTotal || 0);
-        document.getElementById("pdf-total-qtd").innerText = String(sumQtd).padStart(2, '0');
-        document.getElementById("pdf-total-valor").innerText = finalTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-        let footerTipo = "DIVERSOS";
-        if (tiposUnicos.size > 0) {
-            footerTipo = Array.from(tiposUnicos).join(" / ").toUpperCase();
+        if (!temItem) {
+            const vTotal = Number(q.valorTotal || q.valor || 0);
+            sumTotal = vTotal;
+            tbody.innerHTML += `
+                <tr>
+                    <td style="text-align: center; border: 1px solid #e5e7eb; padding: 8px 10px;">1</td>
+                    <td style="text-align: left; border: 1px solid #e5e7eb; padding: 8px 10px;">${q.peca || q.equipamento || "Serviços Gerais / Orçamento Base"}</td>
+                    <td style="text-align: right; border: 1px solid #e5e7eb; padding: 8px 10px;">${formatCurrency(vTotal)}</td>
+                    <td style="text-align: right; border: 1px solid #e5e7eb; padding: 8px 10px;">${formatCurrency(vTotal)}</td>
+                </tr>
+            `;
         }
-        document.getElementById("pdf-total-tipo").innerText = footerTipo;
 
-        // Elemento e Scroll
+        const totalFinal = Number(q.valorTotal || sumTotal || 0);
+        document.getElementById('pdf-prop-total').innerText = formatCurrency(totalFinal);
+
+        // Logo
+        const imgLogo = document.getElementById('pdf-img-logo');
+        if (imgLogo) {
+            try {
+                if (typeof LOGO_BASE64 !== 'undefined') {
+                    imgLogo.src = LOGO_BASE64;
+                } else {
+                    imgLogo.src = 'logo-oficial-nevixa-v3.png';
+                }
+            } catch (e) {
+                imgLogo.src = 'logo-oficial-nevixa-v3.png';
+            }
+        }
+
         const element = document.getElementById('pdf-template');
         const currentScrollX = window.scrollX;
         const currentScrollY = window.scrollY;
@@ -6437,24 +6403,14 @@ window.baixarPdfOrcamento = async function(id) {
         const originalDisplay = element.style.display;
         element.style.display = 'block';
 
-        try {
-            if (typeof LOGO_BASE64 !== 'undefined') {
-                document.querySelectorAll('.pdf-logo').forEach(img => {
-                    img.src = LOGO_BASE64;
-                });
-            }
-        } catch (e) {
-            console.error("Erro ao carregar logo:", e);
-        }
-
         const safeCliente = (q.cliente || 'Cliente').replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚãõÃÕâêîôûÂÊÎÔÛçÇ_-]/g, '_');
         const opt = {
-          margin:       0,
-          filename:     `Orcamento_${safeCliente}_${propStr.replace('/','-')}.pdf`,
-          image:        { type: 'jpeg', quality: 0.98 },
-          pagebreak:    { mode: ['css', 'legacy'] },
-          html2canvas:  { scale: 2, useCORS: true, logging: false },
-          jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            margin:       0,
+            filename:     `Proposta_Comercial_${safeCliente}_${propCode}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            pagebreak:    { mode: ['css', 'legacy'] },
+            html2canvas:  { scale: 2, useCORS: true, letterRendering: true, logging: false },
+            jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
         };
 
         setTimeout(() => {
@@ -6464,7 +6420,7 @@ window.baixarPdfOrcamento = async function(id) {
                 Swal.close();
                 Swal.fire({
                     title: 'PDF Baixado!',
-                    text: `O orçamento de ${q.cliente} foi baixado com sucesso.`,
+                    text: `A proposta de ${q.cliente} foi gerada com sucesso no mesmo layout do link.`,
                     icon: 'success',
                     timer: 2200,
                     showConfirmButton: false,
@@ -6498,8 +6454,6 @@ window.baixarPdfOrcamento = async function(id) {
         });
     }
 };
-
-
 
 // ==========================================================================
 // ETIQUETAS INTELIGENTES (QR CODE)
