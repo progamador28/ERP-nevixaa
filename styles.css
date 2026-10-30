@@ -2419,7 +2419,7 @@ body.light-mode .desgaste-tubo-box {
 }
 
 #pdf-template .pdf-signature-column-client {
-    padding-top: 32px;
+    margin-top: 40px;
 }
 
 #pdf-template .pdf-signature-line {
