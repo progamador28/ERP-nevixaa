@@ -292,17 +292,20 @@
 
         /* Signatures */
         .signature-section {
-            margin-top: 80px;
+            margin-top: 38px;
             display: flex;
             justify-content: space-between;
-            gap: 40px;
+            gap: 32px;
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
 
         .signature-box {
             flex: 1;
             text-align: center;
             border-top: 1px solid var(--text-main);
-            padding-top: 10px;
+            padding-top: 8px;
+            min-width: 0;
         }
 
         .signature-box p {
@@ -314,6 +317,14 @@
         .signature-box span {
             font-size: 0.75rem;
             color: var(--text-light);
+        }
+
+        @media print {
+            .signature-section, .signature-box, .terms-container h4, .terms-container ul {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+            .signature-section h4 { break-after: avoid; page-break-after: avoid; }
         }
 
         /* Action Bar */
@@ -610,12 +621,10 @@
         </div>
 
         <div class="signature-section">
-            <div style="flex: 1; text-align: center;">
-                <p class="assinatura-nome" style="margin-bottom: 8px;">Maciel Monteiro do Vale</p>
-                <div class="signature-box">
+            <div class="signature-box">
+                <p class="assinatura-nome">Maciel Monteiro do Vale</p>
                 <p>Nevixa Engenharia</p>
                 <span>Responsável Técnico / Comercial</span>
-                </div>
             </div>
             <div class="signature-box">
                 <p id="assinatura-cliente">Nome do Cliente</p>

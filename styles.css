@@ -2404,18 +2404,67 @@ body.light-mode .desgaste-tubo-box {
 }
 
 #pdf-template .signature-section {
-    margin-top: 45px;
+    margin-top: 34px;
     display: flex;
-    justify-content: space-between;
-    gap: 40px;
-    page-break-inside: avoid;
+    justify-content: center;
+    gap: 32px;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
 }
 
-#pdf-template .signature-box {
+#pdf-template .pdf-signature-column {
     flex: 1;
     text-align: center;
+    min-width: 0;
+}
+
+#pdf-template .pdf-signature-line {
     border-top: 1px solid #334155;
-    padding-top: 8px;
+    margin-bottom: 8px;
+}
+
+#pdf-template .pdf-signature-name,
+#pdf-template .pdf-signature-company {
+    margin: 0;
+    color: #334155;
+    font-size: 0.85rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+#pdf-template .pdf-signature-script {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.45rem;
+}
+
+#pdf-template .pdf-signature-role {
+    display: block;
+    margin: 3px 0 0;
+    color: #4b5563;
+    font-size: 0.75rem;
+    overflow-wrap: anywhere;
+}
+
+#pdf-template .pdf-keep-together,
+#pdf-template .pdf-keep-together h4,
+#pdf-template .pdf-keep-together ul {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+}
+
+#pdf-template .pdf-header,
+#pdf-template .section-title,
+#pdf-template .pdf-keep-together h4,
+#pdf-template table tr,
+#pdf-template .pdf-signature-area {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+}
+
+#pdf-template .section-title,
+#pdf-template .pdf-keep-together h4 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
 }
 
 /* Ajustes no dark mode para o formulário */

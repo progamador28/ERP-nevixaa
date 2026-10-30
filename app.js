@@ -6433,7 +6433,7 @@ window.baixarPdfOrcamento = async function(id) {
             margin:       0,
             filename:     `Proposta_Comercial_${safeCliente}_${propCode}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
-            pagebreak:    { mode: ['css', 'legacy'] },
+            pagebreak:    { mode: ['css', 'legacy'], avoid: ['.pdf-keep-together', '.pdf-signature-area', '.pdf-header', '.section-title'] },
             html2canvas:  { scale: 2, useCORS: true, letterRendering: true, logging: false },
             jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
         };
