@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Proposta Comercial - Nevixa Engenharia</title>
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Supabase -->
@@ -279,6 +279,15 @@
         .terms-container ul {
             margin-top: 5px;
             padding-left: 20px;
+        }
+
+        /* Assinatura cursiva */
+        .assinatura-nome {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 2px 0;
         }
 
         /* Signatures */
@@ -593,7 +602,7 @@
                 <li><strong>Conta Empresarial:</strong> Banco Santander – Agência: 1246 – Conta Corrente: 130012983.</li>
                 <li><strong>Favorecido:</strong> Nevixa Engenharia Comércio & Serviços (CNPJ: 63.591.634/0001-86).</li>
                 <li><strong>Chave Pix:</strong> 63.591.634/0001-86 (Banco Santander).</li>
-                <li><strong>Opções e Condições de Pagamento:</strong> Pagamento à vista (no ato da aprovação) ou parcelado no cartão de crédito (consultar condições e taxas).</li>
+                <li id="cond-pagamento"><strong>Condições de Pagamento:</strong> Pagamento à vista (100%) no ato da aprovação do orçamento, ou parcelado no cartão de crédito (consultar condições e taxas aplicáveis).</li>
             </ul>
 
             <h4>4. Anuência Eletrônica:</h4>
@@ -602,6 +611,7 @@
 
         <div class="signature-section">
             <div class="signature-box">
+                <p class="assinatura-nome">Maciel Monteiro do Vale</p>
                 <p>Nevixa Engenharia</p>
                 <span>Responsável Técnico / Comercial</span>
             </div>
@@ -718,6 +728,14 @@
             }
             if (document.getElementById('cli-email')) {
                 document.getElementById('cli-email').innerText = (q.email && q.email !== "-") ? q.email : "Não informado";
+            }
+            // Condicao de pagamento dinamica
+            if (document.getElementById('cond-pagamento') && q.condicaoPagamento) {
+                const condTextos = {
+                    'vista': '<strong>Condi\u00e7\u00f5es de Pagamento:</strong> Pagamento \u00e0 vista (100%) no ato da aprova\u00e7\u00e3o do or\u00e7amento, ou parcelado no cart\u00e3o de cr\u00e9dito (consultar condi\u00e7\u00f5es e taxas aplic\u00e1veis).',
+                    'parcelado_50_50': '<strong>Condi\u00e7\u00f5es de Pagamento:</strong> 50% do valor total no ato da aprova\u00e7\u00e3o do or\u00e7amento e os 50% restantes mediante a conclus\u00e3o e entrega do servi\u00e7o.'
+                };
+                document.getElementById('cond-pagamento').innerHTML = condTextos[q.condicaoPagamento] || condTextos['vista'];
             }
             document.getElementById('prop-data').innerText = formatDateBR(q.data);
             

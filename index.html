@@ -21,7 +21,7 @@
     <!-- Google Fonts: Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome para ícones modernos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- html2pdf.js -->
@@ -1012,7 +1012,20 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; align-items: center; gap: 10px; background: var(--color-bg-card); border: 1px solid var(--color-border); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                        <div class="card mb-20">
+                        <h3 class="section-title">Condições de Pagamento</h3>
+                        <div class="form-grid">
+                            <div class="form-group" style="grid-column: 1 / -1;">
+                                <label>Selecione a condição de pagamento:</label>
+                                <select id="orc-condicao-pagamento" class="form-control" style="padding: 10px; font-size: 14px;">
+                                    <option value="vista">100% à vista no ato da aprovação (ou parcelado no cartão - consultar)</option>
+                                    <option value="parcelado_50_50">50% na aprovação + 50% na conclusão do serviço</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+<div style="display: flex; align-items: center; gap: 10px; background: var(--color-bg-card); border: 1px solid var(--color-border); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                         <input type="checkbox" id="orc-cadastrar-cliente" style="width: 20px; height: 20px; cursor: pointer; background: var(--color-bg-input);">
                         <label for="orc-cadastrar-cliente" style="margin: 0; font-weight: bold; cursor: pointer;">Cadastrar este Cliente e Equipamento no sistema Nevixa</label>
                     </div>
@@ -1111,7 +1124,7 @@
                                 <li><strong>Conta Empresarial:</strong> Banco Santander – Agência: 1246 – Conta Corrente: 130012983.</li>
                                 <li><strong>Favorecido:</strong> Nevixa Engenharia Comércio & Serviços (CNPJ: 63.591.634/0001-86).</li>
                                 <li><strong>Chave Pix:</strong> 63.591.634/0001-86 (Banco Santander).</li>
-                                <li><strong>Opções e Condições de Pagamento:</strong> Pagamento à vista (no ato da aprovação) ou parcelado no cartão de crédito (consultar condições e taxas).</li>
+                                <li id="pdf-cond-pagamento"><strong>Condições de Pagamento:</strong> Pagamento à vista (100%) no ato da aprovação do orçamento, ou parcelado no cartão de crédito (consultar condições e taxas aplicáveis).</li>
                             </ul>
                         </div>
 
@@ -1123,6 +1136,7 @@
 
                     <div class="signature-section" style="margin-top: 45px; display: flex; justify-content: space-between; gap: 40px; page-break-inside: avoid;">
                         <div class="signature-box" style="flex: 1; text-align: center; border-top: 1px solid #334155; padding-top: 8px;">
+                            <p style="margin: 0 0 2px 0; font-family: 'Dancing Script', cursive; font-size: 1.5rem; font-weight: 700; color: #1e293b;">Maciel Monteiro do Vale</p>
                             <p style="margin: 0; font-size: 0.85rem; font-weight: 600; color: #334155;">Nevixa Engenharia</p>
                             <span style="font-size: 0.75rem; color: #4b5563;">Responsável Técnico / Comercial</span>
                         </div>
