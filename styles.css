@@ -2418,6 +2418,10 @@ body.light-mode .desgaste-tubo-box {
     min-width: 0;
 }
 
+#pdf-template .pdf-signature-column-client {
+    padding-top: 32px;
+}
+
 #pdf-template .pdf-signature-line {
     border-top: 1px solid #334155;
     margin-bottom: 8px;
