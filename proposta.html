@@ -319,6 +319,16 @@
             color: var(--text-light);
         }
 
+        .signature-company {
+            border-top: 0;
+            padding-top: 0;
+        }
+
+        .signature-line {
+            border-top: 1px solid var(--text-main);
+            margin: 5px 0 8px;
+        }
+
         @media print {
             .signature-section, .signature-box, .terms-container h4, .terms-container ul {
                 break-inside: avoid !important;
@@ -621,8 +631,9 @@
         </div>
 
         <div class="signature-section">
-            <div class="signature-box">
+            <div class="signature-box signature-company">
                 <p class="assinatura-nome">Maciel Monteiro do Vale</p>
+                <div class="signature-line"></div>
                 <p>Nevixa Engenharia</p>
                 <span>Responsável Técnico / Comercial</span>
             </div>
