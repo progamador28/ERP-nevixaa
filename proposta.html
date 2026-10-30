@@ -527,7 +527,15 @@
         <div class="section-title">I. DADOS DO CLIENTE</div>
         <div class="table-responsive"><table class="info-table">
             <tr>
-                <td colspan="2"><strong>Cliente / Razão Social:</strong> <span id="cli-nome">Carregando...</span></td>
+                <td style="width: 60%;"><strong>Cliente / Razão Social:</strong> <span id="cli-nome">Carregando...</span></td>
+                <td style="width: 40%;"><strong>CNPJ / CPF:</strong> <span id="cli-cnpj">-</span></td>
+            </tr>
+            <tr>
+                <td colspan="2"><strong>Endereço:</strong> <span id="cli-endereco">-</span></td>
+            </tr>
+            <tr>
+                <td><strong>Pessoa de Contato / Setor:</strong> <span id="cli-contato">-</span></td>
+                <td><strong>Telefone / E-mail:</strong> <span id="cli-email">-</span></td>
             </tr>
             <tr>
                 <td><strong>Data de Emissão:</strong> <span id="prop-data">--/--/----</span></td>
@@ -699,6 +707,18 @@
             // Header info
             document.getElementById('prop-numero').innerText = `PROPOSTA COMERCIAL NÚM. ${q.id.substring(0,6).toUpperCase()}`;
             document.getElementById('cli-nome').innerText = q.cliente || "Não informado";
+            if (document.getElementById('cli-cnpj')) {
+                document.getElementById('cli-cnpj').innerText = q.cnpj || "-";
+            }
+            if (document.getElementById('cli-endereco')) {
+                document.getElementById('cli-endereco').innerText = (q.endereco && q.endereco !== "-") ? q.endereco : "Não informado";
+            }
+            if (document.getElementById('cli-contato')) {
+                document.getElementById('cli-contato').innerText = q.contato || q.solicitante || "Não informado";
+            }
+            if (document.getElementById('cli-email')) {
+                document.getElementById('cli-email').innerText = (q.email && q.email !== "-") ? q.email : "Não informado";
+            }
             document.getElementById('prop-data').innerText = formatDateBR(q.data);
             
             // Validade: +15 dias da data de criação

@@ -952,8 +952,12 @@
                                 <input type="text" id="orc-cliente" class="form-control" placeholder="Ex: Hospital São Lucas">
                             </div>
                             <div class="form-group">
+                                <label>CNPJ / CPF:</label>
+                                <input type="text" id="orc-cnpj" class="form-control" placeholder="Ex: 00.000.000/0001-00">
+                            </div>
+                            <div class="form-group">
                                 <label>Endereço:</label>
-                                <input type="text" id="orc-endereco" class="form-control" placeholder="Rua, Número, Bairro, Cidade">
+                                <input type="text" id="orc-endereco" class="form-control" placeholder="Rua, Número, Bairro, Cidade - UF">
                             </div>
                             <div class="form-group">
                                 <label>Pessoa de Contato/Setor:</label>
@@ -1040,7 +1044,15 @@
                     <div class="section-title" style="font-size: 0.95rem; font-weight: 700; color: #334155; margin-top: 25px; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px;">I. DADOS DO CLIENTE</div>
                     <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 20px;">
                         <tr>
-                            <td colspan="2" style="border: 1px solid #e5e7eb; padding: 8px 12px;"><strong style="color: #4b5563;">Cliente / Razão Social:</strong> <span id="pdf-cli-nome">-</span></td>
+                            <td style="width: 60%; border: 1px solid #e5e7eb; padding: 8px 12px;"><strong style="color: #4b5563;">Cliente / Razão Social:</strong> <span id="pdf-cli-nome">-</span></td>
+                            <td style="width: 40%; border: 1px solid #e5e7eb; padding: 8px 12px;"><strong style="color: #4b5563;">CNPJ / CPF:</strong> <span id="pdf-cli-cnpj">-</span></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="border: 1px solid #e5e7eb; padding: 8px 12px;"><strong style="color: #4b5563;">Endereço:</strong> <span id="pdf-cli-endereco">-</span></td>
+                        </tr>
+                        <tr>
+                            <td style="width: 50%; border: 1px solid #e5e7eb; padding: 8px 12px;"><strong style="color: #4b5563;">Pessoa de Contato / Setor:</strong> <span id="pdf-cli-contato">-</span></td>
+                            <td style="width: 50%; border: 1px solid #e5e7eb; padding: 8px 12px;"><strong style="color: #4b5563;">Telefone / E-mail:</strong> <span id="pdf-cli-email">-</span></td>
                         </tr>
                         <tr>
                             <td style="width: 50%; border: 1px solid #e5e7eb; padding: 8px 12px;"><strong style="color: #4b5563;">Data de Emissão:</strong> <span id="pdf-prop-data">--/--/----</span></td>

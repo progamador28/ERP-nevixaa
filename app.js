@@ -5806,6 +5806,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 peca: descricoes.join(" / ") || "Diversos",
                 equipamento: equipamento,
                 cliente: cliente,
+                cnpj: (document.getElementById("orc-cnpj") ? document.getElementById("orc-cnpj").value : "").trim(),
                 endereco: document.getElementById("orc-endereco").value || "-",
                 contato: document.getElementById("orc-contato").value || "-",
                 email: document.getElementById("orc-email").value || "-",
@@ -5913,6 +5914,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 peca: descricoes.join(" / ") || "Diversos",
                 equipamento: equipamento,
                 cliente: cliente,
+                cnpj: (document.getElementById("orc-cnpj") ? document.getElementById("orc-cnpj").value : "").trim(),
                 endereco: endereco,
                 contato: contato,
                 email: email,
@@ -6268,6 +6270,18 @@ window.baixarPdfOrcamento = async function(id) {
 
         // 1. Dados do cliente
         document.getElementById('pdf-cli-nome').innerText = q.cliente || "Não informado";
+        if (document.getElementById('pdf-cli-cnpj')) {
+            document.getElementById('pdf-cli-cnpj').innerText = q.cnpj || "-";
+        }
+        if (document.getElementById('pdf-cli-endereco')) {
+            document.getElementById('pdf-cli-endereco').innerText = (q.endereco && q.endereco !== "-") ? q.endereco : "Não informado";
+        }
+        if (document.getElementById('pdf-cli-contato')) {
+            document.getElementById('pdf-cli-contato').innerText = q.contato || q.solicitante || "Não informado";
+        }
+        if (document.getElementById('pdf-cli-email')) {
+            document.getElementById('pdf-cli-email').innerText = (q.email && q.email !== "-") ? q.email : "Não informado";
+        }
 
         // Datas
         let dataStr = "--/--/----";
