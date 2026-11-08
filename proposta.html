@@ -292,40 +292,43 @@
 
         /* Signatures */
         .signature-section {
-            margin-top: 38px;
+            margin-top: 50px;
             display: flex;
             justify-content: space-between;
-            gap: 32px;
+            align-items: flex-end;
+            gap: 40px;
             break-inside: avoid;
             page-break-inside: avoid;
         }
 
-        .signature-box {
+        .signature-column {
             flex: 1;
             text-align: center;
-            border-top: 1px solid var(--text-main);
-            padding-top: 8px;
             min-width: 0;
         }
 
-        .signature-box p {
+        .signature-line-hr {
+            border: none;
+            border-top: 1px solid var(--text-main);
+            margin: 0 0 8px 0;
+        }
+
+        .signature-column p {
             margin: 0;
             font-size: 0.85rem;
             font-weight: 600;
         }
         
-        .signature-box span {
+        .signature-column span {
             font-size: 0.75rem;
             color: var(--text-light);
         }
 
-        .signature-company {
-            border-top: 0;
-            padding-top: 0;
-        }
-
-        .signature-client {
-            margin-top: 17px;
+        .assinatura-cpf {
+            font-size: 0.72rem;
+            color: var(--text-light);
+            margin: 2px 0 0 0;
+            font-weight: 400;
         }
 
         .signature-line {
@@ -635,14 +638,17 @@
         </div>
 
         <div class="signature-section">
-            <div class="signature-box signature-company">
-                <p class="assinatura-nome">Maciel Monteiro do Vale</p>
-                <div class="signature-line"></div>
+            <div class="signature-column">
+                <p class="assinatura-nome" style="margin-bottom: 6px;">Maciel Monteiro do Vale</p>
+                <hr class="signature-line-hr">
                 <p>Nevixa Engenharia</p>
                 <span>Responsável Técnico / Comercial</span>
             </div>
-            <div class="signature-box signature-client">
+            <div class="signature-column">
+                <p id="assinatura-nome-aprovador" class="assinatura-nome" style="margin-bottom: 6px; visibility: hidden;">&nbsp;</p>
+                <hr class="signature-line-hr">
                 <p id="assinatura-cliente">Nome do Cliente</p>
+                <p id="assinatura-cpf-cliente" class="assinatura-cpf" style="display: none;"></p>
                 <span>Aprovador Responsável</span>
             </div>
         </div>
@@ -843,6 +849,17 @@
                 ribbon.className = 'status-badge'; // verde
                 ribbon.style.display = 'block';
                 actionBar.style.display = 'none';
+                // Mostrar nome e CPF/CNPJ de quem assinou
+                const nomeAprovador = document.getElementById('assinatura-nome-aprovador');
+                const cpfAprovador = document.getElementById('assinatura-cpf-cliente');
+                if (nomeAprovador && q.nomeAssinatura) {
+                    nomeAprovador.innerText = q.nomeAssinatura;
+                    nomeAprovador.style.visibility = 'visible';
+                }
+                if (cpfAprovador && q.cpfAssinatura) {
+                    cpfAprovador.innerText = 'CPF/CNPJ: ' + q.cpfAssinatura;
+                    cpfAprovador.style.display = 'block';
+                }
             } else if (q.status === 'Recusado') {
                 ribbon.innerText = 'REPROVADO';
                 ribbon.className = 'status-badge reprovado'; // vermelho
@@ -868,6 +885,7 @@
             
             document.getElementById('sig-client-name').innerText = orcamentoGlobal.cliente || "Cliente Não Especificado";
             document.getElementById('sig-cpf').value = '';
+            if (document.getElementById('sig-nome')) document.getElementById('sig-nome').value = '';
             document.getElementById('sig-terms').checked = false;
 
             if (resposta === 'Aprovado') {
@@ -877,6 +895,7 @@
                 btnConfirm.style.background = '#1d4ed8'; // DocSales blue
                 termsContainer.style.display = 'flex';
                 cpfContainer.style.display = 'block';
+                if (document.getElementById('sig-nome-container')) document.getElementById('sig-nome-container').style.display = 'block';
                 btnConfirm.disabled = true; // wait for checkbox
             } else {
                 topTitle.innerText = "Reprovar documento";
@@ -885,6 +904,7 @@
                 btnConfirm.style.background = '#ef4444'; // Red
                 termsContainer.style.display = 'none';
                 cpfContainer.style.display = 'none';
+                if (document.getElementById('sig-nome-container')) document.getElementById('sig-nome-container').style.display = 'none';
                 btnConfirm.disabled = false; // No terms needed
             }
             document.getElementById('custom-modal').style.display = 'flex';
@@ -893,8 +913,9 @@
         function toggleSigButton() {
             const isChecked = document.getElementById('sig-terms').checked;
             const cpf = document.getElementById('sig-cpf').value.trim();
+            const nome = document.getElementById('sig-nome') ? document.getElementById('sig-nome').value.trim() : '';
             if (pendingAction === 'Aprovado') {
-                document.getElementById('custom-modal-confirm').disabled = !(isChecked && cpf.length > 0);
+                document.getElementById('custom-modal-confirm').disabled = !(isChecked && cpf.length > 0 && nome.length > 0);
             }
         }
         
@@ -903,6 +924,10 @@
             const cpfInput = document.getElementById('sig-cpf');
             if (cpfInput) {
                 cpfInput.addEventListener('input', toggleSigButton);
+            }
+            const nomeInput = document.getElementById('sig-nome');
+            if (nomeInput) {
+                nomeInput.addEventListener('input', toggleSigButton);
             }
         });
 
@@ -915,6 +940,7 @@
             if (!pendingAction) return;
             const resposta = pendingAction;
             const cpfAssinatura = document.getElementById('sig-cpf').value;
+            const nomeAssinatura = document.getElementById('sig-nome') ? document.getElementById('sig-nome').value : '';
             closeModal();
             
             const botoes = document.querySelectorAll('.action-bar .btn');
@@ -939,7 +965,10 @@
                 if (index === -1) throw new Error("Cotação não encontrada no servidor.");
                 
                 cloudData.quotations[index].status = resposta;
-                if(resposta === 'Aprovado') cloudData.quotations[index].cpfAssinatura = cpfAssinatura;
+                if(resposta === 'Aprovado') {
+                    cloudData.quotations[index].cpfAssinatura = cpfAssinatura;
+                    cloudData.quotations[index].nomeAssinatura = nomeAssinatura;
+                }
 
                 // 3. Salva de volta
                 const { error: updateError } = await supabaseClient
@@ -994,7 +1023,11 @@
                         <span class="sig-label">Nome Completo</span>
                         <div class="sig-value" id="sig-client-name">Carregando...</div>
                     </div>
-                    <div class="sig-field" id="sig-cpf-container">
+                    <div class="sig-field" id="sig-nome-container">
+                            <label>Nome Completo do Assinante:</label>
+                            <input type="text" id="sig-nome" class="sig-input" placeholder="Nome completo">
+                        </div>
+                        <div class="sig-field" id="sig-cpf-container">
                         <span class="sig-label">CPF / CNPJ *</span>
                         <input type="text" id="sig-cpf" class="sig-input" placeholder="000.000.000-00">
                     </div>

@@ -5806,7 +5806,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 peca: descricoes.join(" / ") || "Diversos",
                 equipamento: equipamento,
                 cliente: cliente,
-                cnpj: (document.getElementById("orc-cnpj") ? document.getElementById("orc-cnpj").value : "").trim(),
+                cnpj: (document.getElementById("orc-cnpj") ? document.getElementById("orc-cnpj").value : "").trim(),
+
                 condicaoPagamento: document.getElementById("orc-condicao-pagamento") ? document.getElementById("orc-condicao-pagamento").value : "vista",
                 endereco: document.getElementById("orc-endereco").value || "-",
                 contato: document.getElementById("orc-contato").value || "-",
@@ -5915,7 +5916,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 peca: descricoes.join(" / ") || "Diversos",
                 equipamento: equipamento,
                 cliente: cliente,
-                cnpj: (document.getElementById("orc-cnpj") ? document.getElementById("orc-cnpj").value : "").trim(),
+                cnpj: (document.getElementById("orc-cnpj") ? document.getElementById("orc-cnpj").value : "").trim(),
+
                 condicaoPagamento: document.getElementById("orc-condicao-pagamento") ? document.getElementById("orc-condicao-pagamento").value : "vista",
                 endereco: endereco,
                 contato: contato,
@@ -6283,15 +6285,24 @@ window.baixarPdfOrcamento = async function(id) {
         }
         if (document.getElementById('pdf-cli-email')) {
             document.getElementById('pdf-cli-email').innerText = (q.email && q.email !== "-") ? q.email : "Não informado";
-        }
-
-        // Condicao de pagamento dinamica no PDF
-        if (document.getElementById('pdf-cond-pagamento') && q.condicaoPagamento) {
-            const condTextos = {
-                'vista': '<strong>Condi\u00e7\u00f5es de Pagamento:</strong> Pagamento \u00e0 vista (100%) no ato da aprova\u00e7\u00e3o do or\u00e7amento, ou parcelado no cart\u00e3o de cr\u00e9dito (consultar condi\u00e7\u00f5es e taxas aplic\u00e1veis).',
-                'parcelado_50_50': '<strong>Condi\u00e7\u00f5es de Pagamento:</strong> 50% do valor total no ato da aprova\u00e7\u00e3o do or\u00e7amento e os 50% restantes mediante a conclus\u00e3o e entrega do servi\u00e7o.'
-            };
-            document.getElementById('pdf-cond-pagamento').innerHTML = condTextos[q.condicaoPagamento] || condTextos['vista'];
+        }
+
+
+
+        // Condicao de pagamento dinamica no PDF
+
+        if (document.getElementById('pdf-cond-pagamento') && q.condicaoPagamento) {
+
+            const condTextos = {
+
+                'vista': '<strong>Condi\u00e7\u00f5es de Pagamento:</strong> Pagamento \u00e0 vista (100%) no ato da aprova\u00e7\u00e3o do or\u00e7amento, ou parcelado no cart\u00e3o de cr\u00e9dito (consultar condi\u00e7\u00f5es e taxas aplic\u00e1veis).',
+
+                'parcelado_50_50': '<strong>Condi\u00e7\u00f5es de Pagamento:</strong> 50% do valor total no ato da aprova\u00e7\u00e3o do or\u00e7amento e os 50% restantes mediante a conclus\u00e3o e entrega do servi\u00e7o.'
+
+            };
+
+            document.getElementById('pdf-cond-pagamento').innerHTML = condTextos[q.condicaoPagamento] || condTextos['vista'];
+
         }
 
         // Datas
@@ -6316,7 +6327,16 @@ window.baixarPdfOrcamento = async function(id) {
         document.getElementById('pdf-prop-data').innerText = dataStr;
         document.getElementById('pdf-prop-validade').innerText = validadeStr;
         document.getElementById('pdf-prop-equip').innerText = q.equipamento || "Avulso / Nenhum";
-        document.getElementById('pdf-assinatura-cliente').innerText = q.cliente || "Cliente";
+        document.getElementById('pdf-assinatura-cliente').innerText = q.cliente || "Cliente";
+        // Dados do aprovador no PDF
+        if (q.nomeAssinatura && document.getElementById('pdf-assinatura-aprovador')) {
+            document.getElementById('pdf-assinatura-aprovador').innerText = q.nomeAssinatura;
+            document.getElementById('pdf-assinatura-aprovador').style.visibility = 'visible';
+        }
+        if (q.cpfAssinatura && document.getElementById('pdf-assinatura-cpf')) {
+            document.getElementById('pdf-assinatura-cpf').innerText = 'CPF/CNPJ: ' + q.cpfAssinatura;
+            document.getElementById('pdf-assinatura-cpf').style.display = 'block';
+        }
 
         // Observações
         const elObs = document.getElementById('pdf-prop-obs');
